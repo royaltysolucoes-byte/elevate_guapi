@@ -120,17 +120,73 @@ export default function DashboardPage() {
                      stats.totalSenhas + stats.totalImpressoras + stats.totalAutomacoes + 
                      stats.totalRelogios + stats.totalServidores + stats.totalConectividades;
 
+  const getIcon = (type: string) => {
+    const icons: { [key: string]: JSX.Element } = {
+      users: (
+        <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
+        </svg>
+      ),
+      computers: (
+        <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 3v2m6-2v2M9 19v2m6-2v2M5 9H3m2 6H3m18-6h-2m2 6h-2M7 19h10a2 2 0 002-2V7a2 2 0 00-2-2H7a2 2 0 00-2 2v10a2 2 0 002 2zM9 9h6v6H9V9z" />
+        </svg>
+      ),
+      ips: (
+        <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
+        </svg>
+      ),
+      emails: (
+        <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+        </svg>
+      ),
+      passwords: (
+        <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+        </svg>
+      ),
+      printers: (
+        <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" />
+        </svg>
+      ),
+      automations: (
+        <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+        </svg>
+      ),
+      clocks: (
+        <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+        </svg>
+      ),
+      servers: (
+        <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 12h14M5 12a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v4a2 2 0 01-2 2M5 12a2 2 0 00-2 2v4a2 2 0 002 2h14a2 2 0 002-2v-4a2 2 0 00-2-2m-2-4h.01M17 16h.01" />
+        </svg>
+      ),
+      connectivity: (
+        <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.111 16.404a5.5 5.5 0 017.778 0M12 20h.01m-7.08-7.071c3.904-3.905 10.236-3.905 14.141 0M1.394 9.393c5.857-5.857 15.355-5.857 21.213 0" />
+        </svg>
+      ),
+    };
+    return icons[type] || null;
+  };
+
   const statsCards = [
-    { label: 'Usuários', value: stats.totalUsers, icon: '👥', color: 'from-blue-500 to-blue-600', bgColor: 'bg-blue-500/10', borderColor: 'border-blue-500/20' },
-    { label: 'Computadores', value: stats.totalPCs, icon: '💻', color: 'from-green-500 to-emerald-600', bgColor: 'bg-green-500/10', borderColor: 'border-green-500/20' },
-    { label: 'IPs / VLANs', value: stats.totalIPs, icon: '🌐', color: 'from-purple-500 to-purple-600', bgColor: 'bg-purple-500/10', borderColor: 'border-purple-500/20' },
-    { label: 'Emails', value: stats.totalEmails, icon: '📧', color: 'from-yellow-500 to-amber-600', bgColor: 'bg-yellow-500/10', borderColor: 'border-yellow-500/20' },
-    { label: 'Senhas', value: stats.totalSenhas, icon: '🔐', color: 'from-orange-500 to-orange-600', bgColor: 'bg-orange-500/10', borderColor: 'border-orange-500/20' },
-    { label: 'Impressoras', value: stats.totalImpressoras, icon: '🖨️', color: 'from-cyan-500 to-cyan-600', bgColor: 'bg-cyan-500/10', borderColor: 'border-cyan-500/20' },
-    { label: 'Automações', value: stats.totalAutomacoes, icon: '⚡', color: 'from-pink-500 to-pink-600', bgColor: 'bg-pink-500/10', borderColor: 'border-pink-500/20' },
-    { label: 'Relógios de Ponto', value: stats.totalRelogios, icon: '⏰', color: 'from-indigo-500 to-indigo-600', bgColor: 'bg-indigo-500/10', borderColor: 'border-indigo-500/20' },
-    { label: 'Servidores', value: stats.totalServidores, icon: '🖥️', color: 'from-red-500 to-red-600', bgColor: 'bg-red-500/10', borderColor: 'border-red-500/20' },
-    { label: 'Conectividades', value: stats.totalConectividades, icon: '📡', color: 'from-teal-500 to-teal-600', bgColor: 'bg-teal-500/10', borderColor: 'border-teal-500/20' },
+    { label: 'Usuários', value: stats.totalUsers, iconType: 'users', color: 'from-blue-500 to-blue-600', bgColor: 'bg-blue-500/10', borderColor: 'border-blue-500/20' },
+    { label: 'Computadores', value: stats.totalPCs, iconType: 'computers', color: 'from-green-500 to-emerald-600', bgColor: 'bg-green-500/10', borderColor: 'border-green-500/20' },
+    { label: 'IPs / VLANs', value: stats.totalIPs, iconType: 'ips', color: 'from-purple-500 to-purple-600', bgColor: 'bg-purple-500/10', borderColor: 'border-purple-500/20' },
+    { label: 'Emails', value: stats.totalEmails, iconType: 'emails', color: 'from-yellow-500 to-amber-600', bgColor: 'bg-yellow-500/10', borderColor: 'border-yellow-500/20' },
+    { label: 'Senhas', value: stats.totalSenhas, iconType: 'passwords', color: 'from-orange-500 to-orange-600', bgColor: 'bg-orange-500/10', borderColor: 'border-orange-500/20' },
+    { label: 'Impressoras', value: stats.totalImpressoras, iconType: 'printers', color: 'from-cyan-500 to-cyan-600', bgColor: 'bg-cyan-500/10', borderColor: 'border-cyan-500/20' },
+    { label: 'Automações', value: stats.totalAutomacoes, iconType: 'automations', color: 'from-pink-500 to-pink-600', bgColor: 'bg-pink-500/10', borderColor: 'border-pink-500/20' },
+    { label: 'Relógios de Ponto', value: stats.totalRelogios, iconType: 'clocks', color: 'from-indigo-500 to-indigo-600', bgColor: 'bg-indigo-500/10', borderColor: 'border-indigo-500/20' },
+    { label: 'Servidores', value: stats.totalServidores, iconType: 'servers', color: 'from-red-500 to-red-600', bgColor: 'bg-red-500/10', borderColor: 'border-red-500/20' },
+    { label: 'Conectividades', value: stats.totalConectividades, iconType: 'connectivity', color: 'from-teal-500 to-teal-600', bgColor: 'bg-teal-500/10', borderColor: 'border-teal-500/20' },
   ];
 
   if (loading) {
@@ -244,8 +300,10 @@ export default function DashboardPage() {
               className="group relative bg-gradient-to-br from-[#1f2329] to-[#252930] rounded-xl p-5 border border-gray-800/50 hover:border-gray-700/50 transition-all duration-300 hover:shadow-xl hover:shadow-black/20 hover:-translate-y-1"
             >
               <div className="flex items-start justify-between mb-4">
-                <div className={`w-12 h-12 ${card.bgColor} rounded-xl flex items-center justify-center text-2xl border ${card.borderColor} backdrop-blur-sm`}>
-                  {card.icon}
+                <div className={`w-12 h-12 ${card.bgColor} rounded-xl flex items-center justify-center border ${card.borderColor} backdrop-blur-sm`}>
+                  <div className={`text-transparent bg-gradient-to-r ${card.color} bg-clip-text`}>
+                    {getIcon(card.iconType)}
+                  </div>
                 </div>
                 <div className={`px-2 py-1 rounded-md bg-gradient-to-r ${card.color} text-white text-xs font-semibold opacity-0 group-hover:opacity-100 transition-opacity`}>
                   {card.value}
@@ -284,7 +342,11 @@ export default function DashboardPage() {
                 <div key={index} className="space-y-2">
                   <div className="flex items-center justify-between text-sm">
                     <div className="flex items-center gap-2">
-                      <span className="text-xl">{card.icon}</span>
+                      <div className={`w-5 h-5 ${card.bgColor} rounded flex items-center justify-center`}>
+                        <div className={`text-transparent bg-gradient-to-r ${card.color} bg-clip-text`}>
+                          {getIcon(card.iconType)}
+                        </div>
+                      </div>
                       <span className="text-gray-300 font-medium">{card.label}</span>
                     </div>
                     <div className="flex items-center gap-2">
