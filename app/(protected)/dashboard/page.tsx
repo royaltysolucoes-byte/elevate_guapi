@@ -23,6 +23,8 @@ export default function DashboardPage() {
     totalConectividades: 0,
   });
   const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
+  const [lastUpdate, setLastUpdate] = useState<Date | null>(null);
 
   useEffect(() => {
     fetchProfile();
@@ -43,7 +45,7 @@ export default function DashboardPage() {
     }
   };
 
-  const fetchStats = async () => {
+  const fetchStats = async (isManualRefresh = false) => {
     try {
       // Fetch all stats in parallel
       const [usersRes, pcsRes, ipsRes, emailsRes, senhasRes, impressorasRes, automacoesRes, relogiosRes, servidoresRes, conectividadesRes] = await Promise.all([
@@ -73,9 +75,46 @@ export default function DashboardPage() {
       };
 
       setStats(statsData);
+      setLastUpdate(new Date());
+      if (isManualRefresh) {
+        setRefreshing(false);
+      }
     } catch (error) {
       console.error('Error fetching stats:', error);
+      if (isManualRefresh) {
+        setRefreshing(false);
+      }
     }
+  };
+
+  const handleRefresh = async () => {
+    setRefreshing(true);
+    await fetchStats(true);
+  };
+
+  const formatLastUpdate = (date: Date | null) => {
+    if (!date) return 'Nunca atualizado';
+    
+    const now = new Date();
+    const diff = Math.floor((now.getTime() - date.getTime()) / 1000); // diferença em segundos
+    
+    if (diff < 60) return `Atualizado há ${diff} segundo${diff !== 1 ? 's' : ''}`;
+    if (diff < 3600) {
+      const minutes = Math.floor(diff / 60);
+      return `Atualizado há ${minutes} minuto${minutes !== 1 ? 's' : ''}`;
+    }
+    if (diff < 86400) {
+      const hours = Math.floor(diff / 3600);
+      return `Atualizado há ${hours} hora${hours !== 1 ? 's' : ''}`;
+    }
+    
+    return date.toLocaleString('pt-BR', {
+      day: '2-digit',
+      month: '2-digit',
+      year: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
+    });
   };
 
   if (loading) {
@@ -91,18 +130,47 @@ export default function DashboardPage() {
       {/* Welcome Section */}
       <div className="bg-gradient-to-br from-[#282c34] via-[#2c3139] to-[#282c34] rounded-xl shadow-2xl p-8 border border-gray-700/50">
         <div className="flex items-center justify-between mb-6">
-          <div>
+          <div className="flex-1">
             <h1 className="text-4xl font-bold text-white mb-2">
               Bem-vindo, <span className="text-[#4CAF50]">{user?.fullName || 'Usuário'}</span>!
             </h1>
             <p className="text-gray-400 text-lg">
               Sistema de Controle e Gerenciamento TI
             </p>
+            {lastUpdate && (
+              <p className="text-gray-500 text-sm mt-2">
+                {formatLastUpdate(lastUpdate)}
+              </p>
+            )}
           </div>
-          <div className="bg-[#4CAF50]/10 border border-[#4CAF50]/30 rounded-full p-4">
-            <svg className="w-12 h-12 text-[#4CAF50]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
-            </svg>
+          <div className="flex items-center space-x-4">
+            <button
+              onClick={handleRefresh}
+              disabled={refreshing}
+              className={`bg-[#4CAF50] hover:bg-[#45a049] text-white px-4 py-2 rounded-lg flex items-center space-x-2 transition-colors duration-200 ${
+                refreshing ? 'opacity-50 cursor-not-allowed' : ''
+              }`}
+            >
+              <svg
+                className={`w-5 h-5 ${refreshing ? 'animate-spin' : ''}`}
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
+                />
+              </svg>
+              <span>{refreshing ? 'Atualizando...' : 'Atualizar'}</span>
+            </button>
+            <div className="bg-[#4CAF50]/10 border border-[#4CAF50]/30 rounded-full p-4">
+              <svg className="w-12 h-12 text-[#4CAF50]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+              </svg>
+            </div>
           </div>
         </div>
         <div className="flex items-center space-x-4">
