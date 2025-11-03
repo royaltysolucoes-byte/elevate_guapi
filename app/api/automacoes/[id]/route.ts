@@ -67,23 +67,24 @@ export async function PUT(
       );
     }
 
-    // Serialize automacao
+    // Serialize automacao (findByIdAndUpdate returns a single document, not an array)
+    const automacaoDoc = automacaoRaw as any;
     const automacao = {
-      _id: automacaoRaw._id.toString(),
-      ip: automacaoRaw.ip || '',
-      equipamento: automacaoRaw.equipamento || '',
-      porta: automacaoRaw.porta || undefined,
-      categoria: automacaoRaw.categoria || undefined,
-      faixa: automacaoRaw.faixa ? {
-        _id: automacaoRaw.faixa._id?.toString() || '',
-        tipo: automacaoRaw.faixa.tipo || 'faixa',
-        nome: automacaoRaw.faixa.nome || '',
-        faixa: automacaoRaw.faixa.faixa || undefined,
-        vlanNome: automacaoRaw.faixa.vlanNome || undefined,
-        vlanId: automacaoRaw.faixa.vlanId || undefined,
+      _id: automacaoDoc._id.toString(),
+      ip: automacaoDoc.ip || '',
+      equipamento: automacaoDoc.equipamento || '',
+      porta: automacaoDoc.porta || undefined,
+      categoria: automacaoDoc.categoria || undefined,
+      faixa: automacaoDoc.faixa ? {
+        _id: automacaoDoc.faixa._id?.toString() || '',
+        tipo: automacaoDoc.faixa.tipo || 'faixa',
+        nome: automacaoDoc.faixa.nome || '',
+        faixa: automacaoDoc.faixa.faixa || undefined,
+        vlanNome: automacaoDoc.faixa.vlanNome || undefined,
+        vlanId: automacaoDoc.faixa.vlanId || undefined,
       } : undefined,
-      createdAt: automacaoRaw.createdAt ? new Date(automacaoRaw.createdAt).toISOString() : new Date().toISOString(),
-      updatedAt: automacaoRaw.updatedAt ? new Date(automacaoRaw.updatedAt).toISOString() : new Date().toISOString(),
+      createdAt: automacaoDoc.createdAt ? new Date(automacaoDoc.createdAt).toISOString() : new Date().toISOString(),
+      updatedAt: automacaoDoc.updatedAt ? new Date(automacaoDoc.updatedAt).toISOString() : new Date().toISOString(),
     };
 
     return NextResponse.json({ automacao });
