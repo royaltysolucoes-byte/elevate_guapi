@@ -1,10 +1,33 @@
 import { NextRequest, NextResponse } from 'next/server';
 import connectDB from '@/lib/db';
-import Impressora from '@/lib/models/Impressora';
+import mongoose from 'mongoose';
+import { verifyToken } from '@/lib/auth';
+
+// Import and ensure models are registered before use
 import IP from '@/lib/models/IP';
 import Tipo from '@/lib/models/Tipo';
 import Modelo from '@/lib/models/Modelo';
-import { verifyToken } from '@/lib/auth';
+import Marca from '@/lib/models/Marca';
+import Impressora from '@/lib/models/Impressora';
+
+// Ensure models are registered
+const ensureModelsRegistered = () => {
+  if (!mongoose.models.IP) {
+    require('@/lib/models/IP');
+  }
+  if (!mongoose.models.Tipo) {
+    require('@/lib/models/Tipo');
+  }
+  if (!mongoose.models.Modelo) {
+    require('@/lib/models/Modelo');
+  }
+  if (!mongoose.models.Marca) {
+    require('@/lib/models/Marca');
+  }
+  if (!mongoose.models.Impressora) {
+    require('@/lib/models/Impressora');
+  }
+};
 
 async function checkAuth(request: NextRequest) {
   const token = request.cookies.get('token')?.value;
@@ -29,22 +52,28 @@ export async function GET(request: NextRequest) {
     }
 
     await connectDB();
+    
+    // Ensure all models are registered
+    ensureModelsRegistered();
 
     const { searchParams } = new URL(request.url);
     const page = parseInt(searchParams.get('page') || '1');
     const limit = 10;
     const skip = (page - 1) * limit;
 
+    // Get models after ensuring they're registered
+    const ImpressoraModel = mongoose.models.Impressora || Impressora;
+    
     const [impressorasRaw, total] = await Promise.all([
-      Impressora.find({})
-        .populate({ path: 'faixa', strictPopulate: false })
-        .populate({ path: 'modelo', populate: { path: 'marca', strictPopulate: false }, strictPopulate: false })
-        .populate({ path: 'tipo', strictPopulate: false })
+      ImpressoraModel.find({})
+        .populate({ path: 'faixa', model: 'IP', strictPopulate: false })
+        .populate({ path: 'modelo', populate: { path: 'marca', model: 'Marca', strictPopulate: false }, model: 'Modelo', strictPopulate: false })
+        .populate({ path: 'tipo', model: 'Tipo', strictPopulate: false })
         .sort({ createdAt: -1 })
         .skip(skip)
         .limit(limit)
         .lean(),
-      Impressora.countDocuments({}),
+      ImpressoraModel.countDocuments({}),
     ]);
 
     console.log('Impressoras encontradas:', impressorasRaw.length);
@@ -131,6 +160,9 @@ export async function POST(request: NextRequest) {
     }
 
     await connectDB();
+    
+    // Ensure all models are registered
+    ensureModelsRegistered();
 
     const { setor, numeroSerie, tipo, enderecoIP, categoria, faixa, modelo } = await request.json();
 
@@ -141,7 +173,10 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const newImpressora = await Impressora.create({
+    // Get models after ensuring they're registered
+    const ImpressoraModel = mongoose.models.Impressora || Impressora;
+    
+    const newImpressora = await ImpressoraModel.create({
       setor,
       numeroSerie,
       tipo,
@@ -151,10 +186,10 @@ export async function POST(request: NextRequest) {
       modelo: modelo || undefined,
     });
 
-    const populatedImpressoraRaw = await Impressora.findById(newImpressora._id)
-      .populate({ path: 'faixa', strictPopulate: false })
-      .populate({ path: 'modelo', populate: { path: 'marca', strictPopulate: false }, strictPopulate: false })
-      .populate({ path: 'tipo', strictPopulate: false })
+    const populatedImpressoraRaw = await ImpressoraModel.findById(newImpressora._id)
+      .populate({ path: 'faixa', model: 'IP', strictPopulate: false })
+      .populate({ path: 'modelo', populate: { path: 'marca', model: 'Marca', strictPopulate: false }, model: 'Modelo', strictPopulate: false })
+      .populate({ path: 'tipo', model: 'Tipo', strictPopulate: false })
       .lean();
 
     if (!populatedImpressoraRaw) {
