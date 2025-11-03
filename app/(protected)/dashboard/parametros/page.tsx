@@ -204,15 +204,17 @@ export default function ParametrosPage() {
         body: JSON.stringify(formData),
       });
 
+      const data = await response.json();
+      
       if (!response.ok) {
-        const data = await response.json();
         setError(data.error || `Erro ao criar ${activeTab}`);
         return;
       }
-
+      
       setFormData({ nome: '', marca: '' });
       setShowModal(false);
       
+      // Refresh the appropriate list
       if (activeTab === 'categorias') {
         fetchCategorias();
       } else if (activeTab === 'marcas') {
