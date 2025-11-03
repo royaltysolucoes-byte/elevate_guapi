@@ -1,6 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
 import connectDB from '@/lib/db';
 import Impressora from '@/lib/models/Impressora';
+import IP from '@/lib/models/IP';
+import Tipo from '@/lib/models/Tipo';
+import Modelo from '@/lib/models/Modelo';
 import { verifyToken } from '@/lib/auth';
 
 async function checkAuth(request: NextRequest) {
