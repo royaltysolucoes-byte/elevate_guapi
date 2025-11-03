@@ -117,11 +117,15 @@ export default function ParametrosPage() {
 
   const fetchModelos = async () => {
     try {
+      console.log('Buscando modelos...');
       const response = await fetch('/api/modelos');
       const data = await response.json();
       if (response.ok) {
         console.log('Modelos recebidos:', data.modelos?.length || 0);
-        setModelos(data.modelos || []);
+        console.log('Modelos data:', data);
+        const modelosArray = Array.isArray(data.modelos) ? data.modelos : [];
+        console.log('Definindo modelos no estado:', modelosArray.length);
+        setModelos(modelosArray);
       } else {
         console.error('Error fetching modelos:', response.statusText, data);
         setModelos(data.modelos || []);
@@ -258,19 +262,28 @@ export default function ParametrosPage() {
       });
 
       if (response.ok) {
+        // Wait a bit to ensure the deletion is complete before refreshing
+        await new Promise(resolve => setTimeout(resolve, 100));
+        
         if (type === 'categorias') {
-          fetchCategorias();
+          await fetchCategorias();
         } else if (type === 'marcas') {
-          fetchMarcas();
+          await fetchMarcas();
         } else if (type === 'modelos') {
-          fetchModelos();
+          console.log('Atualizando lista de modelos após deletar...');
+          await fetchModelos();
+          console.log('Lista de modelos atualizada');
         } else if (type === 'tipos') {
-          fetchTipos();
+          await fetchTipos();
         } else if (type === 'sistemas') {
-          fetchSistemas();
+          await fetchSistemas();
         } else if (type === 'servicos') {
-          fetchServicos();
+          await fetchServicos();
         }
+      } else {
+        const errorData = await response.json();
+        console.error('Erro ao deletar:', errorData);
+        alert(`Erro ao excluir ${typeName}: ${errorData.error || 'Erro desconhecido'}`);
       }
     } catch (error) {
       console.error(`Error deleting ${type}:`, error);
@@ -342,6 +355,8 @@ export default function ParametrosPage() {
             setActiveTab('modelos');
             setShowModal(false);
             setFormData({ nome: '', marca: '' });
+            // Recarregar modelos quando a aba é selecionada
+            fetchModelos();
           }}
           className={`px-4 py-2 font-medium transition ${
             activeTab === 'modelos'
