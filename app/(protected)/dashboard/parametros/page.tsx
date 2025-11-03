@@ -118,15 +118,17 @@ export default function ParametrosPage() {
   const fetchModelos = async () => {
     try {
       const response = await fetch('/api/modelos');
+      const data = await response.json();
       if (response.ok) {
-        const data = await response.json();
+        console.log('Modelos recebidos:', data.modelos?.length || 0);
         setModelos(data.modelos || []);
       } else {
-        const errorData = await response.json();
-        console.error('Error fetching modelos:', response.statusText, errorData);
+        console.error('Error fetching modelos:', response.statusText, data);
+        setModelos(data.modelos || []);
       }
     } catch (error) {
       console.error('Error fetching modelos:', error);
+      setModelos([]);
     }
   };
 

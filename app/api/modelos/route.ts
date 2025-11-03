@@ -29,11 +29,13 @@ export async function GET(request: NextRequest) {
 
     const modelos = await Modelo.find({}).populate('marca').sort({ nome: 1 });
 
-    return NextResponse.json({ modelos });
-  } catch (error) {
+    console.log('Modelos encontrados:', modelos.length);
+    
+    return NextResponse.json({ modelos: modelos || [] });
+  } catch (error: any) {
     console.error('Error fetching modelos:', error);
     return NextResponse.json(
-      { error: 'Internal server error' },
+      { error: error.message || 'Internal server error', modelos: [] },
       { status: 500 }
     );
   }
