@@ -45,7 +45,7 @@ async function connectDB(): Promise<typeof mongoose> {
             (idx.key && idx.key.enderecoIP !== undefined)
           );
           
-          if (enderecoIPIndex) {
+          if (enderecoIPIndex && enderecoIPIndex.name) {
             console.log('Removing legacy enderecoIP_1 index...');
             await ipsCollection.dropIndex(enderecoIPIndex.name);
             console.log('Legacy index removed successfully');
