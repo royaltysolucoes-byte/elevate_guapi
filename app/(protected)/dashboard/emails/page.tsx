@@ -162,6 +162,7 @@ export default function EmailsPage() {
               colaborador: '',
               nome: '',
               senha: '',
+              confirmarSenha: '',
             });
             setShowModal(true);
           }}
