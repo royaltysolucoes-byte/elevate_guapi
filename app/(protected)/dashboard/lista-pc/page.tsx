@@ -467,7 +467,7 @@ export default function ListaPCPage() {
                   <option value="">Nenhum</option>
                   {modelosDisponiveis.map((modelo) => (
                     <option key={modelo._id} value={modelo._id}>
-                      {modelo.nome} - {modelo.marca.nome}
+                      {modelo.nome} {modelo.marca ? `- ${modelo.marca.nome}` : ''}
                     </option>
                   ))}
                 </select>

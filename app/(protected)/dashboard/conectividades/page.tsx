@@ -413,7 +413,7 @@ export default function ConectividadesPage() {
               <option value="">Todos</option>
               {modelosDisponiveis.map((modelo) => (
                 <option key={modelo._id} value={modelo._id}>
-                  {modelo.nome} - {modelo.marca.nome}
+                  {modelo.nome} {modelo.marca ? `- ${modelo.marca.nome}` : ''}
                 </option>
               ))}
             </select>
@@ -641,7 +641,7 @@ export default function ConectividadesPage() {
                   <option value="">Selecione um modelo</option>
                   {modelosDisponiveis.map((modelo) => (
                     <option key={modelo._id} value={modelo._id}>
-                      {modelo.nome} - {modelo.marca.nome}
+                      {modelo.nome} {modelo.marca ? `- ${modelo.marca.nome}` : ''}
                     </option>
                   ))}
                 </select>
