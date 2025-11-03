@@ -55,6 +55,9 @@ export async function GET(request: NextRequest) {
 }
 
 export async function POST(request: NextRequest) {
+  let tipoIP: string = 'faixa';
+  let nome: string = '';
+  
   try {
     const auth = await checkAuth(request);
     
@@ -67,7 +70,10 @@ export async function POST(request: NextRequest) {
 
     await connectDB();
 
-    const { tipo: tipoIP, nome, faixa, gateway, network, mask, vlanNome, vlanId, vlanFaixa, vlanGateway, vlanNetwork, vlanMask } = await request.json();
+    const body = await request.json();
+    tipoIP = body.tipo || 'faixa';
+    nome = body.nome || '';
+    const { faixa, gateway, network, mask, vlanNome, vlanId, vlanFaixa, vlanGateway, vlanNetwork, vlanMask } = body;
 
     console.log('Criando IP/VLAN:', { tipo: tipoIP, nome, faixa, gateway, network, mask });
 
