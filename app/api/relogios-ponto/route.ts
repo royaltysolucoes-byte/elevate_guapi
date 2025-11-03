@@ -33,7 +33,7 @@ export async function GET(request: NextRequest) {
     const skip = (page - 1) * limit;
 
     const [relogios, total] = await Promise.all([
-      RelogioPonto.find({}).populate('faixa').populate('modelo').populate('tipo').sort({ createdAt: -1 }).skip(skip).limit(limit),
+      RelogioPonto.find({}).populate('faixa').populate({ path: 'modelo', populate: { path: 'marca' } }).populate('tipo').sort({ createdAt: -1 }).skip(skip).limit(limit),
       RelogioPonto.countDocuments({}),
     ]);
 
@@ -86,7 +86,7 @@ export async function POST(request: NextRequest) {
       modelo: modelo || undefined,
     });
 
-    const relogioPopulado = await RelogioPonto.findById(newRelogio._id).populate('faixa').populate('modelo').populate('tipo');
+    const relogioPopulado = await RelogioPonto.findById(newRelogio._id).populate('faixa').populate({ path: 'modelo', populate: { path: 'marca' } }).populate('tipo');
 
     return NextResponse.json(
       { relogio: relogioPopulado },

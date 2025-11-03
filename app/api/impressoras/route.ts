@@ -33,7 +33,7 @@ export async function GET(request: NextRequest) {
     const skip = (page - 1) * limit;
 
     const [impressoras, total] = await Promise.all([
-      Impressora.find({}).populate('faixa').populate('modelo').populate('tipo').sort({ createdAt: -1 }).skip(skip).limit(limit),
+      Impressora.find({}).populate('faixa').populate({ path: 'modelo', populate: { path: 'marca' } }).populate('tipo').sort({ createdAt: -1 }).skip(skip).limit(limit),
       Impressora.countDocuments({}),
     ]);
 
@@ -86,8 +86,10 @@ export async function POST(request: NextRequest) {
       modelo: modelo || undefined,
     });
 
+    const populatedImpressora = await Impressora.findById(newImpressora._id).populate('faixa').populate({ path: 'modelo', populate: { path: 'marca' } }).populate('tipo');
+
     return NextResponse.json(
-      { impressora: newImpressora },
+      { impressora: populatedImpressora },
       { status: 201 }
     );
   } catch (error: any) {

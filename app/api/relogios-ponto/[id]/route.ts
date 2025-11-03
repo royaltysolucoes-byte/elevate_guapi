@@ -33,11 +33,16 @@ export async function PUT(
     const { id } = await params;
     const body = await request.json();
 
+    // Remove empty strings from body to avoid ObjectId casting errors
+    const updateBody = Object.fromEntries(
+      Object.entries(body).filter(([_, value]) => value !== '')
+    );
+
     const relogio = await RelogioPonto.findByIdAndUpdate(
       id,
-      body,
+      updateBody,
       { new: true, runValidators: true }
-    ).populate('faixa').populate('modelo').populate('tipo');
+    ).populate('faixa').populate({ path: 'modelo', populate: { path: 'marca' } }).populate('tipo');
 
     if (!relogio) {
       return NextResponse.json(
