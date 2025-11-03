@@ -95,15 +95,23 @@ export async function POST(request: NextRequest) {
   } catch (error: any) {
     console.error('Error creating impressora:', error);
     
+    if (error.name === 'ValidationError') {
+      const errors = Object.values(error.errors).map((err: any) => err.message);
+      return NextResponse.json(
+        { error: errors.join(', ') },
+        { status: 400 }
+      );
+    }
+
     if (error.code === 11000) {
       return NextResponse.json(
-        { error: 'Esta impressora já está cadastrada' },
+        { error: 'Este número de série já está cadastrado' },
         { status: 400 }
       );
     }
 
     return NextResponse.json(
-      { error: 'Internal server error' },
+      { error: error.message || 'Internal server error' },
       { status: 500 }
     );
   }

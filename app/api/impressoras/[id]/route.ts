@@ -33,10 +33,28 @@ export async function PUT(
     const { id } = await params;
     const body = await request.json();
 
-    // Remove empty strings from body to avoid ObjectId casting errors
-    const updateBody = Object.fromEntries(
-      Object.entries(body).filter(([_, value]) => value !== '')
-    );
+    // Remove empty strings from optional fields (modelo, faixa) to avoid ObjectId casting errors
+    // Keep required fields even if they might be empty (will be validated by Mongoose)
+    const updateBody: any = {
+      setor: body.setor,
+      numeroSerie: body.numeroSerie,
+      tipo: body.tipo,
+      enderecoIP: body.enderecoIP,
+      categoria: body.categoria || undefined,
+    };
+
+    // Only include optional ObjectId fields if they are not empty
+    if (body.modelo && body.modelo !== '') {
+      updateBody.modelo = body.modelo;
+    } else {
+      updateBody.modelo = undefined;
+    }
+
+    if (body.faixa && body.faixa !== '') {
+      updateBody.faixa = body.faixa;
+    } else {
+      updateBody.faixa = undefined;
+    }
 
     const impressora = await Impressora.findByIdAndUpdate(
       id,
@@ -52,10 +70,26 @@ export async function PUT(
     }
 
     return NextResponse.json({ impressora });
-  } catch (error) {
+  } catch (error: any) {
     console.error('Error updating impressora:', error);
+    
+    if (error.name === 'ValidationError') {
+      const errors = Object.values(error.errors).map((err: any) => err.message);
+      return NextResponse.json(
+        { error: errors.join(', ') },
+        { status: 400 }
+      );
+    }
+
+    if (error.code === 11000) {
+      return NextResponse.json(
+        { error: 'Este número de série já está cadastrado' },
+        { status: 400 }
+      );
+    }
+
     return NextResponse.json(
-      { error: 'Internal server error' },
+      { error: error.message || 'Internal server error' },
       { status: 500 }
     );
   }

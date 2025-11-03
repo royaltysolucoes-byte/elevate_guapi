@@ -69,6 +69,15 @@ export async function POST(request: NextRequest) {
 
     const { tipo: tipoIP, nome, faixa, gateway, network, mask, vlanNome, vlanId, vlanFaixa, vlanGateway, vlanNetwork, vlanMask } = await request.json();
 
+    // Check if IP with same tipo and nome already exists
+    const existingIP = await IP.findOne({ tipo: tipoIP, nome });
+    if (existingIP) {
+      return NextResponse.json(
+        { error: `Esta ${tipoIP === 'faixa' ? 'faixa' : 'VLAN'} já está cadastrada com este nome para este tipo` },
+        { status: 400 }
+      );
+    }
+
     const ip = await IP.create({
       tipo: tipoIP,
       nome,
@@ -94,8 +103,19 @@ export async function POST(request: NextRequest) {
     console.error('Error creating IP:', error);
     
     if (error.code === 11000) {
+      // Check which field caused the duplicate key error
+      const duplicateField = error.keyPattern ? Object.keys(error.keyPattern)[0] : 'campo';
+      const tipoFromError = error.keyValue?.tipo || 'faixa';
       return NextResponse.json(
-        { error: 'Esta faixa já está cadastrada' },
+        { error: `Esta ${tipoFromError === 'faixa' ? 'faixa' : 'VLAN'} já está cadastrada com este ${duplicateField === 'nome' ? 'nome' : 'valor'}` },
+        { status: 400 }
+      );
+    }
+
+    if (error.name === 'ValidationError') {
+      const errors = Object.values(error.errors).map((err: any) => err.message);
+      return NextResponse.json(
+        { error: errors.join(', ') },
         { status: 400 }
       );
     }
