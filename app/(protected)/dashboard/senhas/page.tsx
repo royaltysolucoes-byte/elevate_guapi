@@ -404,6 +404,7 @@ export default function SenhasPage() {
                     setShowModal(false);
                     setEditingSenha(null);
                     setFormData({
+                      id: '',
                       ip: '',
                       equipamento: '',
                       categoria: '',
