@@ -71,34 +71,26 @@ export async function POST(request: NextRequest) {
 
     console.log('Criando IP/VLAN:', { tipo: tipoIP, nome, faixa, gateway, network, mask });
 
-    // Check if IP with same tipo and nome already exists (case-insensitive)
+    // Trim nome for comparison
+    const nomeTrimmed = nome.trim();
+    
+    console.log('Verificando duplicidade:', { tipo: tipoIP, nome: nomeTrimmed });
+
+    // Check if IP with same tipo and nome already exists (exact match, case-sensitive)
     const existingIP = await IP.findOne({ 
       tipo: tipoIP, 
-      nome: { $regex: new RegExp(`^${nome.trim()}$`, 'i') } 
+      nome: nomeTrimmed 
     });
     
     if (existingIP) {
-      console.log('IP/VLAN já existe:', existingIP);
+      console.log('IP/VLAN já existe:', existingIP._id, existingIP.nome);
       return NextResponse.json(
-        { error: `Esta ${tipoIP === 'faixa' ? 'faixa' : 'VLAN'} já está cadastrada com o nome "${nome}" para este tipo` },
+        { error: `Esta ${tipoIP === 'faixa' ? 'faixa' : 'VLAN'} já está cadastrada com o nome "${nomeTrimmed}" para este tipo` },
         { status: 400 }
       );
     }
 
-    // For faixa, also check if faixa value already exists
-    if (tipoIP === 'faixa' && faixa) {
-      const existingFaixa = await IP.findOne({ 
-        tipo: 'faixa',
-        faixa: faixa.trim()
-      });
-      if (existingFaixa) {
-        console.log('Faixa já existe:', existingFaixa);
-        return NextResponse.json(
-          { error: `Esta faixa de IP "${faixa}" já está cadastrada` },
-          { status: 400 }
-        );
-      }
-    }
+    console.log('Nenhuma duplicidade encontrada, prosseguindo com criação...');
 
     // Prepare data object - only include fields relevant to the tipo
     const ipData: any = {
