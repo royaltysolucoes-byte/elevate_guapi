@@ -69,6 +69,8 @@ export async function POST(request: NextRequest) {
 
     const { tipo: tipoIP, nome, faixa, gateway, network, mask, vlanNome, vlanId, vlanFaixa, vlanGateway, vlanNetwork, vlanMask } = await request.json();
 
+    console.log('Criando IP/VLAN:', { tipo: tipoIP, nome, faixa, gateway, network, mask });
+
     // Check if IP with same tipo and nome already exists
     const existingIP = await IP.findOne({ tipo: tipoIP, nome });
     if (existingIP) {
@@ -78,20 +80,44 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const ip = await IP.create({
+    // Prepare data object - only include fields relevant to the tipo
+    const ipData: any = {
       tipo: tipoIP,
       nome,
-      faixa,
-      gateway,
-      network,
-      mask,
-      vlanNome,
-      vlanId,
-      vlanFaixa,
-      vlanGateway,
-      vlanNetwork,
-      vlanMask,
-    });
+      ativo: true,
+    };
+
+    if (tipoIP === 'faixa') {
+      // Only include faixa fields
+      ipData.faixa = faixa || undefined;
+      ipData.gateway = gateway || undefined;
+      ipData.network = network || undefined;
+      ipData.mask = mask || undefined;
+      // Clear VLAN fields
+      ipData.vlanNome = undefined;
+      ipData.vlanId = undefined;
+      ipData.vlanFaixa = undefined;
+      ipData.vlanGateway = undefined;
+      ipData.vlanNetwork = undefined;
+      ipData.vlanMask = undefined;
+    } else if (tipoIP === 'vlan') {
+      // Only include VLAN fields
+      ipData.vlanNome = vlanNome || undefined;
+      ipData.vlanId = vlanId || undefined;
+      ipData.vlanFaixa = vlanFaixa || undefined;
+      ipData.vlanGateway = vlanGateway || undefined;
+      ipData.vlanNetwork = vlanNetwork || undefined;
+      ipData.vlanMask = vlanMask || undefined;
+      // Clear faixa fields
+      ipData.faixa = undefined;
+      ipData.gateway = undefined;
+      ipData.network = undefined;
+      ipData.mask = undefined;
+    }
+
+    console.log('Dados preparados para criação:', ipData);
+
+    const ip = await IP.create(ipData);
 
     const ipPopulado = await IP.findById(ip._id);
 
@@ -101,6 +127,14 @@ export async function POST(request: NextRequest) {
     );
   } catch (error: any) {
     console.error('Error creating IP:', error);
+    console.error('Error details:', {
+      name: error.name,
+      message: error.message,
+      code: error.code,
+      keyPattern: error.keyPattern,
+      keyValue: error.keyValue,
+      errors: error.errors
+    });
     
     if (error.code === 11000) {
       // Check which field caused the duplicate key error
@@ -114,8 +148,10 @@ export async function POST(request: NextRequest) {
 
     if (error.name === 'ValidationError') {
       const errors = Object.values(error.errors).map((err: any) => err.message);
+      const errorMessage = errors.join(', ');
+      console.error('Validation errors:', errors);
       return NextResponse.json(
-        { error: errors.join(', ') },
+        { error: errorMessage },
         { status: 400 }
       );
     }
