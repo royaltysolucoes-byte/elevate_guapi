@@ -71,13 +71,33 @@ export async function POST(request: NextRequest) {
 
     console.log('Criando IP/VLAN:', { tipo: tipoIP, nome, faixa, gateway, network, mask });
 
-    // Check if IP with same tipo and nome already exists
-    const existingIP = await IP.findOne({ tipo: tipoIP, nome });
+    // Check if IP with same tipo and nome already exists (case-insensitive)
+    const existingIP = await IP.findOne({ 
+      tipo: tipoIP, 
+      nome: { $regex: new RegExp(`^${nome.trim()}$`, 'i') } 
+    });
+    
     if (existingIP) {
+      console.log('IP/VLAN já existe:', existingIP);
       return NextResponse.json(
-        { error: `Esta ${tipoIP === 'faixa' ? 'faixa' : 'VLAN'} já está cadastrada com este nome para este tipo` },
+        { error: `Esta ${tipoIP === 'faixa' ? 'faixa' : 'VLAN'} já está cadastrada com o nome "${nome}" para este tipo` },
         { status: 400 }
       );
+    }
+
+    // For faixa, also check if faixa value already exists
+    if (tipoIP === 'faixa' && faixa) {
+      const existingFaixa = await IP.findOne({ 
+        tipo: 'faixa',
+        faixa: faixa.trim()
+      });
+      if (existingFaixa) {
+        console.log('Faixa já existe:', existingFaixa);
+        return NextResponse.json(
+          { error: `Esta faixa de IP "${faixa}" já está cadastrada` },
+          { status: 400 }
+        );
+      }
     }
 
     // Prepare data object - only include fields relevant to the tipo
@@ -138,8 +158,20 @@ export async function POST(request: NextRequest) {
     
     if (error.code === 11000) {
       // Check which field caused the duplicate key error
+      console.error('Duplicate key error:', error.keyPattern, error.keyValue);
+      
+      // The compound index is on { tipo, nome }
+      if (error.keyPattern && 'tipo' in error.keyPattern && 'nome' in error.keyPattern) {
+        const tipoFromError = error.keyValue?.tipo || tipoIP || 'faixa';
+        const nomeFromError = error.keyValue?.nome || nome || '';
+        return NextResponse.json(
+          { error: `Esta ${tipoFromError === 'faixa' ? 'faixa' : 'VLAN'} já está cadastrada com o nome "${nomeFromError}" para este tipo` },
+          { status: 400 }
+        );
+      }
+      
       const duplicateField = error.keyPattern ? Object.keys(error.keyPattern)[0] : 'campo';
-      const tipoFromError = error.keyValue?.tipo || 'faixa';
+      const tipoFromError = error.keyValue?.tipo || tipoIP || 'faixa';
       return NextResponse.json(
         { error: `Esta ${tipoFromError === 'faixa' ? 'faixa' : 'VLAN'} já está cadastrada com este ${duplicateField === 'nome' ? 'nome' : 'valor'}` },
         { status: 400 }
