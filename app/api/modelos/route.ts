@@ -1,7 +1,21 @@
 import { NextRequest, NextResponse } from 'next/server';
 import connectDB from '@/lib/db';
-import Modelo from '@/lib/models/Modelo';
+import mongoose from 'mongoose';
 import { verifyToken } from '@/lib/auth';
+
+// Import and ensure models are registered before use
+import Modelo from '@/lib/models/Modelo';
+import Marca from '@/lib/models/Marca';
+
+// Ensure models are registered
+const ensureModelsRegistered = () => {
+  if (!mongoose.models.Marca) {
+    require('@/lib/models/Marca');
+  }
+  if (!mongoose.models.Modelo) {
+    require('@/lib/models/Modelo');
+  }
+};
 
 async function checkAuth(request: NextRequest) {
   const token = request.cookies.get('token')?.value;
@@ -26,9 +40,15 @@ export async function GET(request: NextRequest) {
     }
 
     await connectDB();
+    
+    // Ensure all models are registered
+    ensureModelsRegistered();
 
-    const modelosRaw = await Modelo.find({})
-      .populate({ path: 'marca', strictPopulate: false })
+    // Get models after ensuring they're registered
+    const ModeloModel = mongoose.models.Modelo || Modelo;
+    
+    const modelosRaw = await ModeloModel.find({})
+      .populate({ path: 'marca', model: 'Marca', strictPopulate: false })
       .sort({ nome: 1 })
       .lean();
 
@@ -78,6 +98,9 @@ export async function POST(request: NextRequest) {
     }
 
     await connectDB();
+    
+    // Ensure all models are registered
+    ensureModelsRegistered();
 
     const { nome, marca } = await request.json();
 
@@ -90,8 +113,11 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Get models after ensuring they're registered
+    const ModeloModel = mongoose.models.Modelo || Modelo;
+    
     // Verificar se já existe um modelo com o mesmo nome e marca
-    const existingModelo = await Modelo.findOne({ 
+    const existingModelo = await ModeloModel.findOne({ 
       nome: nome.trim(), 
       marca: marca 
     });
@@ -105,27 +131,32 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const modelo = await Modelo.create({ 
+    const modelo = await ModeloModel.create({ 
       nome: nome.trim(), 
       marca 
     });
 
-    const populatedModelo = await Modelo.findById(modelo._id).populate('marca');
+    const populatedModelo = await ModeloModel.findById(modelo._id).populate({ path: 'marca', model: 'Marca', strictPopulate: false }).lean();
+
+    if (!populatedModelo) {
+      return NextResponse.json(
+        { error: 'Modelo não encontrado após criação' },
+        { status: 404 }
+      );
+    }
+
+    const modeloData = populatedModelo as any;
 
     // Serializar o modelo populado
     const modeloSerializado = {
-      _id: populatedModelo!._id.toString(),
-      nome: populatedModelo!.nome,
-      marca: populatedModelo!.marca ? {
-        _id: typeof populatedModelo!.marca === 'object' && '_id' in populatedModelo!.marca 
-          ? populatedModelo!.marca._id.toString() 
-          : populatedModelo!.marca.toString(),
-        nome: typeof populatedModelo!.marca === 'object' && 'nome' in populatedModelo!.marca 
-          ? populatedModelo!.marca.nome 
-          : 'N/A'
+      _id: modeloData._id.toString(),
+      nome: modeloData.nome || '',
+      marca: modeloData.marca && modeloData.marca._id ? {
+        _id: modeloData.marca._id.toString(),
+        nome: modeloData.marca.nome || 'N/A'
       } : null,
-      createdAt: populatedModelo!.createdAt?.toISOString() || new Date().toISOString(),
-      updatedAt: populatedModelo!.updatedAt?.toISOString() || new Date().toISOString(),
+      createdAt: modeloData.createdAt?.toString() || new Date().toISOString(),
+      updatedAt: modeloData.updatedAt?.toString() || new Date().toISOString(),
     };
 
     return NextResponse.json(
