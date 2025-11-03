@@ -27,9 +27,28 @@ export async function GET(request: NextRequest) {
 
     await connectDB();
 
-    const modelos = await Modelo.find({}).populate('marca').sort({ nome: 1 });
+    const modelosRaw = await Modelo.find({}).populate('marca').sort({ nome: 1 });
 
-    console.log('Modelos encontrados:', modelos.length);
+    console.log('Modelos encontrados:', modelosRaw.length);
+    
+    // Convert to plain objects to ensure proper serialization
+    const modelos = modelosRaw.map(modelo => ({
+      _id: modelo._id.toString(),
+      nome: modelo.nome,
+      marca: modelo.marca ? {
+        _id: typeof modelo.marca === 'object' && '_id' in modelo.marca 
+          ? modelo.marca._id.toString() 
+          : modelo.marca.toString(),
+        nome: typeof modelo.marca === 'object' && 'nome' in modelo.marca 
+          ? modelo.marca.nome 
+          : 'N/A'
+      } : null,
+      createdAt: modelo.createdAt?.toISOString() || new Date().toISOString(),
+      updatedAt: modelo.updatedAt?.toISOString() || new Date().toISOString(),
+    }));
+
+    console.log('Modelos serializados:', modelos.length);
+    console.log('Primeiro modelo:', modelos[0]);
     
     return NextResponse.json({ modelos: modelos || [] });
   } catch (error: any) {
