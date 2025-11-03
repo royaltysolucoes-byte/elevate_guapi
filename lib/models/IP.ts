@@ -82,8 +82,8 @@ const IPSchema = new Schema<IIP>(
   }
 );
 
-// Compound unique index to allow same nome for different tipos
-IPSchema.index({ tipo: 1, nome: 1 }, { unique: true });
+// Index for faster queries (not unique - we'll handle uniqueness in application logic)
+IPSchema.index({ tipo: 1, nome: 1 });
 
 export default mongoose.models.IP || mongoose.model<IIP>('IP', IPSchema);
 
