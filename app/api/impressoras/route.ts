@@ -151,10 +151,63 @@ export async function POST(request: NextRequest) {
       modelo: modelo || undefined,
     });
 
-    const populatedImpressora = await Impressora.findById(newImpressora._id).populate('faixa').populate({ path: 'modelo', populate: { path: 'marca' } }).populate('tipo');
+    const populatedImpressora = await Impressora.findById(newImpressora._id)
+      .populate({ path: 'faixa', strictPopulate: false })
+      .populate({ path: 'modelo', populate: { path: 'marca', strictPopulate: false }, strictPopulate: false })
+      .populate({ path: 'tipo', strictPopulate: false })
+      .lean();
+
+    // Serialize the created impressora
+    const impressoraSerializada: any = {
+      _id: populatedImpressora!._id.toString(),
+      setor: populatedImpressora!.setor || '',
+      numeroSerie: populatedImpressora!.numeroSerie || '',
+      enderecoIP: populatedImpressora!.enderecoIP || '',
+      categoria: (populatedImpressora as any).categoria || null,
+      createdAt: (populatedImpressora as any).createdAt?.toString() || new Date().toISOString(),
+      updatedAt: (populatedImpressora as any).updatedAt?.toString() || new Date().toISOString(),
+    };
+
+    // Serialize tipo
+    if ((populatedImpressora as any).tipo && (populatedImpressora as any).tipo._id) {
+      impressoraSerializada.tipo = {
+        _id: (populatedImpressora as any).tipo._id.toString(),
+        nome: (populatedImpressora as any).tipo.nome || 'N/A'
+      };
+    } else {
+      impressoraSerializada.tipo = null;
+    }
+
+    // Serialize modelo
+    if ((populatedImpressora as any).modelo && (populatedImpressora as any).modelo._id) {
+      impressoraSerializada.modelo = {
+        _id: (populatedImpressora as any).modelo._id.toString(),
+        nome: (populatedImpressora as any).modelo.nome || 'N/A',
+        marca: (populatedImpressora as any).modelo.marca && (populatedImpressora as any).modelo.marca._id ? {
+          _id: (populatedImpressora as any).modelo.marca._id.toString(),
+          nome: (populatedImpressora as any).modelo.marca.nome || 'N/A'
+        } : null
+      };
+    } else {
+      impressoraSerializada.modelo = null;
+    }
+
+    // Serialize faixa
+    if ((populatedImpressora as any).faixa && (populatedImpressora as any).faixa._id) {
+      impressoraSerializada.faixa = {
+        _id: (populatedImpressora as any).faixa._id.toString(),
+        tipo: (populatedImpressora as any).faixa.tipo || null,
+        nome: (populatedImpressora as any).faixa.nome || 'N/A',
+        faixa: (populatedImpressora as any).faixa.faixa || null,
+        vlanNome: (populatedImpressora as any).faixa.vlanNome || null,
+        vlanId: (populatedImpressora as any).faixa.vlanId || null,
+      };
+    } else {
+      impressoraSerializada.faixa = null;
+    }
 
     return NextResponse.json(
-      { impressora: populatedImpressora },
+      { impressora: impressoraSerializada },
       { status: 201 }
     );
   } catch (error: any) {
