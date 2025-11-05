@@ -57,6 +57,15 @@ node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"
 
 Importante: Use uma chave diferente para cada ambiente (desenvolvimento, produção).
 
+## Credenciais Padrão
+
+O usuário administrador padrão é criado automaticamente:
+
+- **Usuário**: `admin`
+- **Senha**: `admin123`
+
+Importante: Alterar a senha após o primeiro acesso em produção.
+
 ## Níveis de Acesso
 
 ### Administrador
@@ -103,13 +112,7 @@ lib/
 ### Vercel
 
 1. Conecte seu repositório ao Vercel
-2. Configure as variáveis de ambiente:
-   - `MONGODB_URI`
-   - `JWT_SECRET`
-   - `ENCRYPTION_KEY`
-
-Importante: A chave `ENCRYPTION_KEY` deve ser a mesma usada no desenvolvimento. Se você alterar essa chave, todos os dados criptografados não poderão ser descriptografados.
-
+2. Configure as variáveis de ambiente na plataforma
 3. Deploy automático será feito a cada push na branch principal
 
 ## Desenvolvimento
