@@ -72,17 +72,26 @@ export async function GET(request: NextRequest) {
             decryptedSenha = '';
           } else if (email.senha.includes(':')) {
             // Está no formato criptografado, tenta descriptografar
-            decryptedSenha = decrypt(email.senha);
+            try {
+              decryptedSenha = decrypt(email.senha);
+              // Verifica se a descriptografia funcionou (não deve retornar o mesmo texto)
+              if (decryptedSenha === email.senha) {
+                // Descriptografia falhou silenciosamente, tenta retornar vazio
+                console.warn(`Descriptografia retornou mesmo texto para ${email.email}, pode estar com chave incorreta`);
+                decryptedSenha = '';
+              }
+            } catch (decryptErr: any) {
+              console.error(`Erro ao descriptografar ${email.email}:`, decryptErr.message);
+              // Se falhar, retorna vazio em vez do texto criptografado
+              decryptedSenha = '';
+            }
           } else {
             // Não está criptografado, pode ser texto simples
             decryptedSenha = email.senha;
           }
-        } catch (decryptError: any) {
-          // Se falhar na descriptografia, loga o erro mas tenta retornar o texto original
-          console.error(`Erro ao descriptografar senha para ${email.email}:`, decryptError.message);
-          console.error('Senha (primeiros 50 chars):', email.senha?.substring(0, 50));
-          // Retorna o texto original se não conseguir descriptografar
-          decryptedSenha = email.senha;
+        } catch (error: any) {
+          console.error(`Erro geral ao processar senha de ${email.email}:`, error.message);
+          decryptedSenha = '';
         }
         
         return {
