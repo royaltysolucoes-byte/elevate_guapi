@@ -77,11 +77,12 @@ export async function PUT(
     // Criar notificação se responsável foi atribuído ou alterado
     if (body.responsavel !== undefined && body.responsavel && body.responsavel !== tarefaAtual.responsavel) {
       try {
+        const tarefaAtualizadaTyped = tarefaAtualizada as any;
         await Notificacao.create({
           usuario: body.responsavel,
           tipo: 'tarefa_atribuida',
           titulo: 'Nova tarefa atribuída',
-          mensagem: `${auth.username} atribuiu a tarefa "${tarefaAtualizada?.titulo || tarefaAtual.titulo}" para você`,
+          mensagem: `${auth.username} atribuiu a tarefa "${tarefaAtualizadaTyped?.titulo || tarefaAtual.titulo}" para você`,
           tarefaId: id,
           lida: false,
         });
@@ -91,19 +92,20 @@ export async function PUT(
       }
     }
 
+    const tarefaTyped = tarefaAtualizada as any;
     return NextResponse.json({
       tarefa: {
-        _id: tarefaAtualizada._id.toString(),
-        titulo: tarefaAtualizada.titulo,
-        descricao: tarefaAtualizada.descricao || '',
-        status: tarefaAtualizada.status,
-        prioridade: tarefaAtualizada.prioridade,
-        responsavel: tarefaAtualizada.responsavel || '',
-        criadoPor: tarefaAtualizada.criadoPor,
-        prazo: tarefaAtualizada.prazo ? new Date(tarefaAtualizada.prazo).toISOString() : null,
-        tags: tarefaAtualizada.tags || [],
-        createdAt: tarefaAtualizada.createdAt ? new Date(tarefaAtualizada.createdAt).toISOString() : new Date().toISOString(),
-        updatedAt: tarefaAtualizada.updatedAt ? new Date(tarefaAtualizada.updatedAt).toISOString() : new Date().toISOString(),
+        _id: tarefaTyped._id?.toString() || '',
+        titulo: tarefaTyped.titulo || '',
+        descricao: tarefaTyped.descricao || '',
+        status: tarefaTyped.status,
+        prioridade: tarefaTyped.prioridade,
+        responsavel: tarefaTyped.responsavel || '',
+        criadoPor: tarefaTyped.criadoPor,
+        prazo: tarefaTyped.prazo ? new Date(tarefaTyped.prazo).toISOString() : null,
+        tags: tarefaTyped.tags || [],
+        createdAt: tarefaTyped.createdAt ? new Date(tarefaTyped.createdAt).toISOString() : new Date().toISOString(),
+        updatedAt: tarefaTyped.updatedAt ? new Date(tarefaTyped.updatedAt).toISOString() : new Date().toISOString(),
       },
     });
   } catch (error) {
