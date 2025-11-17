@@ -86,7 +86,7 @@ export function decrypt(text: string, customKey?: string): string {
     const key = getKey(customKey);
     
     // Log em produção para debug
-    if (process.env.NODE_ENV === 'production' && !customKey) {
+    if (process.env.NODE_ENV === 'production' && !customKey && ENCRYPTION_KEY) {
       console.log('[PROD] Tentando descriptografar com chave:', ENCRYPTION_KEY.substring(0, 10) + '...');
       console.log('[PROD] Key buffer length:', key.length);
       console.log('[PROD] IV length:', iv.length);
