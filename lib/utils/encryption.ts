@@ -32,17 +32,17 @@ export function encrypt(text: string): string {
 }
 
 export function decrypt(text: string, customKey?: string): string {
-  try {
-    if (!text || typeof text !== 'string') {
-      return '';
-    }
+  if (!text || typeof text !== 'string' || text.trim() === '') {
+    return '';
+  }
 
-    const parts = text.split(':');
-    if (parts.length !== 2) {
-      // Maybe it's already decrypted or in a different format
-      return text; // Return as-is if not in encrypted format
-    }
-    
+  const parts = text.split(':');
+  if (parts.length !== 2) {
+    // Maybe it's already decrypted or in a different format
+    return text; // Return as-is if not in encrypted format
+  }
+  
+  try {
     const iv = Buffer.from(parts[0], 'hex');
     const encryptedText = parts[1];
     
@@ -62,7 +62,9 @@ export function decrypt(text: string, customKey?: string): string {
     
     return decrypted;
   } catch (error: any) {
-    // Se falhar, lança o erro para que o código chamador possa tratar
+    // Se falhar na descriptografia, loga e lança o erro
+    console.error('Decryption error:', error.message);
+    console.error('Text (first 50 chars):', text.substring(0, 50));
     throw error;
   }
 }
