@@ -74,20 +74,30 @@ export async function GET(request: NextRequest) {
             // Está no formato criptografado, tenta descriptografar
             try {
               decryptedSenha = decrypt(email.senha);
+              
+              // Log sempre em produção para debug
+              if (process.env.NODE_ENV === 'production' && emailsRaw.indexOf(email) < 3) {
+                console.log(`[PROD] Tentativa de descriptografia para ${email.email}`);
+                console.log(`[PROD] Senha criptografada (primeiros 50):`, email.senha.substring(0, 50));
+                console.log(`[PROD] Senha descriptografada (primeiros 50):`, decryptedSenha.substring(0, Math.min(50, decryptedSenha.length)));
+                console.log(`[PROD] São iguais?`, decryptedSenha === email.senha);
+                console.log(`[PROD] Tamanho descriptografado:`, decryptedSenha.length);
+              }
+              
               // Verifica se a descriptografia funcionou (não deve retornar o mesmo texto)
               if (decryptedSenha === email.senha) {
                 // Descriptografia falhou silenciosamente - retornou o mesmo texto
                 if (process.env.NODE_ENV === 'production') {
-                  console.error(`[PROD] ❌ Descriptografia retornou mesmo texto para ${email.email}`);
-                  console.error(`[PROD] Isso indica que a chave está incorreta ou a descriptografia falhou silenciosamente`);
+                  console.error(`[PROD] ❌ Descriptografia retornou mesmo texto para ${email.email} - CHAVE INCORRETA!`);
                 }
-                decryptedSenha = '';
+                // NÃO retorna vazio, retorna o texto original para debug
+                decryptedSenha = email.senha;
               } else if (decryptedSenha && decryptedSenha.length > 0) {
                 // Descriptografia funcionou!
                 if (process.env.NODE_ENV === 'production' && emailsRaw.indexOf(email) === 0) {
                   console.log(`[PROD] ✅ Descriptografia funcionou para ${email.email}`);
-                  console.log(`[PROD] Senha descriptografada (primeiros 10 chars):`, decryptedSenha.substring(0, Math.min(10, decryptedSenha.length)));
                 }
+                // Retorna a senha descriptografada normalmente
               } else {
                 // Descriptografia retornou vazio
                 if (process.env.NODE_ENV === 'production') {
@@ -97,9 +107,10 @@ export async function GET(request: NextRequest) {
             } catch (decryptErr: any) {
               // Log detalhado em produção
               if (process.env.NODE_ENV === 'production') {
-                console.error(`[PROD] ❌ Erro ao descriptografar ${email.email}:`, decryptErr.message);
+                console.error(`[PROD] ❌ EXCEÇÃO ao descriptografar ${email.email}:`, decryptErr.message);
                 console.error(`[PROD] Error code:`, decryptErr.code);
                 console.error(`[PROD] Error name:`, decryptErr.name);
+                console.error(`[PROD] Error stack:`, decryptErr.stack?.substring(0, 200));
                 console.error(`[PROD] Senha (primeiros 50 chars):`, email.senha?.substring(0, 50));
               }
               decryptedSenha = '';
