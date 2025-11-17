@@ -196,25 +196,24 @@ export default function EmailsPage() {
       <div className="flex justify-between items-center mb-8">
         <h1 className="text-3xl font-bold text-white">Gestão de E-mail</h1>
         <button
-            onClick={() => {
-              setEditingEmail(null);
-              setFormData({
-                email: '',
-                colaborador: '',
-                nome: '',
-                senha: '',
-                confirmarSenha: '',
-              });
-              setShowModal(true);
-            }}
-            className="bg-[#4CAF50] hover:bg-[#45a049] text-white font-semibold px-6 py-3 rounded-lg transition duration-200 flex items-center"
-          >
-            <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-            </svg>
-            Novo Email
-          </button>
-        </div>
+          onClick={() => {
+            setEditingEmail(null);
+            setFormData({
+              email: '',
+              colaborador: '',
+              nome: '',
+              senha: '',
+              confirmarSenha: '',
+            });
+            setShowModal(true);
+          }}
+          className="bg-[#4CAF50] hover:bg-[#45a049] text-white font-semibold px-6 py-3 rounded-lg transition duration-200 flex items-center"
+        >
+          <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+          </svg>
+          Novo Email
+        </button>
       </div>
 
       <form onSubmit={handleSearch} className="mb-6">
