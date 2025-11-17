@@ -110,9 +110,15 @@ export async function GET(request: NextRequest) {
                 console.error(`[PROD] ❌ EXCEÇÃO ao descriptografar ${email.email}:`, decryptErr.message);
                 console.error(`[PROD] Error code:`, decryptErr.code);
                 console.error(`[PROD] Error name:`, decryptErr.name);
-                console.error(`[PROD] Error stack:`, decryptErr.stack?.substring(0, 200));
-                console.error(`[PROD] Senha (primeiros 50 chars):`, email.senha?.substring(0, 50));
+                
+                // Se for erro de bad decrypt, pode ser que a senha foi criptografada com chave diferente
+                if (decryptErr.code === 'ERR_OSSL_BAD_DECRYPT') {
+                  console.error(`[PROD] ⚠️ BAD_DECRYPT: A senha pode ter sido criptografada com uma chave diferente`);
+                  console.error(`[PROD] ⚠️ Verifique se todas as senhas foram criptografadas com a mesma chave`);
+                  console.error(`[PROD] ⚠️ Pode ser necessário usar a funcionalidade de migração de criptografia`);
+                }
               }
+              // Retorna vazio quando falha
               decryptedSenha = '';
             }
           } else {

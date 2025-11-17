@@ -75,7 +75,19 @@ export function decrypt(text: string, customKey?: string): string {
     }
     
     const key = getKey(customKey);
+    
+    // Log em produção para debug
+    if (process.env.NODE_ENV === 'production' && !customKey) {
+      console.log('[PROD] Tentando descriptografar com chave:', ENCRYPTION_KEY.substring(0, 10) + '...');
+      console.log('[PROD] Key buffer length:', key.length);
+      console.log('[PROD] IV length:', iv.length);
+      console.log('[PROD] Encrypted text length:', encryptedText.length);
+    }
+    
     const decipher = crypto.createDecipheriv('aes-256-cbc', key, iv);
+    
+    // Configurar para não lançar erro em caso de bad decrypt, mas ainda vamos capturar
+    decipher.setAutoPadding(true);
     
     let decrypted = decipher.update(encryptedText, 'hex', 'utf8');
     decrypted += decipher.final('utf8');
