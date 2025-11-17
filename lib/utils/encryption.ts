@@ -25,9 +25,15 @@ const getKey = (customKey?: string): Buffer => {
     }
   }
   
-  if (keyToUse.length === 64) {
+  // Sempre trata como hex se tiver 64 caracteres
+  if (keyToUse && keyToUse.length === 64) {
     // Already hex encoded 32 bytes
-    return Buffer.from(keyToUse, 'hex');
+    try {
+      return Buffer.from(keyToUse, 'hex');
+    } catch (e) {
+      // Se falhar, hash a chave
+      return crypto.createHash('sha256').update(keyToUse).digest();
+    }
   }
   // Hash the key to get exactly 32 bytes
   return crypto.createHash('sha256').update(keyToUse).digest();
