@@ -10,10 +10,18 @@ const getKey = (customKey?: string): Buffer => {
   
   // Log para debug (apenas em produção para identificar problema)
   if (process.env.NODE_ENV === 'production' && !customKey) {
-    console.log('ENCRYPTION_KEY configurada:', ENCRYPTION_KEY ? 'SIM' : 'NÃO');
-    console.log('ENCRYPTION_KEY length:', ENCRYPTION_KEY?.length || 0);
+    console.log('[PROD] ENCRYPTION_KEY configurada:', ENCRYPTION_KEY ? 'SIM' : 'NÃO');
+    console.log('[PROD] ENCRYPTION_KEY length:', ENCRYPTION_KEY?.length || 0);
     if (ENCRYPTION_KEY) {
-      console.log('ENCRYPTION_KEY (primeiros 10 chars):', ENCRYPTION_KEY.substring(0, 10));
+      console.log('[PROD] ENCRYPTION_KEY (primeiros 10 chars):', ENCRYPTION_KEY.substring(0, 10));
+      console.log('[PROD] ENCRYPTION_KEY (últimos 10 chars):', ENCRYPTION_KEY.substring(ENCRYPTION_KEY.length - 10));
+      // Verifica se começa com o valor esperado
+      const expectedStart = '4595b50d7e';
+      if (ENCRYPTION_KEY.substring(0, 10) === expectedStart) {
+        console.log('[PROD] ✅ ENCRYPTION_KEY parece estar correta (começa com valor esperado)');
+      } else {
+        console.log('[PROD] ⚠️ ENCRYPTION_KEY pode estar incorreta (não começa com valor esperado)');
+      }
     }
   }
   

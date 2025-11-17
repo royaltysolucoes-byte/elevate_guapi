@@ -78,17 +78,23 @@ export async function GET(request: NextRequest) {
               if (decryptedSenha === email.senha) {
                 // Descriptografia falhou silenciosamente
                 if (process.env.NODE_ENV === 'production') {
-                  console.error(`[PROD] Descriptografia retornou mesmo texto para ${email.email}`);
-                  console.error(`[PROD] ENCRYPTION_KEY configurada:`, !!process.env.ENCRYPTION_KEY);
+                  console.error(`[PROD] ❌ Descriptografia retornou mesmo texto para ${email.email}`);
+                  console.error(`[PROD] Senha criptografada (primeiros 50 chars):`, email.senha.substring(0, 50));
                 }
                 decryptedSenha = '';
+              } else {
+                // Descriptografia funcionou!
+                if (process.env.NODE_ENV === 'production' && emailsRaw.indexOf(email) === 0) {
+                  console.log(`[PROD] ✅ Descriptografia funcionou para ${email.email}`);
+                  console.log(`[PROD] Senha descriptografada (primeiros 10 chars):`, decryptedSenha.substring(0, 10));
+                }
               }
             } catch (decryptErr: any) {
               // Log detalhado em produção
               if (process.env.NODE_ENV === 'production') {
-                console.error(`[PROD] Erro ao descriptografar ${email.email}:`, decryptErr.message);
+                console.error(`[PROD] ❌ Erro ao descriptografar ${email.email}:`, decryptErr.message);
                 console.error(`[PROD] Error code:`, decryptErr.code);
-                console.error(`[PROD] ENCRYPTION_KEY presente:`, !!process.env.ENCRYPTION_KEY);
+                console.error(`[PROD] Senha (primeiros 50 chars):`, email.senha?.substring(0, 50));
               }
               decryptedSenha = '';
             }
