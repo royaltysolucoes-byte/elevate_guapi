@@ -31,6 +31,27 @@ export default function DashboardPage() {
     fetchStats();
   }, []);
 
+  // Refresh automático quando a página ganha foco (usuário volta para a aba)
+  useEffect(() => {
+    const handleFocus = () => {
+      fetchStats();
+    };
+
+    const handleVisibilityChange = () => {
+      if (!document.hidden) {
+        fetchStats();
+      }
+    };
+
+    window.addEventListener('focus', handleFocus);
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+
+    return () => {
+      window.removeEventListener('focus', handleFocus);
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+    };
+  }, []);
+
   const fetchProfile = async () => {
     try {
       const response = await fetch('/api/users/profile');
