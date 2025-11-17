@@ -30,7 +30,10 @@ export default function DashboardLayout({
   }, []);
 
   useEffect(() => {
-    setSidebarOpen(false);
+    // Só fecha o sidebar se estiver aberto (evita re-render desnecessário)
+    if (sidebarOpen) {
+      setSidebarOpen(false);
+    }
   }, [pathname]);
 
   const fetchProfile = async () => {

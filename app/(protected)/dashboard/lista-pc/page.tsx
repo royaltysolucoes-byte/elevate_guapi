@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 
 interface User {
   username: string;
@@ -74,6 +74,7 @@ export default function ListaPCPage() {
   const [editingComputador, setEditingComputador] = useState<Computador | null>(null);
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
+  const [searchTerm, setSearchTerm] = useState('');
   const [formData, setFormData] = useState({
     nome: '',
     descricaoUsuario: '',
@@ -84,14 +85,39 @@ export default function ListaPCPage() {
     modelo: '',
   });
   const [error, setError] = useState('');
+  const isFirstRender = useRef(true);
 
   useEffect(() => {
     fetchUser();
-    fetchComputadores();
     fetchIPsDisponiveis();
     fetchModelosDisponiveis();
     fetchSistemasDisponiveis();
+  }, []);
+
+  useEffect(() => {
+    fetchComputadores(true); // Mostra loading apenas na mudança de página
   }, [page]);
+
+  // Debounce para busca enquanto digita
+  useEffect(() => {
+    // Ignora na primeira renderização
+    if (isFirstRender.current) {
+      isFirstRender.current = false;
+      return;
+    }
+
+    const timeoutId = setTimeout(() => {
+      // Sempre busca sem mostrar loading para não piscar
+      if (page !== 1) {
+        setPage(1); // Reset para primeira página ao buscar
+      } else {
+        // Se já está na página 1, busca direto sem loading
+        fetchComputadores(false);
+      }
+    }, 500); // Aguarda 500ms após parar de digitar
+
+    return () => clearTimeout(timeoutId);
+  }, [searchTerm]);
 
   const fetchUser = async () => {
     try {
@@ -105,9 +131,11 @@ export default function ListaPCPage() {
     }
   };
 
-  const fetchComputadores = async () => {
+  const fetchComputadores = async (showLoading = false) => {
     try {
-      const response = await fetch(`/api/computadores?page=${page}`);
+      if (showLoading) setLoading(true);
+      const searchParam = searchTerm ? `&search=${encodeURIComponent(searchTerm)}` : '';
+      const response = await fetch(`/api/computadores?page=${page}${searchParam}`);
       if (response.ok) {
         const data = await response.json();
         setComputadores(data.computadores);
@@ -116,7 +144,16 @@ export default function ListaPCPage() {
     } catch (error) {
       console.error('Error fetching computadores:', error);
     } finally {
-      setLoading(false);
+      if (showLoading) setLoading(false);
+    }
+  };
+
+  const handleSearch = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (page !== 1) {
+      setPage(1);
+    } else {
+      fetchComputadores(true);
     }
   };
 
@@ -280,6 +317,39 @@ export default function ListaPCPage() {
           </button>
         )}
       </div>
+
+      <form onSubmit={handleSearch} className="mb-6">
+        <div className="flex gap-2">
+          <input
+            type="text"
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            placeholder="Buscar por nome, descrição, AnyDesk ou programas..."
+            className="flex-1 px-4 py-2 bg-[#282c34] text-white rounded-lg border border-gray-600 focus:outline-none focus:ring-2 focus:ring-[#4CAF50]"
+          />
+          <button
+            type="submit"
+            className="px-6 py-2 bg-[#4CAF50] hover:bg-[#45a049] text-white font-semibold rounded-lg transition duration-200 flex items-center"
+          >
+            <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+            </svg>
+            Buscar
+          </button>
+          {searchTerm && (
+            <button
+              type="button"
+              onClick={() => {
+                setSearchTerm('');
+                setPage(1);
+              }}
+              className="px-6 py-2 bg-gray-600 hover:bg-gray-700 text-white font-semibold rounded-lg transition duration-200"
+            >
+              Limpar
+            </button>
+          )}
+        </div>
+      </form>
 
       <div className="bg-[#282c34] rounded-lg shadow-md overflow-hidden">
         <div className="overflow-x-auto">

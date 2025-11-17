@@ -58,14 +58,25 @@ export async function GET(request: NextRequest) {
 
     const { searchParams } = new URL(request.url);
     const page = parseInt(searchParams.get('page') || '1');
+    const search = searchParams.get('search') || '';
     const limit = 10;
     const skip = (page - 1) * limit;
 
     // Get models after ensuring they're registered
     const ComputadorModel = mongoose.models.Computador || Computador;
 
+    const searchQuery: any = {};
+    if (search) {
+      searchQuery.$or = [
+        { nome: { $regex: search, $options: 'i' } },
+        { descricaoUsuario: { $regex: search, $options: 'i' } },
+        { anydesk: { $regex: search, $options: 'i' } },
+        { demaisProgramas: { $regex: search, $options: 'i' } },
+      ];
+    }
+
     const [computadoresRaw, total] = await Promise.all([
-      ComputadorModel.find({})
+      ComputadorModel.find(searchQuery)
         .populate({ path: 'ip', model: 'IP', strictPopulate: false })
         .populate({ path: 'modelo', populate: { path: 'marca', model: 'Marca', strictPopulate: false }, model: 'Modelo', strictPopulate: false })
         .populate({ path: 'so', model: 'SistemaOperacional', strictPopulate: false })
@@ -73,7 +84,7 @@ export async function GET(request: NextRequest) {
         .skip(skip)
         .limit(limit)
         .lean(),
-      ComputadorModel.countDocuments({}),
+      ComputadorModel.countDocuments(searchQuery),
     ]);
 
     // Serialize computadores to plain objects

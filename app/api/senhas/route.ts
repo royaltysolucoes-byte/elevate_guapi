@@ -30,12 +30,23 @@ export async function GET(request: NextRequest) {
 
     const { searchParams } = new URL(request.url);
     const page = parseInt(searchParams.get('page') || '1');
+    const search = searchParams.get('search') || '';
     const limit = 10;
     const skip = (page - 1) * limit;
 
+    const searchQuery: any = {};
+    if (search) {
+      searchQuery.$or = [
+        { id: { $regex: search, $options: 'i' } },
+        { ip: { $regex: search, $options: 'i' } },
+        { equipamento: { $regex: search, $options: 'i' } },
+        { categoria: { $regex: search, $options: 'i' } },
+      ];
+    }
+
     const [senhasRaw, total] = await Promise.all([
-      Senha.find({}).sort({ createdAt: -1 }).skip(skip).limit(limit),
-      Senha.countDocuments({}),
+      Senha.find(searchQuery).sort({ createdAt: -1 }).skip(skip).limit(limit),
+      Senha.countDocuments(searchQuery),
     ]);
 
     // Decrypt passwords before sending to frontend

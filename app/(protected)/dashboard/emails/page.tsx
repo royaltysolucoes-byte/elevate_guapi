@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 
 interface EmailType {
   _id: string;
@@ -20,6 +20,7 @@ export default function EmailsPage() {
   const [showPassword, setShowPassword] = useState<{ [key: string]: boolean }>({});
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
+  const [searchTerm, setSearchTerm] = useState('');
   const [formData, setFormData] = useState({
     email: '',
     colaborador: '',
@@ -28,23 +29,67 @@ export default function EmailsPage() {
     confirmarSenha: '',
   });
   const [error, setError] = useState('');
+  const isFirstRender = useRef(true);
+  const [showMigrateModal, setShowMigrateModal] = useState(false);
+  const [oldKey, setOldKey] = useState('');
+  const [migrating, setMigrating] = useState(false);
+  const [migrateResult, setMigrateResult] = useState<{ success: boolean; message: string; details?: string[] } | null>(null);
 
   useEffect(() => {
-    fetchEmails();
+    fetchEmails(true); // Mostra loading apenas na mudança de página
   }, [page]);
 
-  const fetchEmails = async () => {
+  // Debounce para busca enquanto digita
+  useEffect(() => {
+    // Ignora na primeira renderização
+    if (isFirstRender.current) {
+      isFirstRender.current = false;
+      return;
+    }
+
+    const timeoutId = setTimeout(() => {
+      // Sempre busca sem mostrar loading para não piscar
+      if (page !== 1) {
+        setPage(1); // Reset para primeira página ao buscar
+      } else {
+        // Se já está na página 1, busca direto sem loading
+        fetchEmails(false);
+      }
+    }, 500); // Aguarda 500ms após parar de digitar
+
+    return () => clearTimeout(timeoutId);
+  }, [searchTerm]);
+
+  const fetchEmails = async (showLoading = false) => {
     try {
-      const response = await fetch(`/api/emails?page=${page}`);
+      if (showLoading) setLoading(true);
+      const searchParam = searchTerm ? `&search=${encodeURIComponent(searchTerm)}` : '';
+      const response = await fetch(`/api/emails?page=${page}${searchParam}`);
       if (response.ok) {
         const data = await response.json();
-        setEmails(data.emails);
-        setTotalPages(data.pagination.pages);
+        console.log('Emails recebidos:', data);
+        console.log('Total de emails:', data.emails?.length || 0);
+        setEmails(data.emails || []);
+        setTotalPages(data.pagination?.pages || 1);
+      } else {
+        const errorData = await response.json().catch(() => ({}));
+        console.error('Error fetching emails:', response.status, errorData);
+        setEmails([]);
       }
     } catch (error) {
       console.error('Error fetching emails:', error);
+      setEmails([]);
     } finally {
-      setLoading(false);
+      if (showLoading) setLoading(false);
+    }
+  };
+
+  const handleSearch = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (page !== 1) {
+      setPage(1);
+    } else {
+      fetchEmails(true);
     }
   };
 
@@ -141,7 +186,7 @@ export default function EmailsPage() {
 
   const getPasswordDisplay = (email: EmailType) => {
     if (showPassword[email._id]) {
-      return email.senha; // This will show the hashed password, not the plain text
+      return email.senha || '(sem senha)'; // Show decrypted password or indicate if empty
     }
     return '••••••••';
   };
@@ -154,26 +199,71 @@ export default function EmailsPage() {
     <div>
       <div className="flex justify-between items-center mb-8">
         <h1 className="text-3xl font-bold text-white">Gestão de E-mail</h1>
-        <button
-          onClick={() => {
-            setEditingEmail(null);
-            setFormData({
-              email: '',
-              colaborador: '',
-              nome: '',
-              senha: '',
-              confirmarSenha: '',
-            });
-            setShowModal(true);
-          }}
-          className="bg-[#4CAF50] hover:bg-[#45a049] text-white font-semibold px-6 py-3 rounded-lg transition duration-200 flex items-center"
-        >
-          <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-          </svg>
-          Novo Email
-        </button>
+        <div className="flex gap-3">
+          <button
+            onClick={() => setShowMigrateModal(true)}
+            className="bg-yellow-600 hover:bg-yellow-700 text-white font-semibold px-6 py-3 rounded-lg transition duration-200 flex items-center"
+            title="Migrar criptografia de senhas"
+          >
+            <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+            </svg>
+            Migrar Criptografia
+          </button>
+          <button
+            onClick={() => {
+              setEditingEmail(null);
+              setFormData({
+                email: '',
+                colaborador: '',
+                nome: '',
+                senha: '',
+                confirmarSenha: '',
+              });
+              setShowModal(true);
+            }}
+            className="bg-[#4CAF50] hover:bg-[#45a049] text-white font-semibold px-6 py-3 rounded-lg transition duration-200 flex items-center"
+          >
+            <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+            </svg>
+            Novo Email
+          </button>
+        </div>
       </div>
+
+      <form onSubmit={handleSearch} className="mb-6">
+        <div className="flex gap-2">
+          <input
+            type="text"
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            placeholder="Buscar por email, colaborador ou nome..."
+            className="flex-1 px-4 py-2 bg-[#282c34] text-white rounded-lg border border-gray-600 focus:outline-none focus:ring-2 focus:ring-[#4CAF50]"
+          />
+          <button
+            type="submit"
+            className="px-6 py-2 bg-[#4CAF50] hover:bg-[#45a049] text-white font-semibold rounded-lg transition duration-200 flex items-center"
+          >
+            <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+            </svg>
+            Buscar
+          </button>
+          {searchTerm && (
+            <button
+              type="button"
+              onClick={() => {
+                setSearchTerm('');
+                setPage(1);
+              }}
+              className="px-6 py-2 bg-gray-600 hover:bg-gray-700 text-white font-semibold rounded-lg transition duration-200"
+            >
+              Limpar
+            </button>
+          )}
+        </div>
+      </form>
 
       <div className="bg-[#282c34] rounded-lg shadow-md overflow-hidden">
         <table className="min-w-full divide-y divide-gray-600">
@@ -381,6 +471,127 @@ export default function EmailsPage() {
                   className="flex-1 bg-[#4CAF50] hover:bg-[#45a049] text-white font-semibold py-2 rounded-lg transition"
                 >
                   {editingEmail ? 'Atualizar' : 'Criar'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Modal de Migração */}
+      {showMigrateModal && (
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50">
+          <div className="bg-[#282c34]/98 backdrop-blur-xl rounded-lg shadow-md p-8 max-w-2xl w-full mx-4 border border-gray-700/50">
+            <h2 className="text-3xl font-bold text-white mb-4">Migrar Criptografia de Senhas</h2>
+            <p className="text-gray-400 mb-6">
+              Se você lembrar da chave de criptografia antiga, podemos recriptografar todas as senhas com a nova chave.
+              Caso contrário, será necessário redefinir as senhas manualmente.
+            </p>
+
+            {migrateResult && (
+              <div className={`mb-6 p-4 rounded-lg ${migrateResult.success ? 'bg-green-500/20 border border-green-500' : 'bg-red-500/20 border border-red-500'}`}>
+                <p className={migrateResult.success ? 'text-green-400' : 'text-red-400'}>
+                  {migrateResult.message}
+                </p>
+                {migrateResult.details && migrateResult.details.length > 0 && (
+                  <div className="mt-2 text-sm text-gray-300">
+                    <p className="font-semibold">Detalhes dos erros:</p>
+                    <ul className="list-disc list-inside mt-1">
+                      {migrateResult.details.slice(0, 5).map((detail, idx) => (
+                        <li key={idx}>{detail}</li>
+                      ))}
+                      {migrateResult.details.length > 5 && (
+                        <li>... e mais {migrateResult.details.length - 5} erro(s)</li>
+                      )}
+                    </ul>
+                  </div>
+                )}
+              </div>
+            )}
+
+            <form onSubmit={async (e) => {
+              e.preventDefault();
+              setMigrating(true);
+              setMigrateResult(null);
+              setError('');
+
+              try {
+                const response = await fetch('/api/emails/migrate-encryption', {
+                  method: 'POST',
+                  headers: {
+                    'Content-Type': 'application/json',
+                  },
+                  body: JSON.stringify({ oldEncryptionKey: oldKey }),
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                  setMigrateResult({
+                    success: true,
+                    message: data.message,
+                    details: data.errorDetails,
+                  });
+                  // Recarrega os emails após migração bem-sucedida
+                  setTimeout(() => {
+                    fetchEmails(true);
+                    setShowMigrateModal(false);
+                    setOldKey('');
+                    setMigrateResult(null);
+                  }, 2000);
+                } else {
+                  setMigrateResult({
+                    success: false,
+                    message: data.error || 'Erro ao migrar senhas',
+                    details: data.errorDetails,
+                  });
+                }
+              } catch (error: any) {
+                setMigrateResult({
+                  success: false,
+                  message: `Erro: ${error.message}`,
+                });
+              } finally {
+                setMigrating(false);
+              }
+            }} className="space-y-6">
+              <div>
+                <label className="block text-sm font-medium text-gray-300 mb-2">
+                  Chave de Criptografia Antiga
+                </label>
+                <input
+                  type="password"
+                  value={oldKey}
+                  onChange={(e) => setOldKey(e.target.value)}
+                  className="w-full px-4 py-2 border border-gray-600 rounded-lg bg-[#363f4a] text-white placeholder-gray-400 focus:ring-2 focus:ring-yellow-500 focus:border-transparent"
+                  placeholder="Cole ou digite a chave antiga aqui"
+                  required
+                  disabled={migrating}
+                />
+                <p className="mt-2 text-xs text-gray-400">
+                  A chave pode ser uma string hexadecimal (64 caracteres) ou qualquer texto que será hasheado.
+                </p>
+              </div>
+
+              <div className="flex gap-3">
+                <button
+                  type="submit"
+                  disabled={migrating || !oldKey}
+                  className="flex-1 px-6 py-3 bg-yellow-600 hover:bg-yellow-700 text-white font-semibold rounded-lg transition duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {migrating ? 'Migrando...' : 'Executar Migração'}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setShowMigrateModal(false);
+                    setOldKey('');
+                    setMigrateResult(null);
+                  }}
+                  disabled={migrating}
+                  className="px-6 py-3 bg-gray-600 hover:bg-gray-700 text-white font-semibold rounded-lg transition duration-200 disabled:opacity-50"
+                >
+                  Cancelar
                 </button>
               </div>
             </form>

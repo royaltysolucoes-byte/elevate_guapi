@@ -214,22 +214,112 @@ export default function DashboardPage() {
     );
   }
 
+  // Função para criar gráfico de pizza SVG
+  const renderPieChart = () => {
+    const size = 200;
+    const radius = 80;
+    const center = size / 2;
+    let currentAngle = -90; // Começa no topo
+    
+    const top5Cards = [...statsCards].sort((a, b) => b.value - a.value).slice(0, 5);
+    const top5Total = top5Cards.reduce((sum, card) => sum + card.value, 0);
+    
+    const colors = {
+      blue: '#3b82f6',
+      green: '#10b981',
+      purple: '#8b5cf6',
+      yellow: '#eab308',
+      orange: '#f97316',
+      cyan: '#06b6d4',
+      pink: '#ec4899',
+      indigo: '#6366f1',
+      red: '#ef4444',
+      teal: '#14b8a6',
+    };
+
+    const paths = top5Cards.map((card, index) => {
+      const percentage = top5Total > 0 ? (card.value / top5Total) * 100 : 0;
+      const angle = (percentage / 100) * 360;
+      const startAngle = currentAngle;
+      currentAngle += angle;
+      
+      const endAngle = currentAngle;
+      const largeArcFlag = angle > 180 ? 1 : 0;
+      
+      const x1 = center + radius * Math.cos((startAngle * Math.PI) / 180);
+      const y1 = center + radius * Math.sin((startAngle * Math.PI) / 180);
+      const x2 = center + radius * Math.cos((endAngle * Math.PI) / 180);
+      const y2 = center + radius * Math.sin((endAngle * Math.PI) / 180);
+      
+      return {
+        path: `M ${center} ${center} L ${x1} ${y1} A ${radius} ${radius} 0 ${largeArcFlag} 1 ${x2} ${y2} Z`,
+        color: colors[card.color as keyof typeof colors] || '#6b7280',
+        label: card.label,
+        value: card.value,
+        percentage: percentage.toFixed(1),
+      };
+    });
+
+    return (
+      <div className="flex flex-col items-center">
+        <svg width={size} height={size} className="mb-4">
+          {paths.map((item, index) => (
+            <path
+              key={index}
+              d={item.path}
+              fill={item.color}
+              stroke="#1e2228"
+              strokeWidth="2"
+              className="hover:opacity-80 transition-opacity cursor-pointer"
+            />
+          ))}
+          <circle cx={center} cy={center} r={radius * 0.6} fill="#1e2228" />
+          <text
+            x={center}
+            y={center - 5}
+            textAnchor="middle"
+            className="text-white text-sm font-bold fill-white"
+          >
+            {top5Total.toLocaleString('pt-BR')}
+          </text>
+          <text
+            x={center}
+            y={center + 10}
+            textAnchor="middle"
+            className="text-gray-400 text-xs fill-gray-400"
+          >
+            Top 5
+          </text>
+        </svg>
+        <div className="grid grid-cols-2 gap-2 w-full max-w-xs">
+          {paths.map((item, index) => (
+            <div key={index} className="flex items-center gap-2 text-xs">
+              <div className="w-3 h-3 rounded" style={{ backgroundColor: item.color }}></div>
+              <span className="text-gray-400 truncate">{item.label}</span>
+              <span className="text-white font-semibold ml-auto">{item.percentage}%</span>
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+  };
+
   return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div className="bg-[#282c34] rounded-lg border border-gray-700/50 p-6">
-        <div className="flex items-center justify-between mb-4">
+    <div className="space-y-4">
+      {/* Header Compacto */}
+      <div className="bg-[#282c34] rounded-lg border border-gray-700/50 p-4">
+        <div className="flex items-center justify-between mb-3">
           <div>
-            <h1 className="text-3xl font-bold text-white mb-1">
-              Bem-vindo, <span className="text-[#4CAF50]">{user?.fullName || 'Usuário'}</span>
+            <h1 className="text-2xl font-bold text-white">
+              Olá, <span className="text-[#4CAF50]">{user?.fullName || 'Usuário'}</span>
             </h1>
-            <p className="text-gray-400">Sistema de Gerenciamento TI</p>
+            <p className="text-gray-400 text-sm">Painel de controle</p>
           </div>
           
           <button
             onClick={handleRefresh}
             disabled={refreshing}
-            className="flex items-center gap-2 px-4 py-2 bg-[#4CAF50] hover:bg-[#45a049] text-white rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-sm font-medium"
+            className="flex items-center gap-2 px-4 py-2 bg-[#4CAF50] hover:bg-[#45a049] text-white rounded-lg transition-colors disabled:opacity-50 text-sm font-medium"
           >
             <svg
               className={`w-4 h-4 ${refreshing ? 'animate-spin' : ''}`}
@@ -243,123 +333,164 @@ export default function DashboardPage() {
           </button>
         </div>
 
-        <div className="flex flex-wrap items-center gap-4 pt-4 border-t border-gray-700/50">
-          <div className="flex items-center gap-2 text-sm">
-            <svg className="w-4 h-4 text-[#4CAF50]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-            </svg>
-            <span className="text-gray-300">IP Público:</span>
-            <span className="text-white font-mono">-</span>
-          </div>
-          
+        <div className="flex flex-wrap items-center gap-3 pt-3 border-t border-gray-700/50 text-xs">
           {user?.funcao && (
-            <div className="flex items-center gap-2 text-sm">
-              <svg className="w-4 h-4 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <div className="flex items-center gap-1.5 text-gray-400">
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
               </svg>
-              <span className="text-gray-300">Função:</span>
-              <span className="text-white">{user.funcao}</span>
+              <span>{user.funcao}</span>
             </div>
           )}
 
           {lastUpdate && (
-            <div className="flex items-center gap-2 text-sm">
-              <svg className="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <div className="flex items-center gap-1.5 text-gray-500">
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
               </svg>
-              <span className="text-gray-500">{formatLastUpdate(lastUpdate)}</span>
+              <span>{formatLastUpdate(lastUpdate)}</span>
             </div>
           )}
+
+          <div className="flex items-center gap-1.5 text-[#4CAF50]">
+            <div className="w-1.5 h-1.5 bg-[#4CAF50] rounded-full animate-pulse"></div>
+            <span className="font-medium">Online</span>
+          </div>
         </div>
       </div>
 
-      {/* Stats Summary */}
-      <div className="bg-[#282c34] rounded-lg border border-gray-700/50 p-6">
-        <div className="flex items-center justify-between mb-4">
-          <h2 className="text-xl font-bold text-white">Visão Geral</h2>
-          <div className="text-right">
-            <p className="text-2xl font-bold text-[#4CAF50]">{totalItems}</p>
-            <p className="text-xs text-gray-400">Total de Itens</p>
+      {/* Total Compacto */}
+      <div className="bg-gradient-to-r from-[#4CAF50]/10 to-[#45a049]/5 rounded-lg border border-[#4CAF50]/20 p-4">
+        <div className="flex items-center justify-between">
+          <div>
+            <p className="text-gray-400 text-xs mb-0.5">Total de Recursos</p>
+            <p className="text-3xl font-bold text-[#4CAF50]">
+              {totalItems.toLocaleString('pt-BR')}
+            </p>
+          </div>
+          <div className="w-12 h-12 rounded-full bg-[#4CAF50]/20 flex items-center justify-center border border-[#4CAF50]/30">
+            <svg className="w-6 h-6 text-[#4CAF50]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+            </svg>
           </div>
         </div>
+      </div>
 
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
-          {statsCards.map((card, index) => (
+      {/* Stats Cards Grid Compacto */}
+      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-3">
+        {statsCards.map((card, index) => {
+          const percentage = totalItems > 0 ? (card.value / totalItems) * 100 : 0;
+          return (
             <div
               key={index}
-              className="bg-[#1e2228] rounded-lg border border-gray-800/50 p-4 hover:border-gray-700 transition-colors"
+              className="bg-[#282c34] rounded-lg border border-gray-800/50 p-3 hover:border-gray-700 transition-colors"
             >
-              <div className={`w-10 h-10 ${colorClasses[card.color]} rounded-lg flex items-center justify-center border mb-3`}>
+              <div className={`w-8 h-8 ${colorClasses[card.color]} rounded-lg flex items-center justify-center border mb-2`}>
                 {getIcon(card.iconType)}
               </div>
               <p className="text-gray-400 text-xs mb-1 uppercase tracking-wide">{card.label}</p>
-              <p className="text-2xl font-bold text-white">{card.value.toLocaleString('pt-BR')}</p>
+              <p className="text-xl font-bold text-white mb-1">{card.value.toLocaleString('pt-BR')}</p>
+              <div className="w-full bg-gray-800/50 rounded-full h-1 overflow-hidden">
+                <div
+                  className={`h-full rounded-full transition-all duration-700 ${
+                    card.color === 'blue' ? 'bg-blue-500' :
+                    card.color === 'green' ? 'bg-green-500' :
+                    card.color === 'purple' ? 'bg-purple-500' :
+                    card.color === 'yellow' ? 'bg-yellow-500' :
+                    card.color === 'orange' ? 'bg-orange-500' :
+                    card.color === 'cyan' ? 'bg-cyan-500' :
+                    card.color === 'pink' ? 'bg-pink-500' :
+                    card.color === 'indigo' ? 'bg-indigo-500' :
+                    card.color === 'red' ? 'bg-red-500' :
+                    'bg-teal-500'
+                  }`}
+                  style={{ width: `${percentage}%` }}
+                ></div>
+              </div>
             </div>
-          ))}
-        </div>
+          );
+        })}
       </div>
 
-      {/* Detailed Stats */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <div className="lg:col-span-2 bg-[#282c34] rounded-lg border border-gray-700/50 p-6">
-          <h2 className="text-xl font-bold text-white mb-4">Distribuição de Recursos</h2>
-          <div className="space-y-4">
-            {statsCards.slice(0, 5).map((card, index) => {
-              const percentage = totalItems > 0 ? (card.value / totalItems) * 100 : 0;
-              return (
-                <div key={index} className="space-y-2">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                      <div className={`w-6 h-6 ${colorClasses[card.color]} rounded flex items-center justify-center border`}>
-                        {getIcon(card.iconType)}
-                      </div>
-                      <span className="text-sm text-gray-300 font-medium">{card.label}</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <span className="text-sm font-bold text-white">{card.value}</span>
-                      <span className="text-xs text-gray-500">({percentage.toFixed(1)}%)</span>
-                    </div>
-                  </div>
-                  <div className="w-full bg-gray-800/50 rounded-full h-1.5 overflow-hidden">
-                    <div
-                      className={`h-full bg-${card.color}-500 rounded-full transition-all duration-500`}
-                      style={{ width: `${percentage}%` }}
-                    ></div>
-                  </div>
-                </div>
-              );
-            })}
-          </div>
+      {/* Gráfico e Estatísticas */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+        {/* Gráfico de Pizza */}
+        <div className="lg:col-span-2 bg-[#282c34] rounded-lg border border-gray-700/50 p-4">
+          <h2 className="text-lg font-bold text-white mb-4">Distribuição - Top 5</h2>
+          {renderPieChart()}
         </div>
 
-        <div className="bg-[#282c34] rounded-lg border border-gray-700/50 p-6">
-          <h2 className="text-xl font-bold text-white mb-4">Resumo do Sistema</h2>
-          <div className="space-y-4">
-            <div className="bg-[#1e2228] rounded-lg p-4 border border-gray-800/50">
-              <div className="flex items-center justify-between mb-2">
-                <span className="text-sm text-gray-400">Total de Recursos</span>
-                <span className="text-lg font-bold text-white">{totalItems}</span>
+        {/* Resumo Compacto */}
+        <div className="bg-[#282c34] rounded-lg border border-gray-700/50 p-4">
+          <h2 className="text-lg font-bold text-white mb-4">Resumo</h2>
+          <div className="space-y-3">
+            <div className="bg-[#1e2228] rounded-lg p-3 border border-gray-800/50">
+              <div className="flex items-center justify-between mb-1">
+                <span className="text-xs text-gray-400">Total</span>
+                <span className="text-lg font-bold text-white">{totalItems.toLocaleString('pt-BR')}</span>
               </div>
-              <p className="text-xs text-gray-500">Todos os itens cadastrados</p>
+              <p className="text-xs text-gray-500">Recursos cadastrados</p>
             </div>
 
-            <div className="bg-[#1e2228] rounded-lg p-4 border border-gray-800/50">
-              <div className="flex items-center justify-between mb-2">
-                <span className="text-sm text-gray-400">Categorias</span>
+            <div className="bg-[#1e2228] rounded-lg p-3 border border-gray-800/50">
+              <div className="flex items-center justify-between mb-1">
+                <span className="text-xs text-gray-400">Categorias</span>
                 <span className="text-lg font-bold text-white">10</span>
               </div>
               <p className="text-xs text-gray-500">Tipos de recursos</p>
             </div>
 
-            <div className="bg-gradient-to-r from-[#4CAF50]/10 to-[#45a049]/10 rounded-lg p-4 border border-[#4CAF50]/20">
+            <div className="bg-[#4CAF50]/10 rounded-lg p-3 border border-[#4CAF50]/20">
               <div className="flex items-center gap-2 mb-2">
                 <div className="w-2 h-2 bg-[#4CAF50] rounded-full animate-pulse"></div>
-                <span className="text-sm font-semibold text-[#4CAF50]">Sistema Operacional</span>
+                <span className="text-xs font-semibold text-[#4CAF50]">Sistema Online</span>
               </div>
-              <p className="text-xs text-gray-300">Todas as operações funcionando normalmente</p>
+              <p className="text-xs text-gray-300">Operações normais</p>
             </div>
           </div>
+        </div>
+      </div>
+
+      {/* Distribuição Detalhada Compacta */}
+      <div className="bg-[#282c34] rounded-lg border border-gray-700/50 p-4">
+        <h2 className="text-lg font-bold text-white mb-4">Distribuição Completa</h2>
+        <div className="space-y-3">
+          {statsCards.map((card, index) => {
+            const percentage = totalItems > 0 ? (card.value / totalItems) * 100 : 0;
+            return (
+              <div key={index} className="space-y-2">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <div className={`w-8 h-8 ${colorClasses[card.color]} rounded-lg flex items-center justify-center border`}>
+                      {getIcon(card.iconType)}
+                    </div>
+                    <div>
+                      <span className="text-sm text-gray-300 font-medium block">{card.label}</span>
+                      <span className="text-xs text-gray-500">{card.value} itens</span>
+                    </div>
+                  </div>
+                  <span className="text-sm font-bold text-white">{percentage.toFixed(1)}%</span>
+                </div>
+                <div className="w-full bg-gray-800/50 rounded-full h-1.5 overflow-hidden">
+                  <div
+                    className={`h-full rounded-full transition-all duration-1000 ${
+                      card.color === 'blue' ? 'bg-blue-500' :
+                      card.color === 'green' ? 'bg-green-500' :
+                      card.color === 'purple' ? 'bg-purple-500' :
+                      card.color === 'yellow' ? 'bg-yellow-500' :
+                      card.color === 'orange' ? 'bg-orange-500' :
+                      card.color === 'cyan' ? 'bg-cyan-500' :
+                      card.color === 'pink' ? 'bg-pink-500' :
+                      card.color === 'indigo' ? 'bg-indigo-500' :
+                      card.color === 'red' ? 'bg-red-500' :
+                      'bg-teal-500'
+                    }`}
+                    style={{ width: `${percentage}%` }}
+                  ></div>
+                </div>
+              </div>
+            );
+          })}
         </div>
       </div>
     </div>

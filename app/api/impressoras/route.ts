@@ -58,14 +58,25 @@ export async function GET(request: NextRequest) {
 
     const { searchParams } = new URL(request.url);
     const page = parseInt(searchParams.get('page') || '1');
+    const search = searchParams.get('search') || '';
     const limit = 10;
     const skip = (page - 1) * limit;
 
     // Get models after ensuring they're registered
     const ImpressoraModel = mongoose.models.Impressora || Impressora;
     
+    const searchQuery: any = {};
+    if (search) {
+      searchQuery.$or = [
+        { setor: { $regex: search, $options: 'i' } },
+        { numeroSerie: { $regex: search, $options: 'i' } },
+        { enderecoIP: { $regex: search, $options: 'i' } },
+        { categoria: { $regex: search, $options: 'i' } },
+      ];
+    }
+    
     const [impressorasRaw, total] = await Promise.all([
-      ImpressoraModel.find({})
+      ImpressoraModel.find(searchQuery)
         .populate({ path: 'faixa', model: 'IP', strictPopulate: false })
         .populate({ path: 'modelo', populate: { path: 'marca', model: 'Marca', strictPopulate: false }, model: 'Modelo', strictPopulate: false })
         .populate({ path: 'tipo', model: 'Tipo', strictPopulate: false })
@@ -73,7 +84,7 @@ export async function GET(request: NextRequest) {
         .skip(skip)
         .limit(limit)
         .lean(),
-      ImpressoraModel.countDocuments({}),
+      ImpressoraModel.countDocuments(searchQuery),
     ]);
 
     console.log('Impressoras encontradas:', impressorasRaw.length);
