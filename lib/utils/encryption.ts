@@ -1,7 +1,11 @@
 import crypto from 'crypto';
 
 // Use a strong secret key from environment variables
-const ENCRYPTION_KEY = process.env.ENCRYPTION_KEY || crypto.randomBytes(32).toString('hex');
+// NUNCA usar fallback - se não tiver chave, deve falhar
+const ENCRYPTION_KEY = process.env.ENCRYPTION_KEY;
+if (!ENCRYPTION_KEY) {
+  throw new Error('ENCRYPTION_KEY não está configurada nas variáveis de ambiente!');
+}
 const IV_LENGTH = 16; // For AES, this is always 16
 
 // Get a 32-byte key from the string
