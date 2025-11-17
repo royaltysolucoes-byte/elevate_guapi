@@ -57,8 +57,8 @@ export async function GET(request: NextRequest) {
     });
 
     return NextResponse.json({
-      notificacoes: notificacoes.map(notif => ({
-        _id: notif._id.toString(),
+      notificacoes: notificacoes.map((notif: any) => ({
+        _id: notif._id?.toString() || '',
         tipo: notif.tipo,
         titulo: notif.titulo,
         mensagem: notif.mensagem,
