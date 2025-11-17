@@ -39,8 +39,8 @@ export async function GET(request: NextRequest) {
     const tarefas = await Tarefa.find({}).sort({ createdAt: -1 }).lean();
 
     return NextResponse.json({
-      tarefas: tarefas.map(tarefa => ({
-        _id: tarefa._id.toString(),
+      tarefas: tarefas.map((tarefa: any) => ({
+        _id: tarefa._id?.toString() || '',
         titulo: tarefa.titulo,
         descricao: tarefa.descricao || '',
         status: tarefa.status,
