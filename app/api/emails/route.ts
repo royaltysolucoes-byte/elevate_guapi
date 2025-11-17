@@ -43,24 +43,17 @@ export async function GET(request: NextRequest) {
       ];
     }
 
-    console.log('Buscando emails com query:', searchQuery);
-    console.log('Página:', page, 'Skip:', skip, 'Limit:', limit);
-
     // Use .lean() to get plain JavaScript objects
     const [emailsRaw, total] = await Promise.all([
       Email.find(searchQuery).sort({ createdAt: -1 }).skip(skip).limit(limit).lean(),
       Email.countDocuments(searchQuery),
     ]);
 
-    console.log('Emails encontrados:', emailsRaw.length);
-    console.log('Total de emails:', total);
-
     // Decrypt passwords before sending to frontend
     const emails = (emailsRaw as any[]).map(email => {
       try {
         // Check if senha exists and is not empty
         if (!email.senha || email.senha.trim() === '') {
-          console.warn(`Email ${email._id} não tem senha cadastrada`);
           return {
             _id: email._id.toString(),
             email: email.email,
@@ -73,32 +66,19 @@ export async function GET(request: NextRequest) {
         }
 
         // Try to decrypt
-        let decryptedSenha: string;
+        let decryptedSenha: string = '';
         try {
           decryptedSenha = decrypt(email.senha);
-          
-          // Check if decryption actually worked - if it returns the same encrypted text, it failed
-          if (decryptedSenha === email.senha && email.senha.includes(':')) {
-            throw new Error('Descriptografia falhou - a senha retornada é igual à criptografada');
-          }
-          
-          console.log(`Senha descriptografada para ${email.email}: ${decryptedSenha ? 'OK' : 'VAZIA'}`);
         } catch (decryptError: any) {
-          console.error(`Erro ao descriptografar senha para ${email.email}:`, decryptError.message);
-          console.error('Senha criptografada (primeiros 50 chars):', email.senha?.substring(0, 50));
-          console.error('Formato da senha:', email.senha?.includes(':') ? 'Formato correto (iv:encrypted)' : 'Formato incorreto');
-          console.error('ENCRYPTION_KEY configurada:', process.env.ENCRYPTION_KEY ? 'SIM' : 'NÃO');
-          
-          // If decryption fails, the password might be in plain text or encrypted with different key
-          // Check if it looks like encrypted format (has : separator)
-          if (email.senha.includes(':')) {
-            // It's encrypted but can't decrypt - probably wrong key
-            // Return a clear error message instead of the encrypted text
-            decryptedSenha = '[ERRO: Chave de criptografia incorreta. Verifique ENCRYPTION_KEY no .env.local]';
-          } else {
-            // Maybe it's already plain text?
+          // Se falhar, tenta retornar como texto simples (pode já estar descriptografado)
+          // ou retorna vazio se estiver criptografado mas não conseguir descriptografar
+          if (!email.senha.includes(':')) {
+            // Não está no formato criptografado, pode ser texto simples
             decryptedSenha = email.senha;
-            console.warn(`Senha para ${email.email} parece estar em texto simples`);
+          } else {
+            // Está criptografado mas não conseguiu descriptografar
+            decryptedSenha = '';
+            console.error(`Erro ao descriptografar senha para ${email.email}:`, decryptError.message);
           }
         }
         
@@ -118,7 +98,7 @@ export async function GET(request: NextRequest) {
           email: email.email,
           colaborador: email.colaborador,
           nome: email.nome,
-          senha: `[ERRO: ${error.message}]`, // Show error message so user knows what's wrong
+          senha: '', // Retorna vazio em caso de erro
           createdAt: email.createdAt ? new Date(email.createdAt).toISOString() : new Date().toISOString(),
           updatedAt: email.updatedAt ? new Date(email.updatedAt).toISOString() : new Date().toISOString(),
         };
