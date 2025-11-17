@@ -12,6 +12,16 @@ interface User {
   nivelAcesso?: string;
 }
 
+interface Notificacao {
+  _id: string;
+  tipo: string;
+  titulo: string;
+  mensagem: string;
+  tarefaId?: string;
+  lida: boolean;
+  createdAt: string;
+}
+
 export default function DashboardLayout({
   children,
 }: {
@@ -22,11 +32,22 @@ export default function DashboardLayout({
   const [showConfigMenu, setShowConfigMenu] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [notificacoes, setNotificacoes] = useState<Notificacao[]>([]);
+  const [totalNaoLidas, setTotalNaoLidas] = useState(0);
+  const [showNotificacoes, setShowNotificacoes] = useState(false);
   const router = useRouter();
   const pathname = usePathname();
 
   useEffect(() => {
     fetchProfile();
+    fetchNotificacoes();
+    
+    // Polling para verificar novas notificações a cada 10 segundos
+    const interval = setInterval(() => {
+      fetchNotificacoes();
+    }, 10000);
+
+    return () => clearInterval(interval);
   }, []);
 
   useEffect(() => {
@@ -56,6 +77,45 @@ export default function DashboardLayout({
   const handleLogout = () => {
     document.cookie = 'token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT';
     router.push('/');
+  };
+
+  const fetchNotificacoes = async () => {
+    try {
+      const response = await fetch('/api/notificacoes?apenasNaoLidas=false&limit=10');
+      if (response.ok) {
+        const data = await response.json();
+        setNotificacoes(data.notificacoes);
+        setTotalNaoLidas(data.totalNaoLidas);
+      }
+    } catch (error) {
+      console.error('Error fetching notificacoes:', error);
+    }
+  };
+
+  const marcarComoLida = async (notificacaoId: string) => {
+    try {
+      await fetch('/api/notificacoes', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ notificacaoId }),
+      });
+      fetchNotificacoes();
+    } catch (error) {
+      console.error('Error marking notification as read:', error);
+    }
+  };
+
+  const marcarTodasComoLidas = async () => {
+    try {
+      await fetch('/api/notificacoes', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ marcarTodas: true }),
+      });
+      fetchNotificacoes();
+    } catch (error) {
+      console.error('Error marking all notifications as read:', error);
+    }
   };
 
   if (loading) {
@@ -268,6 +328,21 @@ export default function DashboardLayout({
               Conectividade
             </Link>
 
+            <Link
+              href="/dashboard/tarefas"
+              className={`flex items-center px-4 py-3 rounded-lg transition ${
+                isActive('/dashboard/tarefas')
+                  ? 'bg-[#4CAF50] text-white'
+                  : 'text-gray-300 hover:bg-gray-700'
+              }`}
+              onClick={() => setSidebarOpen(false)}
+            >
+              <svg className="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
+              </svg>
+              Tarefas
+            </Link>
+
             {(user.isAdmin || user.nivelAcesso === 'admin') && (
               <div>
                 <button
@@ -406,6 +481,99 @@ export default function DashboardLayout({
               </div>
             )}
           </div>
+        </div>
+      </div>
+
+      {/* Notificações Button - Fixed Top Right */}
+      <div className="fixed top-4 right-4 z-50">
+        <div className="relative">
+          <button
+            onClick={() => setShowNotificacoes(!showNotificacoes)}
+            className="relative bg-[#282c34] hover:bg-gray-700 text-white p-3 rounded-lg shadow-lg transition-all border border-gray-700/50"
+          >
+            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
+            </svg>
+            {totalNaoLidas > 0 && (
+              <span className="absolute -top-1 -right-1 bg-[#4CAF50] text-white text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center animate-pulse">
+                {totalNaoLidas > 9 ? '9+' : totalNaoLidas}
+              </span>
+            )}
+          </button>
+
+          {/* Dropdown de Notificações */}
+          {showNotificacoes && (
+            <>
+              <div
+                className="fixed inset-0 z-40"
+                onClick={() => setShowNotificacoes(false)}
+              />
+              <div className="absolute right-0 top-full mt-2 w-80 md:w-96 bg-[#282c34] rounded-lg shadow-2xl border border-gray-700/50 max-h-96 overflow-hidden z-50">
+                <div className="p-4 border-b border-gray-700/50 flex items-center justify-between">
+                  <h3 className="text-white font-semibold">Notificações</h3>
+                  {totalNaoLidas > 0 && (
+                    <button
+                      onClick={marcarTodasComoLidas}
+                      className="text-[#4CAF50] text-xs hover:underline"
+                    >
+                      Marcar todas como lidas
+                    </button>
+                  )}
+                </div>
+                <div className="overflow-y-auto max-h-80">
+                  {notificacoes.length === 0 ? (
+                    <div className="p-6 text-center text-gray-400 text-sm">
+                      Nenhuma notificação
+                    </div>
+                  ) : (
+                    <div className="divide-y divide-gray-700/50">
+                      {notificacoes.map((notif) => (
+                        <div
+                          key={notif._id}
+                          className={`p-4 hover:bg-gray-800/50 transition cursor-pointer ${
+                            !notif.lida ? 'bg-gray-800/30' : ''
+                          }`}
+                          onClick={() => {
+                            if (!notif.lida) {
+                              marcarComoLida(notif._id);
+                            }
+                            if (notif.tarefaId) {
+                              router.push(`/dashboard/tarefas`);
+                              setShowNotificacoes(false);
+                            }
+                          }}
+                        >
+                          <div className="flex items-start gap-3">
+                            <div className={`w-2 h-2 rounded-full mt-2 flex-shrink-0 ${
+                              !notif.lida ? 'bg-[#4CAF50]' : 'bg-transparent'
+                            }`} />
+                            <div className="flex-1 min-w-0">
+                              <p className={`text-sm font-semibold mb-1 ${
+                                !notif.lida ? 'text-white' : 'text-gray-300'
+                              }`}>
+                                {notif.titulo}
+                              </p>
+                              <p className="text-gray-400 text-xs mb-2">
+                                {notif.mensagem}
+                              </p>
+                              <p className="text-gray-500 text-[10px]">
+                                {new Date(notif.createdAt).toLocaleString('pt-BR', {
+                                  day: '2-digit',
+                                  month: '2-digit',
+                                  hour: '2-digit',
+                                  minute: '2-digit',
+                                })}
+                              </p>
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              </div>
+            </>
+          )}
         </div>
       </div>
 
