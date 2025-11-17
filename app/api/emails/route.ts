@@ -76,17 +76,22 @@ export async function GET(request: NextRequest) {
               decryptedSenha = decrypt(email.senha);
               // Verifica se a descriptografia funcionou (não deve retornar o mesmo texto)
               if (decryptedSenha === email.senha) {
-                // Descriptografia falhou silenciosamente
+                // Descriptografia falhou silenciosamente - retornou o mesmo texto
                 if (process.env.NODE_ENV === 'production') {
                   console.error(`[PROD] ❌ Descriptografia retornou mesmo texto para ${email.email}`);
-                  console.error(`[PROD] Senha criptografada (primeiros 50 chars):`, email.senha.substring(0, 50));
+                  console.error(`[PROD] Isso indica que a chave está incorreta ou a descriptografia falhou silenciosamente`);
                 }
                 decryptedSenha = '';
-              } else {
+              } else if (decryptedSenha && decryptedSenha.length > 0) {
                 // Descriptografia funcionou!
                 if (process.env.NODE_ENV === 'production' && emailsRaw.indexOf(email) === 0) {
                   console.log(`[PROD] ✅ Descriptografia funcionou para ${email.email}`);
-                  console.log(`[PROD] Senha descriptografada (primeiros 10 chars):`, decryptedSenha.substring(0, 10));
+                  console.log(`[PROD] Senha descriptografada (primeiros 10 chars):`, decryptedSenha.substring(0, Math.min(10, decryptedSenha.length)));
+                }
+              } else {
+                // Descriptografia retornou vazio
+                if (process.env.NODE_ENV === 'production') {
+                  console.error(`[PROD] ⚠️ Descriptografia retornou vazio para ${email.email}`);
                 }
               }
             } catch (decryptErr: any) {
@@ -94,6 +99,7 @@ export async function GET(request: NextRequest) {
               if (process.env.NODE_ENV === 'production') {
                 console.error(`[PROD] ❌ Erro ao descriptografar ${email.email}:`, decryptErr.message);
                 console.error(`[PROD] Error code:`, decryptErr.code);
+                console.error(`[PROD] Error name:`, decryptErr.name);
                 console.error(`[PROD] Senha (primeiros 50 chars):`, email.senha?.substring(0, 50));
               }
               decryptedSenha = '';

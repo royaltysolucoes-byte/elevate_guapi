@@ -83,12 +83,14 @@ export function decrypt(text: string, customKey?: string): string {
   } catch (error: any) {
     // Se falhar na descriptografia, loga detalhes em produção
     if (process.env.NODE_ENV === 'production') {
-      console.error('Decryption error:', error.message);
-      console.error('Error code:', error.code);
-      console.error('Text (first 50 chars):', text.substring(0, 50));
-      console.error('ENCRYPTION_KEY presente:', !!ENCRYPTION_KEY);
+      console.error('[PROD] Decryption error:', error.message);
+      console.error('[PROD] Error code:', error.code);
+      console.error('[PROD] Error name:', error.name);
+      console.error('[PROD] Text (first 50 chars):', text.substring(0, 50));
+      console.error('[PROD] ENCRYPTION_KEY presente:', !!ENCRYPTION_KEY);
       if (ENCRYPTION_KEY) {
-        console.error('ENCRYPTION_KEY length:', ENCRYPTION_KEY.length);
+        console.error('[PROD] ENCRYPTION_KEY length:', ENCRYPTION_KEY.length);
+        console.error('[PROD] ENCRYPTION_KEY (primeiros 10):', ENCRYPTION_KEY.substring(0, 10));
       }
     }
     throw error;
