@@ -47,8 +47,8 @@ export async function GET(request: NextRequest) {
     const users = await User.find({}, { password: 0 }).sort({ createdAt: -1 }).lean();
 
     return NextResponse.json({ 
-      users: users.map(user => ({
-        _id: user._id.toString(),
+      users: users.map((user: any) => ({
+        _id: user._id?.toString() || '',
         username: user.username,
         fullName: user.fullName,
         funcao: user.funcao,
