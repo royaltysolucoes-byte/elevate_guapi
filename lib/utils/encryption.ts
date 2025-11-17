@@ -1,12 +1,13 @@
 import crypto from 'crypto';
 
 // Use a strong secret key from environment variables
-const ENCRYPTION_KEY = process.env.ENCRYPTION_KEY || crypto.randomBytes(32).toString('hex');
+// Remove espaços e quebras de linha que podem vir do Vercel
+const ENCRYPTION_KEY = process.env.ENCRYPTION_KEY?.trim() || crypto.randomBytes(32).toString('hex');
 const IV_LENGTH = 16; // For AES, this is always 16
 
 // Get a 32-byte key from the string
 const getKey = (customKey?: string): Buffer => {
-  const keyToUse = customKey || ENCRYPTION_KEY;
+  const keyToUse = (customKey || ENCRYPTION_KEY)?.trim();
   
   // Log para debug (apenas em produção para identificar problema)
   if (process.env.NODE_ENV === 'production' && !customKey) {
