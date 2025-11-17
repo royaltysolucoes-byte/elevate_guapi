@@ -30,10 +30,6 @@ export default function EmailsPage() {
   });
   const [error, setError] = useState('');
   const isFirstRender = useRef(true);
-  const [showMigrateModal, setShowMigrateModal] = useState(false);
-  const [oldKey, setOldKey] = useState('');
-  const [migrating, setMigrating] = useState(false);
-  const [migrateResult, setMigrateResult] = useState<{ success: boolean; message: string; details?: string[] } | null>(null);
 
   useEffect(() => {
     fetchEmails(true); // Mostra loading apenas na mudança de página
@@ -199,18 +195,7 @@ export default function EmailsPage() {
     <div>
       <div className="flex justify-between items-center mb-8">
         <h1 className="text-3xl font-bold text-white">Gestão de E-mail</h1>
-        <div className="flex gap-3">
-          <button
-            onClick={() => setShowMigrateModal(true)}
-            className="bg-yellow-600 hover:bg-yellow-700 text-white font-semibold px-6 py-3 rounded-lg transition duration-200 flex items-center"
-            title="Migrar criptografia de senhas"
-          >
-            <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
-            </svg>
-            Migrar Criptografia
-          </button>
-          <button
+        <button
             onClick={() => {
               setEditingEmail(null);
               setFormData({
@@ -471,127 +456,6 @@ export default function EmailsPage() {
                   className="flex-1 bg-[#4CAF50] hover:bg-[#45a049] text-white font-semibold py-2 rounded-lg transition"
                 >
                   {editingEmail ? 'Atualizar' : 'Criar'}
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
-
-      {/* Modal de Migração */}
-      {showMigrateModal && (
-        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50">
-          <div className="bg-[#282c34]/98 backdrop-blur-xl rounded-lg shadow-md p-8 max-w-2xl w-full mx-4 border border-gray-700/50">
-            <h2 className="text-3xl font-bold text-white mb-4">Migrar Criptografia de Senhas</h2>
-            <p className="text-gray-400 mb-6">
-              Se você lembrar da chave de criptografia antiga, podemos recriptografar todas as senhas com a nova chave.
-              Caso contrário, será necessário redefinir as senhas manualmente.
-            </p>
-
-            {migrateResult && (
-              <div className={`mb-6 p-4 rounded-lg ${migrateResult.success ? 'bg-green-500/20 border border-green-500' : 'bg-red-500/20 border border-red-500'}`}>
-                <p className={migrateResult.success ? 'text-green-400' : 'text-red-400'}>
-                  {migrateResult.message}
-                </p>
-                {migrateResult.details && migrateResult.details.length > 0 && (
-                  <div className="mt-2 text-sm text-gray-300">
-                    <p className="font-semibold">Detalhes dos erros:</p>
-                    <ul className="list-disc list-inside mt-1">
-                      {migrateResult.details.slice(0, 5).map((detail, idx) => (
-                        <li key={idx}>{detail}</li>
-                      ))}
-                      {migrateResult.details.length > 5 && (
-                        <li>... e mais {migrateResult.details.length - 5} erro(s)</li>
-                      )}
-                    </ul>
-                  </div>
-                )}
-              </div>
-            )}
-
-            <form onSubmit={async (e) => {
-              e.preventDefault();
-              setMigrating(true);
-              setMigrateResult(null);
-              setError('');
-
-              try {
-                const response = await fetch('/api/emails/migrate-encryption', {
-                  method: 'POST',
-                  headers: {
-                    'Content-Type': 'application/json',
-                  },
-                  body: JSON.stringify({ oldEncryptionKey: oldKey }),
-                });
-
-                const data = await response.json();
-
-                if (response.ok) {
-                  setMigrateResult({
-                    success: true,
-                    message: data.message,
-                    details: data.errorDetails,
-                  });
-                  // Recarrega os emails após migração bem-sucedida
-                  setTimeout(() => {
-                    fetchEmails(true);
-                    setShowMigrateModal(false);
-                    setOldKey('');
-                    setMigrateResult(null);
-                  }, 2000);
-                } else {
-                  setMigrateResult({
-                    success: false,
-                    message: data.error || 'Erro ao migrar senhas',
-                    details: data.errorDetails,
-                  });
-                }
-              } catch (error: any) {
-                setMigrateResult({
-                  success: false,
-                  message: `Erro: ${error.message}`,
-                });
-              } finally {
-                setMigrating(false);
-              }
-            }} className="space-y-6">
-              <div>
-                <label className="block text-sm font-medium text-gray-300 mb-2">
-                  Chave de Criptografia Antiga
-                </label>
-                <input
-                  type="password"
-                  value={oldKey}
-                  onChange={(e) => setOldKey(e.target.value)}
-                  className="w-full px-4 py-2 border border-gray-600 rounded-lg bg-[#363f4a] text-white placeholder-gray-400 focus:ring-2 focus:ring-yellow-500 focus:border-transparent"
-                  placeholder="Cole ou digite a chave antiga aqui"
-                  required
-                  disabled={migrating}
-                />
-                <p className="mt-2 text-xs text-gray-400">
-                  A chave pode ser uma string hexadecimal (64 caracteres) ou qualquer texto que será hasheado.
-                </p>
-              </div>
-
-              <div className="flex gap-3">
-                <button
-                  type="submit"
-                  disabled={migrating || !oldKey}
-                  className="flex-1 px-6 py-3 bg-yellow-600 hover:bg-yellow-700 text-white font-semibold rounded-lg transition duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  {migrating ? 'Migrando...' : 'Executar Migração'}
-                </button>
-                <button
-                  type="button"
-                  onClick={() => {
-                    setShowMigrateModal(false);
-                    setOldKey('');
-                    setMigrateResult(null);
-                  }}
-                  disabled={migrating}
-                  className="px-6 py-3 bg-gray-600 hover:bg-gray-700 text-white font-semibold rounded-lg transition duration-200 disabled:opacity-50"
-                >
-                  Cancelar
                 </button>
               </div>
             </form>
