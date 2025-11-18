@@ -1,8 +1,17 @@
 import { NextRequest, NextResponse } from 'next/server';
 import connectDB from '@/lib/db';
+import mongoose from 'mongoose';
 import Senha from '@/lib/models/Senha';
+import Servico from '@/lib/models/Servico';
 import { verifyToken } from '@/lib/auth';
 import { encrypt, decrypt } from '@/lib/utils/encryption';
+
+// Ensure models are registered
+const ensureModelsRegistered = () => {
+  if (!mongoose.models.Servico) {
+    require('@/lib/models/Servico');
+  }
+};
 
 async function checkAuth(request: NextRequest) {
   const token = request.cookies.get('token')?.value;
@@ -27,6 +36,7 @@ export async function GET(request: NextRequest) {
     }
 
     await connectDB();
+    ensureModelsRegistered();
 
     const { searchParams } = new URL(request.url);
     const page = parseInt(searchParams.get('page') || '1');
@@ -38,21 +48,27 @@ export async function GET(request: NextRequest) {
     if (search) {
       searchQuery.$or = [
         { id: { $regex: search, $options: 'i' } },
-        { ip: { $regex: search, $options: 'i' } },
-        { equipamento: { $regex: search, $options: 'i' } },
         { categoria: { $regex: search, $options: 'i' } },
       ];
     }
 
     const [senhasRaw, total] = await Promise.all([
-      Senha.find(searchQuery).sort({ createdAt: -1 }).skip(skip).limit(limit),
+      Senha.find(searchQuery).populate('servico').sort({ createdAt: -1 }).skip(skip).limit(limit),
       Senha.countDocuments(searchQuery),
     ]);
 
     // Decrypt passwords before sending to frontend
-    const senhas = senhasRaw.map(senha => ({
-      ...senha.toObject(),
-      senha: decrypt(senha.senha)
+    const senhas = senhasRaw.map((senha: any) => ({
+      _id: senha._id.toString(),
+      id: senha.id,
+      servico: senha.servico && typeof senha.servico === 'object' ? {
+        _id: senha.servico._id.toString(),
+        nome: senha.servico.nome
+      } : null,
+      categoria: senha.categoria,
+      senha: decrypt(senha.senha),
+      createdAt: senha.createdAt,
+      updatedAt: senha.updatedAt,
     }));
 
     return NextResponse.json({
@@ -84,10 +100,11 @@ export async function POST(request: NextRequest) {
     }
 
     await connectDB();
+    ensureModelsRegistered();
 
-    const { id, ip, equipamento, categoria, senha, confirmarSenha } = await request.json();
+    const { id, servico, categoria, senha, confirmarSenha } = await request.json();
 
-    if (!id || !ip || !equipamento || !categoria || !senha) {
+    if (!id || !servico || !categoria || !senha) {
       return NextResponse.json(
         { error: 'Todos os campos são obrigatórios' },
         { status: 400 }
@@ -107,18 +124,28 @@ export async function POST(request: NextRequest) {
 
     const newSenha = await Senha.create({
       id,
-      ip,
-      equipamento,
+      servico,
       categoria,
       senha: encryptedSenha, // Store encrypted password
     });
 
+    const senhaPopulada = await Senha.findById(newSenha._id).populate('servico');
+
     // Return decrypted password for frontend
+    const senhaData = senhaPopulada as any;
     return NextResponse.json(
       { 
         senha: {
-          ...newSenha.toObject(),
-          senha: senha
+          _id: senhaData._id.toString(),
+          id: senhaData.id,
+          servico: senhaData.servico && typeof senhaData.servico === 'object' ? {
+            _id: senhaData.servico._id.toString(),
+            nome: senhaData.servico.nome
+          } : null,
+          categoria: senhaData.categoria,
+          senha: senha,
+          createdAt: senhaData.createdAt,
+          updatedAt: senhaData.updatedAt,
         }
       },
       { status: 201 }

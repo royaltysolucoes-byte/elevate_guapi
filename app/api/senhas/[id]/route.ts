@@ -1,8 +1,17 @@
 import { NextRequest, NextResponse } from 'next/server';
 import connectDB from '@/lib/db';
+import mongoose from 'mongoose';
 import Senha from '@/lib/models/Senha';
+import Servico from '@/lib/models/Servico';
 import { verifyToken } from '@/lib/auth';
 import { encrypt, decrypt } from '@/lib/utils/encryption';
+
+// Ensure models are registered
+const ensureModelsRegistered = () => {
+  if (!mongoose.models.Servico) {
+    require('@/lib/models/Servico');
+  }
+};
 
 async function checkAuth(request: NextRequest) {
   const token = request.cookies.get('token')?.value;
@@ -30,6 +39,7 @@ export async function PUT(
     }
 
     await connectDB();
+    ensureModelsRegistered();
 
     const { id } = await params;
     const body = await request.json();
@@ -37,8 +47,7 @@ export async function PUT(
     // Build update object, only include senha if provided
     const updateData: any = {
       id: body.id,
-      ip: body.ip,
-      equipamento: body.equipamento,
+      servico: body.servico,
       categoria: body.categoria,
     };
 
@@ -51,7 +60,7 @@ export async function PUT(
       id,
       updateData,
       { new: true, runValidators: true }
-    );
+    ).populate('servico');
 
     if (!senhaUpdated) {
       return NextResponse.json(
@@ -61,10 +70,19 @@ export async function PUT(
     }
 
     // Return decrypted password for frontend
+    const senhaData = senhaUpdated as any;
     return NextResponse.json({ 
       senha: {
-        ...senhaUpdated.toObject(),
-        senha: body.senha || decrypt(senhaUpdated.senha)
+        _id: senhaData._id.toString(),
+        id: senhaData.id,
+        servico: senhaData.servico && typeof senhaData.servico === 'object' ? {
+          _id: senhaData.servico._id.toString(),
+          nome: senhaData.servico.nome
+        } : null,
+        categoria: senhaData.categoria,
+        senha: body.senha || decrypt(senhaData.senha),
+        createdAt: senhaData.createdAt,
+        updatedAt: senhaData.updatedAt,
       }
     });
   } catch (error) {

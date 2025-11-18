@@ -5,8 +5,10 @@ import { useEffect, useState, useRef } from 'react';
 interface SenhaType {
   _id: string;
   id: string;
-  ip: string;
-  equipamento: string;
+  servico: {
+    _id: string;
+    nome: string;
+  } | null;
   categoria: string;
   senha: string;
   createdAt: string;
@@ -18,9 +20,15 @@ interface CategoriaType {
   nome: string;
 }
 
+interface ServicoType {
+  _id: string;
+  nome: string;
+}
+
 export default function SenhasPage() {
   const [senhas, setSenhas] = useState<SenhaType[]>([]);
   const [categorias, setCategorias] = useState<CategoriaType[]>([]);
+  const [servicos, setServicos] = useState<ServicoType[]>([]);
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
   const [editingSenha, setEditingSenha] = useState<SenhaType | null>(null);
@@ -30,8 +38,7 @@ export default function SenhasPage() {
   const [searchTerm, setSearchTerm] = useState('');
   const [formData, setFormData] = useState({
     id: '',
-    ip: '',
-    equipamento: '',
+    servico: '',
     categoria: '',
     senha: '',
     confirmarSenha: '',
@@ -41,6 +48,7 @@ export default function SenhasPage() {
 
   useEffect(() => {
     fetchCategorias();
+    fetchServicos();
   }, []);
 
   useEffect(() => {
@@ -106,6 +114,18 @@ export default function SenhasPage() {
     }
   };
 
+  const fetchServicos = async () => {
+    try {
+      const response = await fetch('/api/servicos');
+      if (response.ok) {
+        const data = await response.json();
+        setServicos(data.servicos || []);
+      }
+    } catch (error) {
+      console.error('Error fetching servicos:', error);
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
@@ -136,8 +156,7 @@ export default function SenhasPage() {
 
       setFormData({
         id: '',
-        ip: '',
-        equipamento: '',
+        servico: '',
         categoria: '',
         senha: '',
         confirmarSenha: '',
@@ -154,8 +173,7 @@ export default function SenhasPage() {
     setEditingSenha(senha);
     setFormData({
       id: senha.id,
-      ip: senha.ip,
-      equipamento: senha.equipamento,
+      servico: senha.servico?._id || '',
       categoria: senha.categoria,
       senha: '', // Don't populate password for security
       confirmarSenha: '',
@@ -231,7 +249,7 @@ export default function SenhasPage() {
             type="text"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            placeholder="Buscar por ID, IP, equipamento ou categoria..."
+            placeholder="Buscar por ID ou categoria..."
             className="flex-1 px-4 py-2 bg-[#282c34] text-white rounded-lg border border-gray-600 focus:outline-none focus:ring-2 focus:ring-[#4CAF50]"
           />
           <button
@@ -266,10 +284,7 @@ export default function SenhasPage() {
                 ID
               </th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
-                IP
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
-                Equipamento
+                Serviço
               </th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
                 Categoria
@@ -292,10 +307,7 @@ export default function SenhasPage() {
                   <div className="text-sm font-medium text-white">{senha.id}</div>
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap">
-                  <div className="text-sm font-medium text-white">{senha.ip}</div>
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap">
-                  <div className="text-sm text-gray-300">{senha.equipamento}</div>
+                  <div className="text-sm text-gray-300">{senha.servico?.nome || 'N/A'}</div>
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap">
                   <div className="text-sm text-gray-300">{senha.categoria}</div>
@@ -385,37 +397,28 @@ export default function SenhasPage() {
                   value={formData.id}
                   onChange={(e) => setFormData({ ...formData, id: e.target.value })}
                   className="w-full px-4 py-2 border border-gray-600 rounded-lg bg-[#363f4a] text-white placeholder-gray-400 focus:ring-2 focus:ring-[#4CAF50] focus:border-transparent"
-                  placeholder="ID do equipamento"
+                  placeholder="ID (ex: usuário padrão, licença, etc.)"
                   required
                 />
               </div>
 
               <div>
                 <label className="block text-sm font-medium text-gray-300 mb-2">
-                  IP
+                  Serviço
                 </label>
-                <input
-                  type="text"
-                  value={formData.ip}
-                  onChange={(e) => setFormData({ ...formData, ip: e.target.value })}
-                  className="w-full px-4 py-2 border border-gray-600 rounded-lg bg-[#363f4a] text-white placeholder-gray-400 focus:ring-2 focus:ring-[#4CAF50] focus:border-transparent"
-                  placeholder="Ex: 192.168.1.1"
+                <select
+                  value={formData.servico}
+                  onChange={(e) => setFormData({ ...formData, servico: e.target.value })}
+                  className="w-full px-4 py-2 border border-gray-600 rounded-lg bg-[#363f4a] text-white focus:ring-2 focus:ring-[#4CAF50] focus:border-transparent"
                   required
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-300 mb-2">
-                  Equipamento
-                </label>
-                <input
-                  type="text"
-                  value={formData.equipamento}
-                  onChange={(e) => setFormData({ ...formData, equipamento: e.target.value })}
-                  className="w-full px-4 py-2 border border-gray-600 rounded-lg bg-[#363f4a] text-white placeholder-gray-400 focus:ring-2 focus:ring-[#4CAF50] focus:border-transparent"
-                  placeholder="Nome do equipamento"
-                  required
-                />
+                >
+                  <option value="">Selecione um serviço</option>
+                  {servicos.map((servico) => (
+                    <option key={servico._id} value={servico._id}>
+                      {servico.nome}
+                    </option>
+                  ))}
+                </select>
               </div>
 
               <div>
@@ -475,8 +478,7 @@ export default function SenhasPage() {
                     setEditingSenha(null);
                     setFormData({
                       id: '',
-                      ip: '',
-                      equipamento: '',
+                      servico: '',
                       categoria: '',
                       senha: '',
                       confirmarSenha: '',

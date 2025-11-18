@@ -2,8 +2,7 @@ import mongoose, { Document, Schema } from 'mongoose';
 
 export interface ISenha extends Document {
   id: string;
-  ip: string;
-  equipamento: string;
+  servico: mongoose.Types.ObjectId;
   categoria: string;
   senha: string; // Encrypted password in database
   createdAt: Date;
@@ -17,15 +16,10 @@ const SenhaSchema = new Schema<ISenha>(
       required: [true, 'ID is required'],
       trim: true,
     },
-    ip: {
-      type: String,
-      required: [true, 'IP is required'],
-      trim: true,
-    },
-    equipamento: {
-      type: String,
-      required: [true, 'Equipamento is required'],
-      trim: true,
+    servico: {
+      type: Schema.Types.ObjectId,
+      ref: 'Servico',
+      required: [true, 'Serviço is required'],
     },
     categoria: {
       type: String,
