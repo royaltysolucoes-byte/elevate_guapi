@@ -8,6 +8,10 @@ export default function LoginPage() {
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [requiresCaptcha, setRequiresCaptcha] = useState(false);
+  const [captchaQuestion, setCaptchaQuestion] = useState('');
+  const [captchaAnswer, setCaptchaAnswer] = useState('');
+  const [attemptsLeft, setAttemptsLeft] = useState<number | null>(null);
   const router = useRouter();
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -21,17 +25,33 @@ export default function LoginPage() {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ username, password }),
+        body: JSON.stringify({
+          username,
+          password,
+          captchaAnswer: requiresCaptcha ? Number(captchaAnswer) : undefined,
+        }),
       });
 
       const data = await response.json();
 
       if (!response.ok) {
+        if (data.requiresCaptcha) {
+          setRequiresCaptcha(true);
+          setCaptchaQuestion(data.captchaQuestion || '');
+          setCaptchaAnswer('');
+        }
+        if (data.attemptsLeft !== undefined) {
+          setAttemptsLeft(data.attemptsLeft);
+        }
         setError(data.error || 'Erro ao fazer login');
         setLoading(false);
         return;
       }
 
+      // Login successful - reset everything
+      setRequiresCaptcha(false);
+      setCaptchaAnswer('');
+      setAttemptsLeft(null);
       router.push('/dashboard');
     } catch (error) {
       setError('Erro ao conectar com o servidor');
@@ -144,6 +164,9 @@ export default function LoginPage() {
             {error && (
               <div className="bg-red-500/20 border border-red-500 text-red-500 px-4 py-3 rounded-lg text-sm">
                 {error}
+                {attemptsLeft !== null && attemptsLeft > 0 && (
+                  <p className="mt-1 text-xs">Tentativas restantes: {attemptsLeft}</p>
+                )}
               </div>
             )}
 
@@ -190,6 +213,29 @@ export default function LoginPage() {
                 />
               </div>
             </div>
+
+            {requiresCaptcha && (
+              <div className="bg-[#4CAF50]/10 border border-[#4CAF50]/30 rounded-lg p-4">
+                <label htmlFor="captcha" className="block text-white text-sm font-medium mb-2">
+                  Verificação de Segurança
+                </label>
+                <div className="space-y-2">
+                  <p className="text-gray-300 text-sm">
+                    Resolva: <span className="font-mono text-lg font-bold text-[#4CAF50]">{captchaQuestion} = ?</span>
+                  </p>
+                  <input
+                    id="captcha"
+                    type="number"
+                    value={captchaAnswer}
+                    onChange={(e) => setCaptchaAnswer(e.target.value)}
+                    className="block w-full px-4 py-2.5 border border-gray-600 rounded-lg bg-[#363f4a] text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#4CAF50] focus:border-transparent transition"
+                    placeholder="Digite a resposta"
+                    required
+                    autoComplete="off"
+                  />
+                </div>
+              </div>
+            )}
 
             <div>
               <button
