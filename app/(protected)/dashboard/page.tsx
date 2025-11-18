@@ -328,10 +328,10 @@ export default function DashboardPage() {
       </div>
 
       {/* Content */}
-      <div className="relative z-10 min-h-screen">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <div className="relative z-10 min-h-screen w-full">
+        <div className="w-full px-4 sm:px-6 lg:px-8 xl:px-12 py-6 sm:py-8">
           {/* Header */}
-          <div className="mb-8">
+          <div className="mb-6 sm:mb-8">
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
               <div className="space-y-1">
                 <h1 className="text-3xl sm:text-4xl font-bold text-white">
@@ -356,7 +356,7 @@ export default function DashboardPage() {
             {/* Hero Card */}
             <div className="relative group">
               <div className="absolute -inset-0.5 bg-gradient-to-r from-[#4CAF50] via-[#45a049] to-[#4CAF50] rounded-2xl opacity-20 group-hover:opacity-30 blur transition duration-500 animate-pulse"></div>
-              <div className="relative bg-gradient-to-br from-[#282c34] via-[#282c34] to-[#1e2228] rounded-2xl border border-[#4CAF50]/30 p-8 overflow-hidden">
+              <div className="relative bg-gradient-to-br from-[#282c34] via-[#282c34] to-[#1e2228] rounded-2xl border border-[#4CAF50]/30 p-6 sm:p-8 lg:p-10 overflow-hidden">
                 {/* Network waves animation */}
                 <div className="absolute bottom-0 left-0 right-0 h-32 opacity-20">
                   <svg className="w-full h-full" viewBox="0 0 400 128" preserveAspectRatio="none">
@@ -430,7 +430,7 @@ export default function DashboardPage() {
           </div>
 
           {/* Stats Grid */}
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4 mb-8">
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 2xl:grid-cols-11 gap-4 sm:gap-5 mb-6 sm:mb-8">
             {statsData.map((stat, index) => (
               <div
                 key={index}
@@ -457,7 +457,7 @@ export default function DashboardPage() {
 
           {/* Tarefas */}
           {tarefasStats.total > 0 && (
-            <div className="bg-[#282c34] rounded-xl border border-gray-700/50 p-6 mb-8 hover:border-[#4CAF50]/30 transition-all duration-300">
+            <div className="bg-[#282c34] rounded-xl border border-gray-700/50 p-6 sm:p-8 mb-6 sm:mb-8 hover:border-[#4CAF50]/30 transition-all duration-300">
               <div className="flex items-center justify-between mb-6">
                 <h2 className="text-xl font-bold text-white">Tarefas</h2>
                 <a href="/dashboard/tarefas" className="text-sm text-[#4CAF50] hover:underline flex items-center gap-1 group">
@@ -493,7 +493,7 @@ export default function DashboardPage() {
           )}
 
           {/* Quick Actions */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-6">
             {[
               { href: '/dashboard/lista-pc', title: 'Computadores', desc: 'Gerenciar equipamentos', icon: 'computers' },
               { href: '/dashboard/emails', title: 'Emails', desc: 'Contas e credenciais', icon: 'emails' },
