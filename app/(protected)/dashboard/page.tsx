@@ -430,24 +430,23 @@ export default function DashboardPage() {
           </div>
 
           {/* Stats Grid */}
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 2xl:grid-cols-11 gap-4 sm:gap-5 mb-6 sm:mb-8">
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4 mb-6 sm:mb-8">
             {statsData.map((stat, index) => (
               <div
                 key={index}
-                className="group relative bg-[#282c34] rounded-xl border border-gray-700/50 p-5 hover:border-[#4CAF50]/50 transition-all duration-300 hover:shadow-lg hover:shadow-[#4CAF50]/10 hover:-translate-y-1 cursor-pointer"
-                style={{ animationDelay: `${index * 50}ms` }}
+                className="group relative bg-[#282c34] rounded-xl border border-gray-700/50 p-4 sm:p-5 hover:border-[#4CAF50]/50 transition-all duration-300 hover:shadow-lg hover:shadow-[#4CAF50]/10 hover:-translate-y-1 cursor-pointer"
               >
                 <div className={`absolute inset-0 bg-gradient-to-br ${stat.color} rounded-xl opacity-0 group-hover:opacity-100 transition-opacity duration-300`}></div>
                 <div className="absolute -inset-0.5 bg-gradient-to-r from-[#4CAF50]/0 via-[#4CAF50]/20 to-[#4CAF50]/0 rounded-xl opacity-0 group-hover:opacity-100 blur transition duration-500"></div>
                 
                 <div className="relative z-10">
-                  <div className="flex items-center gap-3 mb-4">
-                    <div className="w-12 h-12 rounded-xl bg-[#4CAF50]/10 border border-[#4CAF50]/20 flex items-center justify-center text-[#4CAF50] group-hover:scale-110 group-hover:rotate-3 transition-all duration-300">
+                  <div className="flex items-center mb-3 sm:mb-4">
+                    <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-[#4CAF50]/10 border border-[#4CAF50]/20 flex items-center justify-center text-[#4CAF50] group-hover:scale-110 group-hover:rotate-3 transition-all duration-300">
                       {getIcon(stat.icon)}
                     </div>
                   </div>
-                  <p className="text-gray-400 text-xs mb-2 font-medium uppercase tracking-wide">{stat.label}</p>
-                  <p className="text-2xl font-bold text-white group-hover:scale-105 transition-transform duration-300">
+                  <p className="text-gray-400 text-xs mb-1 sm:mb-2 font-medium uppercase tracking-wide truncate">{stat.label}</p>
+                  <p className="text-xl sm:text-2xl font-bold text-white group-hover:scale-105 transition-transform duration-300">
                     {(stat.value || 0).toLocaleString('pt-BR')}
                   </p>
                 </div>
