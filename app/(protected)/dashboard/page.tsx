@@ -402,13 +402,13 @@ export default function DashboardPage() {
                 
                 <div className="relative z-10">
                   <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-6">
-                    <div className="space-y-2">
-                      <p className="text-gray-400 text-sm font-medium uppercase tracking-wider">Total de Recursos</p>
-                      <div className="flex items-baseline gap-3">
-                        <p className="text-5xl sm:text-6xl font-bold text-white tracking-tight">
+                    <div className="space-y-1">
+                      <p className="text-gray-400 text-xs font-medium uppercase tracking-wider">Total de Recursos</p>
+                      <div className="flex items-baseline gap-2">
+                        <p className="text-3xl sm:text-4xl font-bold text-white tracking-tight">
                           {(totalItems || 0).toLocaleString('pt-BR')}
                         </p>
-                        <span className="text-gray-500 text-lg">itens</span>
+                        <span className="text-gray-500 text-sm">itens</span>
                       </div>
                     </div>
                     <div className="flex flex-col sm:items-end gap-3">
