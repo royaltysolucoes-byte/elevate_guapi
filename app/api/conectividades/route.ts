@@ -1,7 +1,30 @@
 import { NextRequest, NextResponse } from 'next/server';
 import connectDB from '@/lib/db';
+import mongoose from 'mongoose';
 import Conectividade from '@/lib/models/Conectividade';
 import { verifyToken } from '@/lib/auth';
+
+// Import and ensure models are registered before use
+import Tipo from '@/lib/models/Tipo';
+import Modelo from '@/lib/models/Modelo';
+import Categoria from '@/lib/models/Categoria';
+import Servico from '@/lib/models/Servico';
+
+// Ensure models are registered
+const ensureModelsRegistered = () => {
+  if (!mongoose.models.Tipo) {
+    require('@/lib/models/Tipo');
+  }
+  if (!mongoose.models.Modelo) {
+    require('@/lib/models/Modelo');
+  }
+  if (!mongoose.models.Categoria) {
+    require('@/lib/models/Categoria');
+  }
+  if (!mongoose.models.Servico) {
+    require('@/lib/models/Servico');
+  }
+};
 
 async function checkAuth(request: NextRequest) {
   const token = request.cookies.get('token')?.value;
@@ -26,6 +49,7 @@ export async function GET(request: NextRequest) {
     }
 
     await connectDB();
+    ensureModelsRegistered();
 
     const { searchParams } = new URL(request.url);
     const page = parseInt(searchParams.get('page') || '1');
@@ -99,6 +123,7 @@ export async function POST(request: NextRequest) {
     }
 
     await connectDB();
+    ensureModelsRegistered();
 
     const { nome, ip, categoria, tipo, servico, modelo } = await request.json();
 

@@ -1,7 +1,30 @@
 import { NextRequest, NextResponse } from 'next/server';
 import connectDB from '@/lib/db';
+import mongoose from 'mongoose';
 import RelogioPonto from '@/lib/models/RelogioPonto';
 import { verifyToken } from '@/lib/auth';
+
+// Import and ensure models are registered before use
+import Modelo from '@/lib/models/Modelo';
+import Tipo from '@/lib/models/Tipo';
+import IP from '@/lib/models/IP';
+import Marca from '@/lib/models/Marca';
+
+// Ensure models are registered
+const ensureModelsRegistered = () => {
+  if (!mongoose.models.Modelo) {
+    require('@/lib/models/Modelo');
+  }
+  if (!mongoose.models.Tipo) {
+    require('@/lib/models/Tipo');
+  }
+  if (!mongoose.models.IP) {
+    require('@/lib/models/IP');
+  }
+  if (!mongoose.models.Marca) {
+    require('@/lib/models/Marca');
+  }
+};
 
 async function checkAuth(request: NextRequest) {
   const token = request.cookies.get('token')?.value;
@@ -26,6 +49,7 @@ export async function GET(request: NextRequest) {
     }
 
     await connectDB();
+    ensureModelsRegistered();
 
     const { searchParams } = new URL(request.url);
     const page = parseInt(searchParams.get('page') || '1');
@@ -66,6 +90,7 @@ export async function POST(request: NextRequest) {
     }
 
     await connectDB();
+    ensureModelsRegistered();
 
     const { setor, numeroSerie, tipo, enderecoIP, categoria, faixa, modelo } = await request.json();
 

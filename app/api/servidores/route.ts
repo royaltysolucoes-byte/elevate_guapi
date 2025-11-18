@@ -1,7 +1,22 @@
 import { NextRequest, NextResponse } from 'next/server';
 import connectDB from '@/lib/db';
+import mongoose from 'mongoose';
 import Servidor from '@/lib/models/Servidor';
 import { verifyToken } from '@/lib/auth';
+
+// Import and ensure models are registered before use
+import SistemaOperacional from '@/lib/models/SistemaOperacional';
+import Servico from '@/lib/models/Servico';
+
+// Ensure models are registered
+const ensureModelsRegistered = () => {
+  if (!mongoose.models.SistemaOperacional) {
+    require('@/lib/models/SistemaOperacional');
+  }
+  if (!mongoose.models.Servico) {
+    require('@/lib/models/Servico');
+  }
+};
 
 async function checkAuth(request: NextRequest) {
   const token = request.cookies.get('token')?.value;
@@ -26,6 +41,7 @@ export async function GET(request: NextRequest) {
     }
 
     await connectDB();
+    ensureModelsRegistered();
 
     const { searchParams } = new URL(request.url);
     const page = parseInt(searchParams.get('page') || '1');
@@ -66,6 +82,7 @@ export async function POST(request: NextRequest) {
     }
 
     await connectDB();
+    ensureModelsRegistered();
 
     const { ip, nome, sistemaOperacional, status, servico } = await request.json();
 
