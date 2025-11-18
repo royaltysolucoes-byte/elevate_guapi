@@ -251,7 +251,7 @@ export default function CelularesPage() {
     <div>
       <div className="flex items-center justify-between mb-6">
           <h1 className="text-3xl font-bold text-white">Celulares</h1>
-          {(user?.isAdmin || user?.nivelAcesso === 'admin') && (
+          {user?.nivelAcesso !== 'suporte' && (
             <button
               onClick={handleCreate}
               className="bg-[#4CAF50] hover:bg-[#45a049] text-white px-6 py-3 rounded-lg transition flex items-center gap-2"
@@ -305,9 +305,7 @@ export default function CelularesPage() {
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">Colaborador</th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">Categoria</th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">Modelo</th>
-                  {(user?.isAdmin || user?.nivelAcesso === 'admin') && (
-                    <th className="px-6 py-3 text-right text-xs font-medium text-gray-400 uppercase tracking-wider">Ações</th>
-                  )}
+                  <th className="px-6 py-3 text-right text-xs font-medium text-gray-400 uppercase tracking-wider">Ações</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-700/50">
@@ -326,22 +324,26 @@ export default function CelularesPage() {
                       <td className="px-6 py-4 whitespace-nowrap text-gray-300">
                         {celular.modelo ? `${celular.modelo.marca?.nome || ''} ${celular.modelo.nome}`.trim() : '-'}
                       </td>
-                      {(user?.isAdmin || user?.nivelAcesso === 'admin') && (
-                        <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                          <button
-                            onClick={() => handleEdit(celular)}
-                            className="text-[#4CAF50] hover:text-[#45a049] mr-4"
-                          >
-                            Editar
-                          </button>
-                          <button
-                            onClick={() => handleDelete(celular._id)}
-                            className="text-red-400 hover:text-red-300"
-                          >
-                            Excluir
-                          </button>
-                        </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                    <div className="flex items-center justify-end gap-3">
+                      {user?.nivelAcesso !== 'suporte' && (
+                        <button
+                          onClick={() => handleEdit(celular)}
+                          className="text-[#4CAF50] hover:text-[#45a049]"
+                        >
+                          Editar
+                        </button>
                       )}
+                      {(user?.isAdmin || user?.nivelAcesso === 'admin') && (
+                        <button
+                          onClick={() => handleDelete(celular._id)}
+                          className="text-red-400 hover:text-red-300"
+                        >
+                          Excluir
+                        </button>
+                      )}
+                    </div>
+                  </td>
                     </tr>
                   ))
                 )}

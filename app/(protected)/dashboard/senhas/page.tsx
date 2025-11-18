@@ -2,6 +2,14 @@
 
 import { useEffect, useState, useRef } from 'react';
 
+interface User {
+  username: string;
+  fullName: string;
+  funcao: string;
+  isAdmin: boolean;
+  nivelAcesso?: string;
+}
+
 interface SenhaType {
   _id: string;
   id: string;
@@ -26,6 +34,7 @@ interface ServicoType {
 }
 
 export default function SenhasPage() {
+  const [user, setUser] = useState<User | null>(null);
   const [senhas, setSenhas] = useState<SenhaType[]>([]);
   const [categorias, setCategorias] = useState<CategoriaType[]>([]);
   const [servicos, setServicos] = useState<ServicoType[]>([]);
@@ -47,9 +56,22 @@ export default function SenhasPage() {
   const isFirstRender = useRef(true);
 
   useEffect(() => {
+    fetchUser();
     fetchCategorias();
     fetchServicos();
   }, []);
+
+  const fetchUser = async () => {
+    try {
+      const response = await fetch('/api/users/profile');
+      if (response.ok) {
+        const data = await response.json();
+        setUser(data.user);
+      }
+    } catch (error) {
+      console.error('Error fetching user:', error);
+    }
+  };
 
   useEffect(() => {
     fetchSenhas(true); // Mostra loading apenas na mudança de página
@@ -232,15 +254,17 @@ export default function SenhasPage() {
     <div>
       <div className="flex justify-between items-center mb-8">
         <h1 className="text-3xl font-bold text-white">Senhas</h1>
-        <button
-          onClick={() => setShowModal(true)}
-          className="bg-[#4CAF50] hover:bg-[#45a049] text-white font-semibold px-6 py-3 rounded-lg transition duration-200 flex items-center"
-        >
-          <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-          </svg>
-          Nova Senha
-        </button>
+        {user?.nivelAcesso !== 'suporte' && (
+          <button
+            onClick={() => setShowModal(true)}
+            className="bg-[#4CAF50] hover:bg-[#45a049] text-white font-semibold px-6 py-3 rounded-lg transition duration-200 flex items-center"
+          >
+            <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+            </svg>
+            Nova Senha
+          </button>
+        )}
       </div>
 
       <form onSubmit={handleSearch} className="mb-6">
@@ -336,18 +360,24 @@ export default function SenhasPage() {
                   {formatDate(senha.createdAt)}
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                  <button
-                    onClick={() => handleEdit(senha)}
-                    className="text-blue-400 hover:text-blue-300 mr-4"
-                  >
-                    Editar
-                  </button>
-                  <button
-                    onClick={() => handleDelete(senha._id)}
-                    className="text-red-400 hover:text-red-300"
-                  >
-                    Excluir
-                  </button>
+                  <div className="flex items-center justify-end gap-3">
+                    {user?.nivelAcesso !== 'suporte' && (
+                      <button
+                        onClick={() => handleEdit(senha)}
+                        className="text-blue-400 hover:text-blue-300"
+                      >
+                        Editar
+                      </button>
+                    )}
+                    {(user?.isAdmin || user?.nivelAcesso === 'admin') && (
+                      <button
+                        onClick={() => handleDelete(senha._id)}
+                        className="text-red-400 hover:text-red-300"
+                      >
+                        Excluir
+                      </button>
+                    )}
+                  </div>
                 </td>
               </tr>
             ))}
