@@ -262,162 +262,288 @@ export default function DashboardPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[#1e2228]">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Header com animação */}
-        <div className="mb-8">
-          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
-            <div className="space-y-1">
-              <h1 className="text-3xl sm:text-4xl font-bold text-white">
-                Dashboard
-              </h1>
-              <p className="text-gray-400">
-                {user?.fullName ? `Olá, ${user.fullName}` : 'Visão geral do sistema'}
-              </p>
-            </div>
-            <button
-              onClick={handleRefresh}
-              disabled={refreshing}
-              className="group flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-[#4CAF50] to-[#45a049] hover:from-[#45a049] hover:to-[#4CAF50] text-white rounded-lg transition-all duration-300 disabled:opacity-50 text-sm font-medium shadow-lg shadow-[#4CAF50]/20 hover:shadow-xl hover:shadow-[#4CAF50]/30 transform hover:scale-105"
-            >
-              <svg className={`w-4 h-4 ${refreshing ? 'animate-spin' : 'group-hover:rotate-180 transition-transform duration-300'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-              </svg>
-              {refreshing ? 'Atualizando...' : 'Atualizar'}
-            </button>
-          </div>
+    <div className="min-h-screen bg-[#1e2228] relative overflow-hidden">
+      {/* Network Grid Background */}
+      <div className="fixed inset-0 opacity-20 pointer-events-none">
+        <svg className="w-full h-full" xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <pattern id="grid" width="50" height="50" patternUnits="userSpaceOnUse">
+              <path d="M 50 0 L 0 0 0 50" fill="none" stroke="#4CAF50" strokeWidth="0.5" opacity="0.3"/>
+            </pattern>
+          </defs>
+          <rect width="100%" height="100%" fill="url(#grid)" />
+        </svg>
+      </div>
 
-          {/* Hero Card com animações */}
-          <div className="relative group">
-            <div className="absolute -inset-0.5 bg-gradient-to-r from-[#4CAF50] via-[#45a049] to-[#4CAF50] rounded-2xl opacity-20 group-hover:opacity-30 blur transition duration-500 animate-pulse"></div>
-            <div className="relative bg-gradient-to-br from-[#282c34] via-[#282c34] to-[#1e2228] rounded-2xl border border-[#4CAF50]/30 p-8 overflow-hidden">
-              {/* Background animado */}
-              <div className="absolute inset-0 bg-gradient-to-r from-[#4CAF50]/5 via-transparent to-[#4CAF50]/5 animate-[shimmer_3s_ease-in-out_infinite]"></div>
-              
-              <div className="relative z-10">
-                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-6">
-                  <div className="space-y-2">
-                    <p className="text-gray-400 text-sm font-medium uppercase tracking-wider">Total de Recursos</p>
-                    <div className="flex items-baseline gap-3">
-                      <p className="text-5xl sm:text-6xl font-bold text-white tracking-tight">
-                        {(totalItems || 0).toLocaleString('pt-BR')}
-                      </p>
-                      <span className="text-gray-500 text-lg">itens</span>
-                    </div>
-                  </div>
-                  <div className="flex flex-col sm:items-end gap-3">
-                    <div className="flex items-center gap-2 px-3 py-1.5 bg-[#4CAF50]/10 rounded-full border border-[#4CAF50]/30">
-                      <div className="w-2 h-2 bg-[#4CAF50] rounded-full animate-pulse"></div>
-                      <span className="text-[#4CAF50] font-semibold text-sm">Sistema Online</span>
-                    </div>
-                    <div className="flex items-center gap-2 text-gray-400 text-sm">
-                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                      </svg>
-                      <span className="font-mono">{currentTime.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit', second: '2-digit' })}</span>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
+      {/* Animated Network Lines */}
+      <div className="fixed inset-0 opacity-10 pointer-events-none">
+        {[...Array(8)].map((_, i) => (
+          <div
+            key={i}
+            className="absolute"
+            style={{
+              left: `${(i * 12.5) % 100}%`,
+              top: `${(i * 15) % 100}%`,
+              width: '2px',
+              height: '200px',
+              background: `linear-gradient(to bottom, transparent, #4CAF50, transparent)`,
+              animation: `network-line-${i % 3} ${3 + (i % 3)}s ease-in-out infinite`,
+              animationDelay: `${i * 0.3}s`,
+            }}
+          />
+        ))}
+      </div>
 
-        {/* Stats Grid com animações */}
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4 mb-8">
-          {statsData.map((stat, index) => (
-            <div
-              key={index}
-              className="group relative bg-[#282c34] rounded-xl border border-gray-700/50 p-5 hover:border-[#4CAF50]/50 transition-all duration-300 hover:shadow-lg hover:shadow-[#4CAF50]/10 hover:-translate-y-1 cursor-pointer"
-              style={{ animationDelay: `${index * 50}ms` }}
-            >
-              {/* Gradient overlay no hover */}
-              <div className={`absolute inset-0 bg-gradient-to-br ${stat.color} rounded-xl opacity-0 group-hover:opacity-100 transition-opacity duration-300`}></div>
-              
-              {/* Glow effect */}
-              <div className="absolute -inset-0.5 bg-gradient-to-r from-[#4CAF50]/0 via-[#4CAF50]/20 to-[#4CAF50]/0 rounded-xl opacity-0 group-hover:opacity-100 blur transition duration-500"></div>
-              
-              <div className="relative z-10">
-                <div className="flex items-center gap-3 mb-4">
-                  <div className="w-12 h-12 rounded-xl bg-[#4CAF50]/10 border border-[#4CAF50]/20 flex items-center justify-center text-[#4CAF50] group-hover:scale-110 group-hover:rotate-3 transition-all duration-300">
-                    {getIcon(stat.icon)}
-                  </div>
-                </div>
-                <p className="text-gray-400 text-xs mb-2 font-medium uppercase tracking-wide">{stat.label}</p>
-                <p className="text-2xl font-bold text-white group-hover:scale-105 transition-transform duration-300">
-                  {(stat.value || 0).toLocaleString('pt-BR')}
+      {/* Floating Particles */}
+      <div className="fixed inset-0 pointer-events-none">
+        {[...Array(20)].map((_, i) => (
+          <div
+            key={i}
+            className="absolute w-1 h-1 bg-[#4CAF50] rounded-full opacity-40"
+            style={{
+              left: `${Math.random() * 100}%`,
+              top: `${Math.random() * 100}%`,
+              animation: `float-particle ${5 + Math.random() * 5}s ease-in-out infinite`,
+              animationDelay: `${Math.random() * 2}s`,
+            }}
+          />
+        ))}
+      </div>
+
+      {/* Pulsing Nodes */}
+      <div className="fixed inset-0 pointer-events-none">
+        {[...Array(6)].map((_, i) => (
+          <div
+            key={i}
+            className="absolute w-3 h-3 bg-[#4CAF50] rounded-full"
+            style={{
+              left: `${20 + (i * 15)}%`,
+              top: `${30 + (i % 3) * 20}%`,
+              animation: `pulse-node ${2 + (i % 2)}s ease-in-out infinite`,
+              animationDelay: `${i * 0.5}s`,
+              boxShadow: '0 0 10px #4CAF50, 0 0 20px #4CAF50',
+            }}
+          />
+        ))}
+      </div>
+
+      {/* Content */}
+      <div className="relative z-10 min-h-screen">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+          {/* Header */}
+          <div className="mb-8">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
+              <div className="space-y-1">
+                <h1 className="text-3xl sm:text-4xl font-bold text-white">
+                  Dashboard
+                </h1>
+                <p className="text-gray-400">
+                  {user?.fullName ? `Olá, ${user.fullName}` : 'Visão geral do sistema'}
                 </p>
               </div>
-            </div>
-          ))}
-        </div>
-
-        {/* Tarefas com animação */}
-        {tarefasStats.total > 0 && (
-          <div className="bg-[#282c34] rounded-xl border border-gray-700/50 p-6 mb-8 hover:border-[#4CAF50]/30 transition-all duration-300">
-            <div className="flex items-center justify-between mb-6">
-              <h2 className="text-xl font-bold text-white">Tarefas</h2>
-              <a href="/dashboard/tarefas" className="text-sm text-[#4CAF50] hover:underline flex items-center gap-1 group">
-                Ver todas
-                <svg className="w-4 h-4 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+              <button
+                onClick={handleRefresh}
+                disabled={refreshing}
+                className="group flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-[#4CAF50] to-[#45a049] hover:from-[#45a049] hover:to-[#4CAF50] text-white rounded-lg transition-all duration-300 disabled:opacity-50 text-sm font-medium shadow-lg shadow-[#4CAF50]/20 hover:shadow-xl hover:shadow-[#4CAF50]/30 transform hover:scale-105"
+              >
+                <svg className={`w-4 h-4 ${refreshing ? 'animate-spin' : 'group-hover:rotate-180 transition-transform duration-300'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
                 </svg>
-              </a>
+                {refreshing ? 'Atualizando...' : 'Atualizar'}
+              </button>
             </div>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-              <div className="bg-[#1e2228] rounded-lg p-5 text-center border border-gray-700/30 hover:border-gray-600/50 transition-colors">
-                <p className="text-gray-400 text-xs mb-2 uppercase tracking-wide">Total</p>
-                <p className="text-3xl font-bold text-white">{tarefasStats.total}</p>
-              </div>
-              <div className="bg-[#1e2228] rounded-lg p-5 text-center border border-[#4CAF50]/30 hover:border-[#4CAF50]/50 transition-colors group">
-                <p className="text-gray-400 text-xs mb-2 uppercase tracking-wide">Concluídas</p>
-                <p className="text-3xl font-bold text-[#4CAF50] group-hover:scale-110 transition-transform duration-300">{tarefasStats.porStatus.done}</p>
-              </div>
-              <div className="bg-[#1e2228] rounded-lg p-5 text-center border border-gray-700/30 hover:border-gray-600/50 transition-colors">
-                <p className="text-gray-400 text-xs mb-2 uppercase tracking-wide">Em Andamento</p>
-                <p className="text-3xl font-bold text-white">{tarefasStats.porStatus['in-progress']}</p>
-              </div>
-              <div className={`bg-[#1e2228] rounded-lg p-5 text-center border transition-colors ${tarefasStats.atrasadas > 0 ? 'border-red-500/30 hover:border-red-500/50' : 'border-gray-700/30 hover:border-gray-600/50'}`}>
-                <p className={`text-xs mb-2 uppercase tracking-wide ${tarefasStats.atrasadas > 0 ? 'text-red-400' : 'text-gray-400'}`}>
-                  Atrasadas
-                </p>
-                <p className={`text-3xl font-bold ${tarefasStats.atrasadas > 0 ? 'text-red-400' : 'text-gray-600'}`}>
-                  {tarefasStats.atrasadas || 0}
-                </p>
+
+            {/* Hero Card */}
+            <div className="relative group">
+              <div className="absolute -inset-0.5 bg-gradient-to-r from-[#4CAF50] via-[#45a049] to-[#4CAF50] rounded-2xl opacity-20 group-hover:opacity-30 blur transition duration-500 animate-pulse"></div>
+              <div className="relative bg-gradient-to-br from-[#282c34] via-[#282c34] to-[#1e2228] rounded-2xl border border-[#4CAF50]/30 p-8 overflow-hidden">
+                {/* Network waves animation */}
+                <div className="absolute bottom-0 left-0 right-0 h-32 opacity-20">
+                  <svg className="w-full h-full" viewBox="0 0 400 128" preserveAspectRatio="none">
+                    <path
+                      d="M0,64 Q100,32 200,64 T400,64 L400,128 L0,128 Z"
+                      fill="url(#waveGradient1)"
+                      opacity="0.6"
+                    >
+                      <animate
+                        attributeName="d"
+                        values="M0,64 Q100,32 200,64 T400,64 L400,128 L0,128 Z;M0,64 Q100,96 200,64 T400,64 L400,128 L0,128 Z;M0,64 Q100,32 200,64 T400,64 L400,128 L0,128 Z"
+                        dur="4s"
+                        repeatCount="indefinite"
+                      />
+                    </path>
+                    <path
+                      d="M0,80 Q150,48 300,80 T400,80 L400,128 L0,128 Z"
+                      fill="url(#waveGradient2)"
+                      opacity="0.4"
+                    >
+                      <animate
+                        attributeName="d"
+                        values="M0,80 Q150,48 300,80 T400,80 L400,128 L0,128 Z;M0,80 Q150,112 300,80 T400,80 L400,128 L0,128 Z;M0,80 Q150,48 300,80 T400,80 L400,128 L0,128 Z"
+                        dur="5s"
+                        repeatCount="indefinite"
+                      />
+                    </path>
+                    <defs>
+                      <linearGradient id="waveGradient1" x1="0%" y1="0%" x2="0%" y2="100%">
+                        <stop offset="0%" stopColor="#4CAF50" stopOpacity="0.8" />
+                        <stop offset="100%" stopColor="#4CAF50" stopOpacity="0" />
+                      </linearGradient>
+                      <linearGradient id="waveGradient2" x1="0%" y1="0%" x2="0%" y2="100%">
+                        <stop offset="0%" stopColor="#4CAF50" stopOpacity="0.6" />
+                        <stop offset="100%" stopColor="#4CAF50" stopOpacity="0" />
+                      </linearGradient>
+                    </defs>
+                  </svg>
+                </div>
+
+                {/* Shimmer effect */}
+                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/5 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000"></div>
+                
+                <div className="relative z-10">
+                  <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-6">
+                    <div className="space-y-2">
+                      <p className="text-gray-400 text-sm font-medium uppercase tracking-wider">Total de Recursos</p>
+                      <div className="flex items-baseline gap-3">
+                        <p className="text-5xl sm:text-6xl font-bold text-white tracking-tight">
+                          {(totalItems || 0).toLocaleString('pt-BR')}
+                        </p>
+                        <span className="text-gray-500 text-lg">itens</span>
+                      </div>
+                    </div>
+                    <div className="flex flex-col sm:items-end gap-3">
+                      <div className="flex items-center gap-2 px-3 py-1.5 bg-[#4CAF50]/10 rounded-full border border-[#4CAF50]/30">
+                        <div className="w-2 h-2 bg-[#4CAF50] rounded-full animate-pulse"></div>
+                        <span className="text-[#4CAF50] font-semibold text-sm">Sistema Online</span>
+                      </div>
+                      <div className="flex items-center gap-2 text-gray-400 text-sm">
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                        <span className="font-mono">{currentTime.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit', second: '2-digit' })}</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
-        )}
 
-        {/* Quick Actions com animações */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          {[
-            { href: '/dashboard/lista-pc', title: 'Computadores', desc: 'Gerenciar equipamentos', icon: 'computers' },
-            { href: '/dashboard/emails', title: 'Emails', desc: 'Contas e credenciais', icon: 'emails' },
-            { href: '/dashboard/tarefas', title: 'Tarefas', desc: 'Kanban e gestão', icon: 'clocks' },
-          ].map((action, index) => (
-            <a
-              key={index}
-              href={action.href}
-              className="group relative bg-[#282c34] rounded-xl border border-gray-700/50 p-6 hover:border-[#4CAF50]/50 transition-all duration-300 hover:shadow-xl hover:shadow-[#4CAF50]/10 hover:-translate-y-1 overflow-hidden"
-            >
-              {/* Background gradient no hover */}
-              <div className="absolute inset-0 bg-gradient-to-br from-[#4CAF50]/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-              
-              {/* Glow effect */}
-              <div className="absolute -inset-0.5 bg-gradient-to-r from-[#4CAF50]/0 via-[#4CAF50]/20 to-[#4CAF50]/0 rounded-xl opacity-0 group-hover:opacity-100 blur transition duration-500"></div>
-              
-              <div className="relative z-10">
-                <div className="w-14 h-14 rounded-xl bg-[#4CAF50]/10 border border-[#4CAF50]/20 flex items-center justify-center mb-4 text-[#4CAF50] group-hover:scale-110 group-hover:rotate-3 transition-all duration-300">
-                  {getIcon(action.icon)}
+          {/* Stats Grid */}
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4 mb-8">
+            {statsData.map((stat, index) => (
+              <div
+                key={index}
+                className="group relative bg-[#282c34] rounded-xl border border-gray-700/50 p-5 hover:border-[#4CAF50]/50 transition-all duration-300 hover:shadow-lg hover:shadow-[#4CAF50]/10 hover:-translate-y-1 cursor-pointer"
+                style={{ animationDelay: `${index * 50}ms` }}
+              >
+                <div className={`absolute inset-0 bg-gradient-to-br ${stat.color} rounded-xl opacity-0 group-hover:opacity-100 transition-opacity duration-300`}></div>
+                <div className="absolute -inset-0.5 bg-gradient-to-r from-[#4CAF50]/0 via-[#4CAF50]/20 to-[#4CAF50]/0 rounded-xl opacity-0 group-hover:opacity-100 blur transition duration-500"></div>
+                
+                <div className="relative z-10">
+                  <div className="flex items-center gap-3 mb-4">
+                    <div className="w-12 h-12 rounded-xl bg-[#4CAF50]/10 border border-[#4CAF50]/20 flex items-center justify-center text-[#4CAF50] group-hover:scale-110 group-hover:rotate-3 transition-all duration-300">
+                      {getIcon(stat.icon)}
+                    </div>
+                  </div>
+                  <p className="text-gray-400 text-xs mb-2 font-medium uppercase tracking-wide">{stat.label}</p>
+                  <p className="text-2xl font-bold text-white group-hover:scale-105 transition-transform duration-300">
+                    {(stat.value || 0).toLocaleString('pt-BR')}
+                  </p>
                 </div>
-                <h3 className="text-lg font-bold text-white mb-1 group-hover:text-[#4CAF50] transition-colors">{action.title}</h3>
-                <p className="text-sm text-gray-400">{action.desc}</p>
               </div>
-            </a>
-          ))}
+            ))}
+          </div>
+
+          {/* Tarefas */}
+          {tarefasStats.total > 0 && (
+            <div className="bg-[#282c34] rounded-xl border border-gray-700/50 p-6 mb-8 hover:border-[#4CAF50]/30 transition-all duration-300">
+              <div className="flex items-center justify-between mb-6">
+                <h2 className="text-xl font-bold text-white">Tarefas</h2>
+                <a href="/dashboard/tarefas" className="text-sm text-[#4CAF50] hover:underline flex items-center gap-1 group">
+                  Ver todas
+                  <svg className="w-4 h-4 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                  </svg>
+                </a>
+              </div>
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <div className="bg-[#1e2228] rounded-lg p-5 text-center border border-gray-700/30 hover:border-gray-600/50 transition-colors">
+                  <p className="text-gray-400 text-xs mb-2 uppercase tracking-wide">Total</p>
+                  <p className="text-3xl font-bold text-white">{tarefasStats.total}</p>
+                </div>
+                <div className="bg-[#1e2228] rounded-lg p-5 text-center border border-[#4CAF50]/30 hover:border-[#4CAF50]/50 transition-colors group">
+                  <p className="text-gray-400 text-xs mb-2 uppercase tracking-wide">Concluídas</p>
+                  <p className="text-3xl font-bold text-[#4CAF50] group-hover:scale-110 transition-transform duration-300">{tarefasStats.porStatus.done}</p>
+                </div>
+                <div className="bg-[#1e2228] rounded-lg p-5 text-center border border-gray-700/30 hover:border-gray-600/50 transition-colors">
+                  <p className="text-gray-400 text-xs mb-2 uppercase tracking-wide">Em Andamento</p>
+                  <p className="text-3xl font-bold text-white">{tarefasStats.porStatus['in-progress']}</p>
+                </div>
+                <div className={`bg-[#1e2228] rounded-lg p-5 text-center border transition-colors ${tarefasStats.atrasadas > 0 ? 'border-red-500/30 hover:border-red-500/50' : 'border-gray-700/30 hover:border-gray-600/50'}`}>
+                  <p className={`text-xs mb-2 uppercase tracking-wide ${tarefasStats.atrasadas > 0 ? 'text-red-400' : 'text-gray-400'}`}>
+                    Atrasadas
+                  </p>
+                  <p className={`text-3xl font-bold ${tarefasStats.atrasadas > 0 ? 'text-red-400' : 'text-gray-600'}`}>
+                    {tarefasStats.atrasadas || 0}
+                  </p>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Quick Actions */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {[
+              { href: '/dashboard/lista-pc', title: 'Computadores', desc: 'Gerenciar equipamentos', icon: 'computers' },
+              { href: '/dashboard/emails', title: 'Emails', desc: 'Contas e credenciais', icon: 'emails' },
+              { href: '/dashboard/tarefas', title: 'Tarefas', desc: 'Kanban e gestão', icon: 'clocks' },
+            ].map((action, index) => (
+              <a
+                key={index}
+                href={action.href}
+                className="group relative bg-[#282c34] rounded-xl border border-gray-700/50 p-6 hover:border-[#4CAF50]/50 transition-all duration-300 hover:shadow-xl hover:shadow-[#4CAF50]/10 hover:-translate-y-1 overflow-hidden"
+              >
+                <div className="absolute inset-0 bg-gradient-to-br from-[#4CAF50]/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                <div className="absolute -inset-0.5 bg-gradient-to-r from-[#4CAF50]/0 via-[#4CAF50]/20 to-[#4CAF50]/0 rounded-xl opacity-0 group-hover:opacity-100 blur transition duration-500"></div>
+                
+                <div className="relative z-10">
+                  <div className="w-14 h-14 rounded-xl bg-[#4CAF50]/10 border border-[#4CAF50]/20 flex items-center justify-center mb-4 text-[#4CAF50] group-hover:scale-110 group-hover:rotate-3 transition-all duration-300">
+                    {getIcon(action.icon)}
+                  </div>
+                  <h3 className="text-lg font-bold text-white mb-1 group-hover:text-[#4CAF50] transition-colors">{action.title}</h3>
+                  <p className="text-sm text-gray-400">{action.desc}</p>
+                </div>
+              </a>
+            ))}
+          </div>
         </div>
       </div>
+
+      <style jsx>{`
+        @keyframes network-line-0 {
+          0%, 100% { opacity: 0; transform: translateY(-20px); }
+          50% { opacity: 1; transform: translateY(20px); }
+        }
+        @keyframes network-line-1 {
+          0%, 100% { opacity: 0; transform: translateY(-30px); }
+          50% { opacity: 1; transform: translateY(30px); }
+        }
+        @keyframes network-line-2 {
+          0%, 100% { opacity: 0; transform: translateY(-25px); }
+          50% { opacity: 1; transform: translateY(25px); }
+        }
+        @keyframes float-particle {
+          0%, 100% { transform: translate(0, 0) scale(1); opacity: 0.4; }
+          25% { transform: translate(20px, -20px) scale(1.2); opacity: 0.8; }
+          50% { transform: translate(-15px, -40px) scale(0.8); opacity: 0.6; }
+          75% { transform: translate(-20px, -20px) scale(1.1); opacity: 0.7; }
+        }
+        @keyframes pulse-node {
+          0%, 100% { transform: scale(1); opacity: 0.6; }
+          50% { transform: scale(1.5); opacity: 1; }
+        }
+      `}</style>
     </div>
   );
 }
