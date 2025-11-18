@@ -8,9 +8,36 @@ interface User {
   funcao: string;
 }
 
+interface Stats {
+  totalUsers: number;
+  totalPCs: number;
+  totalIPs: number;
+  totalEmails: number;
+  totalSenhas: number;
+  totalImpressoras: number;
+  totalAutomacoes: number;
+  totalRelogios: number;
+  totalServidores: number;
+  totalConectividades: number;
+  totalCelulares: number;
+}
+
+interface TarefasStats {
+  total: number;
+  porStatus: { todo: number; 'in-progress': number; review: number; done: number };
+  porPrioridade: { baixa: number; media: number; alta: number; urgente: number };
+  atrasadas: number;
+}
+
+interface StatCard {
+  label: string;
+  value: number;
+  iconType: string;
+}
+
 export default function DashboardPage() {
   const [user, setUser] = useState<User | null>(null);
-  const [stats, setStats] = useState({
+  const [stats, setStats] = useState<Stats>({
     totalUsers: 0,
     totalPCs: 0,
     totalIPs: 0,
@@ -23,7 +50,7 @@ export default function DashboardPage() {
     totalConectividades: 0,
     totalCelulares: 0,
   });
-  const [tarefasStats, setTarefasStats] = useState({
+  const [tarefasStats, setTarefasStats] = useState<TarefasStats>({
     total: 0,
     porStatus: { todo: 0, 'in-progress': 0, review: 0, done: 0 },
     porPrioridade: { baixa: 0, media: 0, alta: 0, urgente: 0 },
@@ -40,14 +67,9 @@ export default function DashboardPage() {
   }, []);
 
   useEffect(() => {
-    const handleFocus = () => {
-      fetchStats();
-    };
-
+    const handleFocus = () => fetchStats();
     const handleVisibilityChange = () => {
-      if (!document.hidden) {
-        fetchStats();
-      }
+      if (!document.hidden) fetchStats();
     };
 
     window.addEventListener('focus', handleFocus);
@@ -60,10 +82,7 @@ export default function DashboardPage() {
   }, []);
 
   useEffect(() => {
-    const timer = setInterval(() => {
-      setCurrentTime(new Date());
-    }, 1000);
-
+    const timer = setInterval(() => setCurrentTime(new Date()), 1000);
     return () => clearInterval(timer);
   }, []);
 
@@ -83,7 +102,20 @@ export default function DashboardPage() {
 
   const fetchStats = async (isManualRefresh = false) => {
     try {
-      const [usersRes, pcsRes, ipsRes, emailsRes, senhasRes, impressorasRes, automacoesRes, relogiosRes, servidoresRes, conectividadesRes, celularesRes, tarefasRes] = await Promise.all([
+      const [
+        usersRes,
+        pcsRes,
+        ipsRes,
+        emailsRes,
+        senhasRes,
+        impressorasRes,
+        automacoesRes,
+        relogiosRes,
+        servidoresRes,
+        conectividadesRes,
+        celularesRes,
+        tarefasRes,
+      ] = await Promise.all([
         fetch('/api/users'),
         fetch('/api/computadores?page=1'),
         fetch('/api/ips?page=1'),
@@ -98,7 +130,7 @@ export default function DashboardPage() {
         fetch('/api/tarefas/stats'),
       ]);
 
-      const statsData = {
+      const statsData: Stats = {
         totalUsers: usersRes.ok ? (await usersRes.json()).users.length : 0,
         totalPCs: pcsRes.ok ? (await pcsRes.json()).pagination.total : 0,
         totalIPs: ipsRes.ok ? (await ipsRes.json()).pagination.total : 0,
@@ -112,21 +144,21 @@ export default function DashboardPage() {
         totalCelulares: celularesRes.ok ? (await celularesRes.json()).pagination.total : 0,
       };
 
-      const tarefasData = tarefasRes.ok ? (await tarefasRes.json()).stats : {
-        total: 0,
-        porStatus: { todo: 0, 'in-progress': 0, review: 0, done: 0 },
-        porPrioridade: { baixa: 0, media: 0, alta: 0, urgente: 0 },
-        atrasadas: 0,
-      };
+      const tarefasData: TarefasStats = tarefasRes.ok
+        ? (await tarefasRes.json()).stats
+        : {
+            total: 0,
+            porStatus: { todo: 0, 'in-progress': 0, review: 0, done: 0 },
+            porPrioridade: { baixa: 0, media: 0, alta: 0, urgente: 0 },
+            atrasadas: 0,
+          };
 
       setStats(statsData);
       setTarefasStats(tarefasData);
       setLastUpdate(new Date());
-      if (isManualRefresh) {
-        setRefreshing(false);
-      }
     } catch (error) {
       console.error('Error fetching stats:', error);
+    } finally {
       if (isManualRefresh) {
         setRefreshing(false);
       }
@@ -138,36 +170,39 @@ export default function DashboardPage() {
     await fetchStats(true);
   };
 
-  const formatLastUpdate = (date: Date | null) => {
+  const formatLastUpdate = (date: Date | null): string => {
     if (!date) return 'Nunca atualizado';
-    
+
     const now = new Date();
     const diff = Math.floor((now.getTime() - date.getTime()) / 1000);
-    
+
     if (diff < 60) return `Há ${diff}s`;
-    if (diff < 3600) {
-      const minutes = Math.floor(diff / 60);
-      return `Há ${minutes}min`;
-    }
-    if (diff < 86400) {
-      const hours = Math.floor(diff / 3600);
-      return `Há ${hours}h`;
-    }
-    
+    if (diff < 3600) return `Há ${Math.floor(diff / 60)}min`;
+    if (diff < 86400) return `Há ${Math.floor(diff / 3600)}h`;
+
     return date.toLocaleDateString('pt-BR', {
       day: '2-digit',
       month: '2-digit',
       hour: '2-digit',
-      minute: '2-digit'
+      minute: '2-digit',
     });
   };
 
-  const totalItems = stats.totalUsers + stats.totalPCs + stats.totalIPs + stats.totalEmails + 
-                     stats.totalSenhas + stats.totalImpressoras + stats.totalAutomacoes + 
-                     stats.totalRelogios + stats.totalServidores + stats.totalConectividades + stats.totalCelulares;
+  const totalItems =
+    stats.totalUsers +
+    stats.totalPCs +
+    stats.totalIPs +
+    stats.totalEmails +
+    stats.totalSenhas +
+    stats.totalImpressoras +
+    stats.totalAutomacoes +
+    stats.totalRelogios +
+    stats.totalServidores +
+    stats.totalConectividades +
+    stats.totalCelulares;
 
   const getIcon = (type: string): React.ReactElement => {
-    const iconClass = "w-5 h-5";
+    const iconClass = 'w-5 h-5';
     const icons: { [key: string]: React.ReactElement } = {
       users: (
         <svg className={iconClass} fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -228,7 +263,7 @@ export default function DashboardPage() {
     return icons[type] || <div className={iconClass} />;
   };
 
-  const statsCards = [
+  const statsCards: StatCard[] = [
     { label: 'Usuários', value: stats.totalUsers, iconType: 'users' },
     { label: 'Computadores', value: stats.totalPCs, iconType: 'computers' },
     { label: 'IPs / VLANs', value: stats.totalIPs, iconType: 'ips' },
@@ -254,59 +289,88 @@ export default function DashboardPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[#1e2228]">
-      {/* Header */}
-      <div className="bg-[#282c34] border-b border-gray-700/50">
-        <div className="p-6">
-          <div className="flex items-center justify-between mb-6">
+    <div className="min-h-screen bg-[#1e2228] pb-8">
+      {/* Hero Section */}
+      <div className="bg-gradient-to-br from-[#282c34] via-[#282c34] to-[#1e2228] border-b border-gray-800/50">
+        <div className="p-4 md:p-6">
+          {/* Header */}
+          <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 mb-6">
             <div>
-              <h1 className="text-2xl font-bold text-white mb-1">
+              <h1 className="text-2xl md:text-3xl font-bold text-white mb-1">
                 Bem-vindo, <span className="text-[#4CAF50]">{user?.fullName || 'Usuário'}</span>
               </h1>
               <p className="text-gray-400 text-sm">Visão geral do sistema</p>
             </div>
-            <button
-              onClick={handleRefresh}
-              disabled={refreshing}
-              className="px-4 py-2 bg-[#4CAF50] hover:bg-[#45a049] text-white rounded-lg transition disabled:opacity-50 flex items-center gap-2 text-sm"
-            >
-              <svg
-                className={`w-4 h-4 ${refreshing ? 'animate-spin' : ''}`}
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
+            <div className="flex items-center gap-3">
+              {lastUpdate && (
+                <div className="hidden md:flex items-center gap-1.5 text-gray-500 text-xs">
+                  <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                  <span>{formatLastUpdate(lastUpdate)}</span>
+                </div>
+              )}
+              <button
+                onClick={handleRefresh}
+                disabled={refreshing}
+                className="flex items-center gap-2 px-4 py-2 bg-[#4CAF50] hover:bg-[#45a049] text-white rounded-lg transition-all disabled:opacity-50 text-sm font-medium shadow-lg shadow-[#4CAF50]/20"
               >
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-              </svg>
-              {refreshing ? 'Atualizando...' : 'Atualizar'}
-            </button>
+                <svg
+                  className={`w-4 h-4 ${refreshing ? 'animate-spin' : ''}`}
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                </svg>
+                {refreshing ? 'Atualizando...' : 'Atualizar'}
+              </button>
+            </div>
           </div>
 
-          {/* Total Resources Card */}
-          <div className="bg-gradient-to-br from-[#4CAF50]/20 to-[#4CAF50]/5 rounded-lg border border-[#4CAF50]/30 p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-gray-400 text-sm mb-2">Recursos Cadastrados</p>
-                <p className="text-4xl font-bold text-white">
-                  {(totalItems || 0).toLocaleString('pt-BR')}
-                  <span className="text-lg text-gray-400 ml-2">itens</span>
-                </p>
-              </div>
-              <div className="text-right">
-                <div className="flex items-center gap-2 mb-2 justify-end">
-                  <div className="w-2 h-2 bg-[#4CAF50] rounded-full animate-pulse"></div>
-                  <span className="text-[#4CAF50] text-sm font-medium">Sistema Online</span>
+          {/* Total Resources Hero Card */}
+          <div className="relative bg-gradient-to-br from-[#4CAF50]/20 via-[#4CAF50]/10 to-transparent rounded-xl border border-[#4CAF50]/30 p-5 md:p-6 overflow-hidden group">
+            {/* Animated background glow */}
+            <div className="absolute inset-0 bg-gradient-to-r from-[#4CAF50]/0 via-[#4CAF50]/10 to-[#4CAF50]/0 opacity-50 animate-pulse"></div>
+
+            {/* Shimmer effect on hover */}
+            <div className="absolute inset-0 -translate-x-full group-hover:translate-x-full transition-transform duration-1000 bg-gradient-to-r from-transparent via-white/10 to-transparent"></div>
+
+            <div className="relative z-10">
+              <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+                <div>
+                  <p className="text-gray-400 text-xs mb-2 font-medium uppercase tracking-wide">Recursos Cadastrados</p>
+                  <div className="flex items-baseline gap-2">
+                    <p className="text-3xl md:text-4xl font-bold text-white drop-shadow-sm">
+                      {(totalItems || 0).toLocaleString('pt-BR')}
+                    </p>
+                    <span className="text-gray-500 text-sm">itens</span>
+                  </div>
                 </div>
-                <div className="text-gray-400 text-xs">
-                  {currentTime.toLocaleDateString('pt-BR', { 
-                    weekday: 'short', 
-                    day: '2-digit', 
-                    month: 'short' 
-                  })} {currentTime.toLocaleTimeString('pt-BR', { 
-                    hour: '2-digit', 
-                    minute: '2-digit',
-                    second: '2-digit'
-                  })}
+                <div className="flex flex-col items-start md:items-end gap-2">
+                  <div className="flex items-center gap-1.5">
+                    <div className="w-1.5 h-1.5 bg-[#4CAF50] rounded-full animate-pulse"></div>
+                    <p className="text-[#4CAF50] text-xs font-semibold">Sistema Online</p>
+                  </div>
+                  <div className="flex items-center gap-1.5">
+                    <svg className="w-3 h-3 text-[#4CAF50]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                    </svg>
+                    <span className="text-gray-400 text-[10px] uppercase tracking-wide">
+                      {currentTime.toLocaleDateString('pt-BR', {
+                        weekday: 'short',
+                        day: '2-digit',
+                        month: 'short',
+                      })}
+                    </span>
+                    <span className="text-[#4CAF50] text-xs font-semibold">
+                      {currentTime.toLocaleTimeString('pt-BR', {
+                        hour: '2-digit',
+                        minute: '2-digit',
+                        second: '2-digit',
+                      })}
+                    </span>
+                  </div>
                 </div>
               </div>
             </div>
@@ -315,18 +379,18 @@ export default function DashboardPage() {
       </div>
 
       {/* Main Content */}
-      <div className="p-6">
+      <div className="p-4 md:p-6 max-w-7xl mx-auto">
         {/* Stats Grid */}
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4 mb-8">
           {statsCards.map((card, index) => (
             <div
               key={index}
-              className="bg-[#282c34] rounded-lg border border-gray-700/50 p-4 hover:border-[#4CAF50]/50 transition-colors"
+              className="bg-[#282c34] rounded-lg border border-gray-700/50 p-4 hover:border-[#4CAF50]/50 transition-all duration-200 hover:shadow-lg hover:shadow-[#4CAF50]/10"
             >
-              <div className="w-10 h-10 rounded-lg bg-[#4CAF50]/10 flex items-center justify-center mb-3 text-[#4CAF50]">
+              <div className="w-10 h-10 rounded-lg bg-[#4CAF50]/10 border border-[#4CAF50]/20 flex items-center justify-center mb-3 text-[#4CAF50]">
                 {getIcon(card.iconType)}
               </div>
-              <p className="text-gray-400 text-xs mb-1 uppercase tracking-wide">{card.label}</p>
+              <p className="text-gray-400 text-xs mb-1 uppercase tracking-wide font-medium">{card.label}</p>
               <p className="text-xl font-bold text-white">{(card.value || 0).toLocaleString('pt-BR')}</p>
             </div>
           ))}
@@ -357,9 +421,17 @@ export default function DashboardPage() {
                 <p className="text-gray-400 text-xs mb-2">Em Andamento</p>
                 <p className="text-2xl font-bold text-white">{tarefasStats.porStatus['in-progress']}</p>
               </div>
-              <div className={`bg-[#1e2228] rounded-lg border p-4 text-center ${tarefasStats.atrasadas > 0 ? 'border-red-500/30' : 'border-gray-700/30'}`}>
-                <p className={`text-xs mb-2 ${tarefasStats.atrasadas > 0 ? 'text-red-400' : 'text-gray-400'}`}>Atrasadas</p>
-                <p className={`text-2xl font-bold ${tarefasStats.atrasadas > 0 ? 'text-red-400' : 'text-gray-600'}`}>
+              <div
+                className={`bg-[#1e2228] rounded-lg border p-4 text-center ${
+                  tarefasStats.atrasadas > 0 ? 'border-red-500/30' : 'border-gray-700/30'
+                }`}
+              >
+                <p className={`text-xs mb-2 ${tarefasStats.atrasadas > 0 ? 'text-red-400' : 'text-gray-400'}`}>
+                  Atrasadas
+                </p>
+                <p
+                  className={`text-2xl font-bold ${tarefasStats.atrasadas > 0 ? 'text-red-400' : 'text-gray-600'}`}
+                >
                   {tarefasStats.atrasadas || 0}
                 </p>
               </div>
@@ -369,11 +441,11 @@ export default function DashboardPage() {
 
         {/* Quick Actions */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <a 
-            href="/dashboard/lista-pc" 
-            className="bg-[#282c34] rounded-lg border border-gray-700/50 p-6 hover:border-[#4CAF50]/50 transition-colors"
+          <a
+            href="/dashboard/lista-pc"
+            className="bg-[#282c34] rounded-lg border border-gray-700/50 p-6 hover:border-[#4CAF50]/50 transition-all duration-200 group hover:shadow-lg hover:shadow-[#4CAF50]/10"
           >
-            <div className="w-12 h-12 rounded-lg bg-[#4CAF50]/10 flex items-center justify-center mb-4 text-[#4CAF50]">
+            <div className="w-12 h-12 rounded-lg bg-[#4CAF50]/10 border border-[#4CAF50]/20 flex items-center justify-center mb-4 text-[#4CAF50] group-hover:scale-110 transition-transform">
               <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 3v2m6-2v2M9 19v2m6-2v2M5 9H3m2 6H3m18-6h-2m2 6h-2M7 19h10a2 2 0 002-2V7a2 2 0 00-2-2H7a2 2 0 00-2 2v10a2 2 0 002 2zM9 9h6v6H9V9z" />
               </svg>
@@ -382,11 +454,11 @@ export default function DashboardPage() {
             <p className="text-sm text-gray-400">Gerenciar equipamentos</p>
           </a>
 
-          <a 
-            href="/dashboard/emails" 
-            className="bg-[#282c34] rounded-lg border border-gray-700/50 p-6 hover:border-[#4CAF50]/50 transition-colors"
+          <a
+            href="/dashboard/emails"
+            className="bg-[#282c34] rounded-lg border border-gray-700/50 p-6 hover:border-[#4CAF50]/50 transition-all duration-200 group hover:shadow-lg hover:shadow-[#4CAF50]/10"
           >
-            <div className="w-12 h-12 rounded-lg bg-[#4CAF50]/10 flex items-center justify-center mb-4 text-[#4CAF50]">
+            <div className="w-12 h-12 rounded-lg bg-[#4CAF50]/10 border border-[#4CAF50]/20 flex items-center justify-center mb-4 text-[#4CAF50] group-hover:scale-110 transition-transform">
               <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
               </svg>
@@ -395,11 +467,11 @@ export default function DashboardPage() {
             <p className="text-sm text-gray-400">Contas e credenciais</p>
           </a>
 
-          <a 
-            href="/dashboard/tarefas" 
-            className="bg-[#282c34] rounded-lg border border-gray-700/50 p-6 hover:border-[#4CAF50]/50 transition-colors"
+          <a
+            href="/dashboard/tarefas"
+            className="bg-[#282c34] rounded-lg border border-gray-700/50 p-6 hover:border-[#4CAF50]/50 transition-all duration-200 group hover:shadow-lg hover:shadow-[#4CAF50]/10"
           >
-            <div className="w-12 h-12 rounded-lg bg-[#4CAF50]/10 flex items-center justify-center mb-4 text-[#4CAF50]">
+            <div className="w-12 h-12 rounded-lg bg-[#4CAF50]/10 border border-[#4CAF50]/20 flex items-center justify-center mb-4 text-[#4CAF50] group-hover:scale-110 transition-transform">
               <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
               </svg>
