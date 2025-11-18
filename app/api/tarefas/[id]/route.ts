@@ -135,7 +135,8 @@ export async function DELETE(
 
     const { id } = await params;
 
-    const tarefa = await Tarefa.findByIdAndDelete(id);
+    // Buscar a tarefa antes de deletar para verificar o criador
+    const tarefa = await Tarefa.findById(id);
 
     if (!tarefa) {
       return NextResponse.json(
@@ -143,6 +144,16 @@ export async function DELETE(
         { status: 404 }
       );
     }
+
+    // Verificar se o usuário atual é o criador da tarefa
+    if (tarefa.criadoPor !== auth.username) {
+      return NextResponse.json(
+        { error: 'Você só pode excluir tarefas que você criou' },
+        { status: 403 }
+      );
+    }
+
+    await Tarefa.findByIdAndDelete(id);
 
     return NextResponse.json({ message: 'Tarefa excluída com sucesso' });
   } catch (error) {
