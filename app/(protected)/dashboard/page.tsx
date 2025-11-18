@@ -33,6 +33,7 @@ interface StatCard {
   label: string;
   value: number;
   iconType: string;
+  color: string;
 }
 
 export default function DashboardPage() {
@@ -172,20 +173,12 @@ export default function DashboardPage() {
 
   const formatLastUpdate = (date: Date | null): string => {
     if (!date) return 'Nunca atualizado';
-
     const now = new Date();
     const diff = Math.floor((now.getTime() - date.getTime()) / 1000);
-
     if (diff < 60) return `Há ${diff}s`;
     if (diff < 3600) return `Há ${Math.floor(diff / 60)}min`;
     if (diff < 86400) return `Há ${Math.floor(diff / 3600)}h`;
-
-    return date.toLocaleDateString('pt-BR', {
-      day: '2-digit',
-      month: '2-digit',
-      hour: '2-digit',
-      minute: '2-digit',
-    });
+    return date.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' });
   };
 
   const totalItems =
@@ -202,7 +195,7 @@ export default function DashboardPage() {
     stats.totalCelulares;
 
   const getIcon = (type: string): React.ReactElement => {
-    const iconClass = 'w-5 h-5';
+    const iconClass = 'w-6 h-6';
     const icons: { [key: string]: React.ReactElement } = {
       users: (
         <svg className={iconClass} fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -264,17 +257,17 @@ export default function DashboardPage() {
   };
 
   const statsCards: StatCard[] = [
-    { label: 'Usuários', value: stats.totalUsers, iconType: 'users' },
-    { label: 'Computadores', value: stats.totalPCs, iconType: 'computers' },
-    { label: 'IPs / VLANs', value: stats.totalIPs, iconType: 'ips' },
-    { label: 'Emails', value: stats.totalEmails, iconType: 'emails' },
-    { label: 'Senhas', value: stats.totalSenhas, iconType: 'passwords' },
-    { label: 'Impressoras', value: stats.totalImpressoras, iconType: 'printers' },
-    { label: 'Automações', value: stats.totalAutomacoes, iconType: 'automations' },
-    { label: 'Relógios', value: stats.totalRelogios, iconType: 'clocks' },
-    { label: 'Servidores', value: stats.totalServidores, iconType: 'servers' },
-    { label: 'Conectividades', value: stats.totalConectividades, iconType: 'connectivity' },
-    { label: 'Celulares', value: stats.totalCelulares, iconType: 'phones' },
+    { label: 'Usuários', value: stats.totalUsers, iconType: 'users', color: 'from-blue-500/20 to-blue-600/10' },
+    { label: 'Computadores', value: stats.totalPCs, iconType: 'computers', color: 'from-purple-500/20 to-purple-600/10' },
+    { label: 'IPs / VLANs', value: stats.totalIPs, iconType: 'ips', color: 'from-cyan-500/20 to-cyan-600/10' },
+    { label: 'Emails', value: stats.totalEmails, iconType: 'emails', color: 'from-orange-500/20 to-orange-600/10' },
+    { label: 'Senhas', value: stats.totalSenhas, iconType: 'passwords', color: 'from-red-500/20 to-red-600/10' },
+    { label: 'Impressoras', value: stats.totalImpressoras, iconType: 'printers', color: 'from-pink-500/20 to-pink-600/10' },
+    { label: 'Automações', value: stats.totalAutomacoes, iconType: 'automations', color: 'from-yellow-500/20 to-yellow-600/10' },
+    { label: 'Relógios', value: stats.totalRelogios, iconType: 'clocks', color: 'from-indigo-500/20 to-indigo-600/10' },
+    { label: 'Servidores', value: stats.totalServidores, iconType: 'servers', color: 'from-teal-500/20 to-teal-600/10' },
+    { label: 'Conectividades', value: stats.totalConectividades, iconType: 'connectivity', color: 'from-emerald-500/20 to-emerald-600/10' },
+    { label: 'Celulares', value: stats.totalCelulares, iconType: 'phones', color: 'from-violet-500/20 to-violet-600/10' },
   ];
 
   if (loading) {
@@ -289,22 +282,21 @@ export default function DashboardPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[#1e2228] pb-8">
-      {/* Hero Section */}
-      <div className="bg-gradient-to-br from-[#282c34] via-[#282c34] to-[#1e2228] border-b border-gray-800/50">
-        <div className="p-4 md:p-6">
-          {/* Header */}
+    <div className="min-h-screen bg-[#1e2228]">
+      {/* Header */}
+      <div className="bg-[#282c34] border-b border-gray-800/50">
+        <div className="max-w-7xl mx-auto px-4 md:px-6 py-6">
           <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 mb-6">
             <div>
-              <h1 className="text-2xl md:text-3xl font-bold text-white mb-1">
-                Bem-vindo, <span className="text-[#4CAF50]">{user?.fullName || 'Usuário'}</span>
+              <h1 className="text-3xl font-bold text-white mb-1">
+                Olá, <span className="text-[#4CAF50]">{user?.fullName || 'Usuário'}</span>
               </h1>
-              <p className="text-gray-400 text-sm">Visão geral do sistema</p>
+              <p className="text-gray-400">Bem-vindo ao painel de controle</p>
             </div>
             <div className="flex items-center gap-3">
               {lastUpdate && (
-                <div className="hidden md:flex items-center gap-1.5 text-gray-500 text-xs">
-                  <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <div className="hidden md:flex items-center gap-2 text-gray-400 text-sm">
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
                   </svg>
                   <span>{formatLastUpdate(lastUpdate)}</span>
@@ -313,14 +305,9 @@ export default function DashboardPage() {
               <button
                 onClick={handleRefresh}
                 disabled={refreshing}
-                className="flex items-center gap-2 px-4 py-2 bg-[#4CAF50] hover:bg-[#45a049] text-white rounded-lg transition-all disabled:opacity-50 text-sm font-medium shadow-lg shadow-[#4CAF50]/20"
+                className="flex items-center gap-2 px-4 py-2 bg-[#4CAF50] hover:bg-[#45a049] text-white rounded-lg transition disabled:opacity-50 text-sm font-medium"
               >
-                <svg
-                  className={`w-4 h-4 ${refreshing ? 'animate-spin' : ''}`}
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
+                <svg className={`w-4 h-4 ${refreshing ? 'animate-spin' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
                 </svg>
                 {refreshing ? 'Atualizando...' : 'Atualizar'}
@@ -328,47 +315,34 @@ export default function DashboardPage() {
             </div>
           </div>
 
-          {/* Total Resources Hero Card */}
-          <div className="relative bg-gradient-to-br from-[#4CAF50]/20 via-[#4CAF50]/10 to-transparent rounded-xl border border-[#4CAF50]/30 p-5 md:p-6 overflow-hidden group">
-            {/* Animated background glow */}
-            <div className="absolute inset-0 bg-gradient-to-r from-[#4CAF50]/0 via-[#4CAF50]/10 to-[#4CAF50]/0 opacity-50 animate-pulse"></div>
-
-            {/* Shimmer effect on hover */}
-            <div className="absolute inset-0 -translate-x-full group-hover:translate-x-full transition-transform duration-1000 bg-gradient-to-r from-transparent via-white/10 to-transparent"></div>
-
+          {/* Hero Card */}
+          <div className="relative bg-gradient-to-br from-[#4CAF50]/20 via-[#4CAF50]/10 to-transparent rounded-2xl border border-[#4CAF50]/30 p-6 md:p-8 overflow-hidden">
+            <div className="absolute inset-0 bg-gradient-to-r from-[#4CAF50]/0 via-[#4CAF50]/5 to-[#4CAF50]/0 opacity-50"></div>
             <div className="relative z-10">
-              <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+              <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
                 <div>
-                  <p className="text-gray-400 text-xs mb-2 font-medium uppercase tracking-wide">Recursos Cadastrados</p>
-                  <div className="flex items-baseline gap-2">
-                    <p className="text-3xl md:text-4xl font-bold text-white drop-shadow-sm">
+                  <p className="text-gray-400 text-sm mb-2 uppercase tracking-wide font-medium">Total de Recursos</p>
+                  <div className="flex items-baseline gap-3">
+                    <p className="text-5xl md:text-6xl font-bold text-white">
                       {(totalItems || 0).toLocaleString('pt-BR')}
                     </p>
-                    <span className="text-gray-500 text-sm">itens</span>
+                    <span className="text-gray-500 text-lg">itens cadastrados</span>
                   </div>
                 </div>
-                <div className="flex flex-col items-start md:items-end gap-2">
-                  <div className="flex items-center gap-1.5">
-                    <div className="w-1.5 h-1.5 bg-[#4CAF50] rounded-full animate-pulse"></div>
-                    <p className="text-[#4CAF50] text-xs font-semibold">Sistema Online</p>
+                <div className="flex flex-col items-start md:items-end gap-3">
+                  <div className="flex items-center gap-2">
+                    <div className="w-2 h-2 bg-[#4CAF50] rounded-full animate-pulse"></div>
+                    <span className="text-[#4CAF50] font-semibold">Sistema Online</span>
                   </div>
-                  <div className="flex items-center gap-1.5">
-                    <svg className="w-3 h-3 text-[#4CAF50]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <div className="flex items-center gap-2 text-gray-400">
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
                     </svg>
-                    <span className="text-gray-400 text-[10px] uppercase tracking-wide">
-                      {currentTime.toLocaleDateString('pt-BR', {
-                        weekday: 'short',
-                        day: '2-digit',
-                        month: 'short',
-                      })}
+                    <span className="text-sm">
+                      {currentTime.toLocaleDateString('pt-BR', { day: '2-digit', month: 'short' })}
                     </span>
-                    <span className="text-[#4CAF50] text-xs font-semibold">
-                      {currentTime.toLocaleTimeString('pt-BR', {
-                        hour: '2-digit',
-                        minute: '2-digit',
-                        second: '2-digit',
-                      })}
+                    <span className="text-[#4CAF50] font-semibold">
+                      {currentTime.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit', second: '2-digit' })}
                     </span>
                   </div>
                 </div>
@@ -379,59 +353,53 @@ export default function DashboardPage() {
       </div>
 
       {/* Main Content */}
-      <div className="p-4 md:p-6 max-w-7xl mx-auto">
+      <div className="max-w-7xl mx-auto px-4 md:px-6 py-8">
         {/* Stats Grid */}
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4 mb-8">
           {statsCards.map((card, index) => (
             <div
               key={index}
-              className="bg-[#282c34] rounded-lg border border-gray-700/50 p-4 hover:border-[#4CAF50]/50 transition-all duration-200 hover:shadow-lg hover:shadow-[#4CAF50]/10"
+              className="group relative bg-[#282c34] rounded-xl border border-gray-700/50 p-5 hover:border-[#4CAF50]/50 transition-all duration-300 hover:shadow-lg hover:shadow-[#4CAF50]/10 hover:-translate-y-1"
             >
-              <div className="w-10 h-10 rounded-lg bg-[#4CAF50]/10 border border-[#4CAF50]/20 flex items-center justify-center mb-3 text-[#4CAF50]">
-                {getIcon(card.iconType)}
+              <div className={`absolute inset-0 bg-gradient-to-br ${card.color} rounded-xl opacity-0 group-hover:opacity-100 transition-opacity duration-300`}></div>
+              <div className="relative z-10">
+                <div className="w-12 h-12 rounded-lg bg-[#4CAF50]/10 border border-[#4CAF50]/20 flex items-center justify-center mb-4 text-[#4CAF50] group-hover:scale-110 transition-transform duration-300">
+                  {getIcon(card.iconType)}
+                </div>
+                <p className="text-gray-400 text-xs mb-2 uppercase tracking-wide font-medium">{card.label}</p>
+                <p className="text-2xl font-bold text-white">{(card.value || 0).toLocaleString('pt-BR')}</p>
               </div>
-              <p className="text-gray-400 text-xs mb-1 uppercase tracking-wide font-medium">{card.label}</p>
-              <p className="text-xl font-bold text-white">{(card.value || 0).toLocaleString('pt-BR')}</p>
             </div>
           ))}
         </div>
 
         {/* Tarefas Section */}
         {tarefasStats.total > 0 && (
-          <div className="bg-[#282c34] rounded-lg border border-gray-700/50 p-6 mb-8">
+          <div className="bg-[#282c34] rounded-xl border border-gray-700/50 p-6 mb-8">
             <div className="flex items-center justify-between mb-6">
-              <h2 className="text-lg font-bold text-white">Tarefas</h2>
-              <a
-                href="/dashboard/tarefas"
-                className="text-sm text-gray-400 hover:text-[#4CAF50] transition-colors"
-              >
+              <h2 className="text-xl font-bold text-white">Tarefas</h2>
+              <a href="/dashboard/tarefas" className="text-sm text-gray-400 hover:text-[#4CAF50] transition-colors">
                 Ver todas →
               </a>
             </div>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-              <div className="bg-[#1e2228] rounded-lg border border-gray-700/30 p-4 text-center">
-                <p className="text-gray-400 text-xs mb-2">Total</p>
-                <p className="text-2xl font-bold text-white">{tarefasStats.total}</p>
+              <div className="bg-[#1e2228] rounded-lg border border-gray-700/30 p-5 text-center">
+                <p className="text-gray-400 text-xs mb-2 uppercase tracking-wide">Total</p>
+                <p className="text-3xl font-bold text-white">{tarefasStats.total}</p>
               </div>
-              <div className="bg-[#1e2228] rounded-lg border border-[#4CAF50]/30 p-4 text-center">
-                <p className="text-gray-400 text-xs mb-2">Concluídas</p>
-                <p className="text-2xl font-bold text-[#4CAF50]">{tarefasStats.porStatus.done}</p>
+              <div className="bg-[#1e2228] rounded-lg border border-[#4CAF50]/30 p-5 text-center">
+                <p className="text-gray-400 text-xs mb-2 uppercase tracking-wide">Concluídas</p>
+                <p className="text-3xl font-bold text-[#4CAF50]">{tarefasStats.porStatus.done}</p>
               </div>
-              <div className="bg-[#1e2228] rounded-lg border border-gray-700/30 p-4 text-center">
-                <p className="text-gray-400 text-xs mb-2">Em Andamento</p>
-                <p className="text-2xl font-bold text-white">{tarefasStats.porStatus['in-progress']}</p>
+              <div className="bg-[#1e2228] rounded-lg border border-gray-700/30 p-5 text-center">
+                <p className="text-gray-400 text-xs mb-2 uppercase tracking-wide">Em Andamento</p>
+                <p className="text-3xl font-bold text-white">{tarefasStats.porStatus['in-progress']}</p>
               </div>
-              <div
-                className={`bg-[#1e2228] rounded-lg border p-4 text-center ${
-                  tarefasStats.atrasadas > 0 ? 'border-red-500/30' : 'border-gray-700/30'
-                }`}
-              >
-                <p className={`text-xs mb-2 ${tarefasStats.atrasadas > 0 ? 'text-red-400' : 'text-gray-400'}`}>
+              <div className={`bg-[#1e2228] rounded-lg border p-5 text-center ${tarefasStats.atrasadas > 0 ? 'border-red-500/30' : 'border-gray-700/30'}`}>
+                <p className={`text-xs mb-2 uppercase tracking-wide ${tarefasStats.atrasadas > 0 ? 'text-red-400' : 'text-gray-400'}`}>
                   Atrasadas
                 </p>
-                <p
-                  className={`text-2xl font-bold ${tarefasStats.atrasadas > 0 ? 'text-red-400' : 'text-gray-600'}`}
-                >
+                <p className={`text-3xl font-bold ${tarefasStats.atrasadas > 0 ? 'text-red-400' : 'text-gray-600'}`}>
                   {tarefasStats.atrasadas || 0}
                 </p>
               </div>
@@ -440,44 +408,44 @@ export default function DashboardPage() {
         )}
 
         {/* Quick Actions */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           <a
             href="/dashboard/lista-pc"
-            className="bg-[#282c34] rounded-lg border border-gray-700/50 p-6 hover:border-[#4CAF50]/50 transition-all duration-200 group hover:shadow-lg hover:shadow-[#4CAF50]/10"
+            className="group bg-[#282c34] rounded-xl border border-gray-700/50 p-6 hover:border-[#4CAF50]/50 transition-all duration-300 hover:shadow-lg hover:shadow-[#4CAF50]/10 hover:-translate-y-1"
           >
-            <div className="w-12 h-12 rounded-lg bg-[#4CAF50]/10 border border-[#4CAF50]/20 flex items-center justify-center mb-4 text-[#4CAF50] group-hover:scale-110 transition-transform">
-              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <div className="w-14 h-14 rounded-xl bg-[#4CAF50]/10 border border-[#4CAF50]/20 flex items-center justify-center mb-4 text-[#4CAF50] group-hover:scale-110 transition-transform duration-300">
+              <svg className="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 3v2m6-2v2M9 19v2m6-2v2M5 9H3m2 6H3m18-6h-2m2 6h-2M7 19h10a2 2 0 002-2V7a2 2 0 00-2-2H7a2 2 0 00-2 2v10a2 2 0 002 2zM9 9h6v6H9V9z" />
               </svg>
             </div>
-            <h3 className="text-base font-bold text-white mb-1">Lista de Computadores</h3>
-            <p className="text-sm text-gray-400">Gerenciar equipamentos</p>
+            <h3 className="text-lg font-bold text-white mb-2">Computadores</h3>
+            <p className="text-sm text-gray-400">Gerenciar equipamentos e recursos</p>
           </a>
 
           <a
             href="/dashboard/emails"
-            className="bg-[#282c34] rounded-lg border border-gray-700/50 p-6 hover:border-[#4CAF50]/50 transition-all duration-200 group hover:shadow-lg hover:shadow-[#4CAF50]/10"
+            className="group bg-[#282c34] rounded-xl border border-gray-700/50 p-6 hover:border-[#4CAF50]/50 transition-all duration-300 hover:shadow-lg hover:shadow-[#4CAF50]/10 hover:-translate-y-1"
           >
-            <div className="w-12 h-12 rounded-lg bg-[#4CAF50]/10 border border-[#4CAF50]/20 flex items-center justify-center mb-4 text-[#4CAF50] group-hover:scale-110 transition-transform">
-              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <div className="w-14 h-14 rounded-xl bg-[#4CAF50]/10 border border-[#4CAF50]/20 flex items-center justify-center mb-4 text-[#4CAF50] group-hover:scale-110 transition-transform duration-300">
+              <svg className="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
               </svg>
             </div>
-            <h3 className="text-base font-bold text-white mb-1">Gerenciar Emails</h3>
-            <p className="text-sm text-gray-400">Contas e credenciais</p>
+            <h3 className="text-lg font-bold text-white mb-2">Emails</h3>
+            <p className="text-sm text-gray-400">Contas e credenciais de acesso</p>
           </a>
 
           <a
             href="/dashboard/tarefas"
-            className="bg-[#282c34] rounded-lg border border-gray-700/50 p-6 hover:border-[#4CAF50]/50 transition-all duration-200 group hover:shadow-lg hover:shadow-[#4CAF50]/10"
+            className="group bg-[#282c34] rounded-xl border border-gray-700/50 p-6 hover:border-[#4CAF50]/50 transition-all duration-300 hover:shadow-lg hover:shadow-[#4CAF50]/10 hover:-translate-y-1"
           >
-            <div className="w-12 h-12 rounded-lg bg-[#4CAF50]/10 border border-[#4CAF50]/20 flex items-center justify-center mb-4 text-[#4CAF50] group-hover:scale-110 transition-transform">
-              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <div className="w-14 h-14 rounded-xl bg-[#4CAF50]/10 border border-[#4CAF50]/20 flex items-center justify-center mb-4 text-[#4CAF50] group-hover:scale-110 transition-transform duration-300">
+              <svg className="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
               </svg>
             </div>
-            <h3 className="text-base font-bold text-white mb-1">Tarefas</h3>
-            <p className="text-sm text-gray-400">Kanban e gestão</p>
+            <h3 className="text-lg font-bold text-white mb-2">Tarefas</h3>
+            <p className="text-sm text-gray-400">Kanban e gestão de atividades</p>
           </a>
         </div>
       </div>

@@ -59,12 +59,9 @@ Importante: Use uma chave diferente para cada ambiente (desenvolvimento, produç
 
 ## Credenciais Padrão
 
-O usuário administrador padrão é criado automaticamente:
+O usuário administrador padrão é criado automaticamente na primeira execução.
 
-- **Usuário**: `admin`
-- **Senha**: `admin123`
-
-Importante: Alterar a senha após o primeiro acesso em produção.
+Importante: Alterar a senha padrão após o primeiro acesso em produção.
 
 ## Níveis de Acesso
 
