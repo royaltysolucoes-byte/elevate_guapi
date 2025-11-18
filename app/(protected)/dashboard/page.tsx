@@ -176,17 +176,17 @@ export default function DashboardPage() {
     stats.totalCelulares;
 
   const statsData = [
-    { label: 'Usuários', value: stats.totalUsers, icon: 'users' },
-    { label: 'Computadores', value: stats.totalPCs, icon: 'computers' },
-    { label: 'IPs / VLANs', value: stats.totalIPs, icon: 'ips' },
-    { label: 'Emails', value: stats.totalEmails, icon: 'emails' },
-    { label: 'Senhas', value: stats.totalSenhas, icon: 'passwords' },
-    { label: 'Impressoras', value: stats.totalImpressoras, icon: 'printers' },
-    { label: 'Automações', value: stats.totalAutomacoes, icon: 'automations' },
-    { label: 'Relógios', value: stats.totalRelogios, icon: 'clocks' },
-    { label: 'Servidores', value: stats.totalServidores, icon: 'servers' },
-    { label: 'Conectividades', value: stats.totalConectividades, icon: 'connectivity' },
-    { label: 'Celulares', value: stats.totalCelulares, icon: 'phones' },
+    { label: 'Usuários', value: stats.totalUsers, icon: 'users', color: 'from-blue-500/20 to-cyan-500/10' },
+    { label: 'Computadores', value: stats.totalPCs, icon: 'computers', color: 'from-purple-500/20 to-pink-500/10' },
+    { label: 'IPs / VLANs', value: stats.totalIPs, icon: 'ips', color: 'from-cyan-500/20 to-blue-500/10' },
+    { label: 'Emails', value: stats.totalEmails, icon: 'emails', color: 'from-orange-500/20 to-red-500/10' },
+    { label: 'Senhas', value: stats.totalSenhas, icon: 'passwords', color: 'from-red-500/20 to-orange-500/10' },
+    { label: 'Impressoras', value: stats.totalImpressoras, icon: 'printers', color: 'from-pink-500/20 to-rose-500/10' },
+    { label: 'Automações', value: stats.totalAutomacoes, icon: 'automations', color: 'from-yellow-500/20 to-amber-500/10' },
+    { label: 'Relógios', value: stats.totalRelogios, icon: 'clocks', color: 'from-indigo-500/20 to-purple-500/10' },
+    { label: 'Servidores', value: stats.totalServidores, icon: 'servers', color: 'from-teal-500/20 to-cyan-500/10' },
+    { label: 'Conectividades', value: stats.totalConectividades, icon: 'connectivity', color: 'from-emerald-500/20 to-green-500/10' },
+    { label: 'Celulares', value: stats.totalCelulares, icon: 'phones', color: 'from-violet-500/20 to-purple-500/10' },
   ];
 
   const getIcon = (type: string) => {
@@ -264,96 +264,124 @@ export default function DashboardPage() {
   return (
     <div className="min-h-screen bg-[#1e2228]">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Header */}
+        {/* Header com animação */}
         <div className="mb-8">
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
-            <div>
-              <h1 className="text-2xl sm:text-3xl font-bold text-white mb-1">
+            <div className="space-y-1">
+              <h1 className="text-3xl sm:text-4xl font-bold text-white">
                 Dashboard
               </h1>
-              <p className="text-gray-400 text-sm">
-                {user?.fullName ? `Bem-vindo, ${user.fullName}` : 'Visão geral do sistema'}
+              <p className="text-gray-400">
+                {user?.fullName ? `Olá, ${user.fullName}` : 'Visão geral do sistema'}
               </p>
             </div>
             <button
               onClick={handleRefresh}
               disabled={refreshing}
-              className="flex items-center gap-2 px-4 py-2 bg-[#4CAF50] hover:bg-[#45a049] text-white rounded-lg transition disabled:opacity-50 text-sm font-medium self-start sm:self-auto"
+              className="group flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-[#4CAF50] to-[#45a049] hover:from-[#45a049] hover:to-[#4CAF50] text-white rounded-lg transition-all duration-300 disabled:opacity-50 text-sm font-medium shadow-lg shadow-[#4CAF50]/20 hover:shadow-xl hover:shadow-[#4CAF50]/30 transform hover:scale-105"
             >
-              <svg className={`w-4 h-4 ${refreshing ? 'animate-spin' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg className={`w-4 h-4 ${refreshing ? 'animate-spin' : 'group-hover:rotate-180 transition-transform duration-300'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
               </svg>
               {refreshing ? 'Atualizando...' : 'Atualizar'}
             </button>
           </div>
 
-          {/* Total Card */}
-          <div className="bg-[#282c34] rounded-lg border border-gray-700/50 p-6">
-            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-              <div>
-                <p className="text-gray-400 text-sm mb-1">Total de Recursos</p>
-                <p className="text-4xl sm:text-5xl font-bold text-white">
-                  {(totalItems || 0).toLocaleString('pt-BR')}
-                </p>
-              </div>
-              <div className="flex items-center gap-4 text-sm">
-                <div className="flex items-center gap-2">
-                  <div className="w-2 h-2 bg-[#4CAF50] rounded-full animate-pulse"></div>
-                  <span className="text-[#4CAF50] font-medium">Online</span>
-                </div>
-                <div className="text-gray-400">
-                  {currentTime.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}
+          {/* Hero Card com animações */}
+          <div className="relative group">
+            <div className="absolute -inset-0.5 bg-gradient-to-r from-[#4CAF50] via-[#45a049] to-[#4CAF50] rounded-2xl opacity-20 group-hover:opacity-30 blur transition duration-500 animate-pulse"></div>
+            <div className="relative bg-gradient-to-br from-[#282c34] via-[#282c34] to-[#1e2228] rounded-2xl border border-[#4CAF50]/30 p-8 overflow-hidden">
+              {/* Background animado */}
+              <div className="absolute inset-0 bg-gradient-to-r from-[#4CAF50]/5 via-transparent to-[#4CAF50]/5 animate-[shimmer_3s_ease-in-out_infinite]"></div>
+              
+              <div className="relative z-10">
+                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-6">
+                  <div className="space-y-2">
+                    <p className="text-gray-400 text-sm font-medium uppercase tracking-wider">Total de Recursos</p>
+                    <div className="flex items-baseline gap-3">
+                      <p className="text-5xl sm:text-6xl font-bold text-white tracking-tight">
+                        {(totalItems || 0).toLocaleString('pt-BR')}
+                      </p>
+                      <span className="text-gray-500 text-lg">itens</span>
+                    </div>
+                  </div>
+                  <div className="flex flex-col sm:items-end gap-3">
+                    <div className="flex items-center gap-2 px-3 py-1.5 bg-[#4CAF50]/10 rounded-full border border-[#4CAF50]/30">
+                      <div className="w-2 h-2 bg-[#4CAF50] rounded-full animate-pulse"></div>
+                      <span className="text-[#4CAF50] font-semibold text-sm">Sistema Online</span>
+                    </div>
+                    <div className="flex items-center gap-2 text-gray-400 text-sm">
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                      </svg>
+                      <span className="font-mono">{currentTime.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit', second: '2-digit' })}</span>
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
           </div>
         </div>
 
-        {/* Stats Grid */}
+        {/* Stats Grid com animações */}
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4 mb-8">
           {statsData.map((stat, index) => (
             <div
               key={index}
-              className="bg-[#282c34] rounded-lg border border-gray-700/50 p-4 hover:border-[#4CAF50]/50 transition-colors"
+              className="group relative bg-[#282c34] rounded-xl border border-gray-700/50 p-5 hover:border-[#4CAF50]/50 transition-all duration-300 hover:shadow-lg hover:shadow-[#4CAF50]/10 hover:-translate-y-1 cursor-pointer"
+              style={{ animationDelay: `${index * 50}ms` }}
             >
-              <div className="flex items-center gap-3 mb-3">
-                <div className="w-10 h-10 rounded-lg bg-[#4CAF50]/10 flex items-center justify-center text-[#4CAF50]">
-                  {getIcon(stat.icon)}
+              {/* Gradient overlay no hover */}
+              <div className={`absolute inset-0 bg-gradient-to-br ${stat.color} rounded-xl opacity-0 group-hover:opacity-100 transition-opacity duration-300`}></div>
+              
+              {/* Glow effect */}
+              <div className="absolute -inset-0.5 bg-gradient-to-r from-[#4CAF50]/0 via-[#4CAF50]/20 to-[#4CAF50]/0 rounded-xl opacity-0 group-hover:opacity-100 blur transition duration-500"></div>
+              
+              <div className="relative z-10">
+                <div className="flex items-center gap-3 mb-4">
+                  <div className="w-12 h-12 rounded-xl bg-[#4CAF50]/10 border border-[#4CAF50]/20 flex items-center justify-center text-[#4CAF50] group-hover:scale-110 group-hover:rotate-3 transition-all duration-300">
+                    {getIcon(stat.icon)}
+                  </div>
                 </div>
+                <p className="text-gray-400 text-xs mb-2 font-medium uppercase tracking-wide">{stat.label}</p>
+                <p className="text-2xl font-bold text-white group-hover:scale-105 transition-transform duration-300">
+                  {(stat.value || 0).toLocaleString('pt-BR')}
+                </p>
               </div>
-              <p className="text-gray-400 text-xs mb-1">{stat.label}</p>
-              <p className="text-xl font-bold text-white">{(stat.value || 0).toLocaleString('pt-BR')}</p>
             </div>
           ))}
         </div>
 
-        {/* Tarefas */}
+        {/* Tarefas com animação */}
         {tarefasStats.total > 0 && (
-          <div className="bg-[#282c34] rounded-lg border border-gray-700/50 p-6 mb-8">
+          <div className="bg-[#282c34] rounded-xl border border-gray-700/50 p-6 mb-8 hover:border-[#4CAF50]/30 transition-all duration-300">
             <div className="flex items-center justify-between mb-6">
-              <h2 className="text-lg font-bold text-white">Tarefas</h2>
-              <a href="/dashboard/tarefas" className="text-sm text-[#4CAF50] hover:underline">
+              <h2 className="text-xl font-bold text-white">Tarefas</h2>
+              <a href="/dashboard/tarefas" className="text-sm text-[#4CAF50] hover:underline flex items-center gap-1 group">
                 Ver todas
+                <svg className="w-4 h-4 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                </svg>
               </a>
             </div>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-              <div className="bg-[#1e2228] rounded-lg p-4 text-center">
-                <p className="text-gray-400 text-xs mb-2">Total</p>
-                <p className="text-2xl font-bold text-white">{tarefasStats.total}</p>
+              <div className="bg-[#1e2228] rounded-lg p-5 text-center border border-gray-700/30 hover:border-gray-600/50 transition-colors">
+                <p className="text-gray-400 text-xs mb-2 uppercase tracking-wide">Total</p>
+                <p className="text-3xl font-bold text-white">{tarefasStats.total}</p>
               </div>
-              <div className="bg-[#1e2228] rounded-lg p-4 text-center border border-[#4CAF50]/30">
-                <p className="text-gray-400 text-xs mb-2">Concluídas</p>
-                <p className="text-2xl font-bold text-[#4CAF50]">{tarefasStats.porStatus.done}</p>
+              <div className="bg-[#1e2228] rounded-lg p-5 text-center border border-[#4CAF50]/30 hover:border-[#4CAF50]/50 transition-colors group">
+                <p className="text-gray-400 text-xs mb-2 uppercase tracking-wide">Concluídas</p>
+                <p className="text-3xl font-bold text-[#4CAF50] group-hover:scale-110 transition-transform duration-300">{tarefasStats.porStatus.done}</p>
               </div>
-              <div className="bg-[#1e2228] rounded-lg p-4 text-center">
-                <p className="text-gray-400 text-xs mb-2">Em Andamento</p>
-                <p className="text-2xl font-bold text-white">{tarefasStats.porStatus['in-progress']}</p>
+              <div className="bg-[#1e2228] rounded-lg p-5 text-center border border-gray-700/30 hover:border-gray-600/50 transition-colors">
+                <p className="text-gray-400 text-xs mb-2 uppercase tracking-wide">Em Andamento</p>
+                <p className="text-3xl font-bold text-white">{tarefasStats.porStatus['in-progress']}</p>
               </div>
-              <div className={`bg-[#1e2228] rounded-lg p-4 text-center ${tarefasStats.atrasadas > 0 ? 'border border-red-500/30' : ''}`}>
-                <p className={`text-xs mb-2 ${tarefasStats.atrasadas > 0 ? 'text-red-400' : 'text-gray-400'}`}>
+              <div className={`bg-[#1e2228] rounded-lg p-5 text-center border transition-colors ${tarefasStats.atrasadas > 0 ? 'border-red-500/30 hover:border-red-500/50' : 'border-gray-700/30 hover:border-gray-600/50'}`}>
+                <p className={`text-xs mb-2 uppercase tracking-wide ${tarefasStats.atrasadas > 0 ? 'text-red-400' : 'text-gray-400'}`}>
                   Atrasadas
                 </p>
-                <p className={`text-2xl font-bold ${tarefasStats.atrasadas > 0 ? 'text-red-400' : 'text-gray-600'}`}>
+                <p className={`text-3xl font-bold ${tarefasStats.atrasadas > 0 ? 'text-red-400' : 'text-gray-600'}`}>
                   {tarefasStats.atrasadas || 0}
                 </p>
               </div>
@@ -361,46 +389,33 @@ export default function DashboardPage() {
           </div>
         )}
 
-        {/* Quick Actions */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <a
-            href="/dashboard/lista-pc"
-            className="bg-[#282c34] rounded-lg border border-gray-700/50 p-6 hover:border-[#4CAF50]/50 transition-colors"
-          >
-            <div className="w-12 h-12 rounded-lg bg-[#4CAF50]/10 flex items-center justify-center mb-4 text-[#4CAF50]">
-              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 3v2m6-2v2M9 19v2m6-2v2M5 9H3m2 6H3m18-6h-2m2 6h-2M7 19h10a2 2 0 002-2V7a2 2 0 00-2-2H7a2 2 0 00-2 2v10a2 2 0 002 2zM9 9h6v6H9V9z" />
-              </svg>
-            </div>
-            <h3 className="text-base font-bold text-white mb-1">Computadores</h3>
-            <p className="text-sm text-gray-400">Gerenciar equipamentos</p>
-          </a>
-
-          <a
-            href="/dashboard/emails"
-            className="bg-[#282c34] rounded-lg border border-gray-700/50 p-6 hover:border-[#4CAF50]/50 transition-colors"
-          >
-            <div className="w-12 h-12 rounded-lg bg-[#4CAF50]/10 flex items-center justify-center mb-4 text-[#4CAF50]">
-              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-              </svg>
-            </div>
-            <h3 className="text-base font-bold text-white mb-1">Emails</h3>
-            <p className="text-sm text-gray-400">Contas e credenciais</p>
-          </a>
-
-          <a
-            href="/dashboard/tarefas"
-            className="bg-[#282c34] rounded-lg border border-gray-700/50 p-6 hover:border-[#4CAF50]/50 transition-colors"
-          >
-            <div className="w-12 h-12 rounded-lg bg-[#4CAF50]/10 flex items-center justify-center mb-4 text-[#4CAF50]">
-              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
-              </svg>
-            </div>
-            <h3 className="text-base font-bold text-white mb-1">Tarefas</h3>
-            <p className="text-sm text-gray-400">Kanban e gestão</p>
-          </a>
+        {/* Quick Actions com animações */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          {[
+            { href: '/dashboard/lista-pc', title: 'Computadores', desc: 'Gerenciar equipamentos', icon: 'computers' },
+            { href: '/dashboard/emails', title: 'Emails', desc: 'Contas e credenciais', icon: 'emails' },
+            { href: '/dashboard/tarefas', title: 'Tarefas', desc: 'Kanban e gestão', icon: 'clocks' },
+          ].map((action, index) => (
+            <a
+              key={index}
+              href={action.href}
+              className="group relative bg-[#282c34] rounded-xl border border-gray-700/50 p-6 hover:border-[#4CAF50]/50 transition-all duration-300 hover:shadow-xl hover:shadow-[#4CAF50]/10 hover:-translate-y-1 overflow-hidden"
+            >
+              {/* Background gradient no hover */}
+              <div className="absolute inset-0 bg-gradient-to-br from-[#4CAF50]/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+              
+              {/* Glow effect */}
+              <div className="absolute -inset-0.5 bg-gradient-to-r from-[#4CAF50]/0 via-[#4CAF50]/20 to-[#4CAF50]/0 rounded-xl opacity-0 group-hover:opacity-100 blur transition duration-500"></div>
+              
+              <div className="relative z-10">
+                <div className="w-14 h-14 rounded-xl bg-[#4CAF50]/10 border border-[#4CAF50]/20 flex items-center justify-center mb-4 text-[#4CAF50] group-hover:scale-110 group-hover:rotate-3 transition-all duration-300">
+                  {getIcon(action.icon)}
+                </div>
+                <h3 className="text-lg font-bold text-white mb-1 group-hover:text-[#4CAF50] transition-colors">{action.title}</h3>
+                <p className="text-sm text-gray-400">{action.desc}</p>
+              </div>
+            </a>
+          ))}
         </div>
       </div>
     </div>
