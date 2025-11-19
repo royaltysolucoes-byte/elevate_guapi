@@ -32,9 +32,11 @@ export default function DashboardLayout({
   const [showConfigMenu, setShowConfigMenu] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [pageLoading, setPageLoading] = useState(false);
   const [notificacoes, setNotificacoes] = useState<Notificacao[]>([]);
   const [totalNaoLidas, setTotalNaoLidas] = useState(0);
   const [showNotificacoes, setShowNotificacoes] = useState(false);
+  const [openSubmenus, setOpenSubmenus] = useState<{ [key: string]: boolean }>({});
   const router = useRouter();
   const pathname = usePathname();
 
@@ -55,7 +57,41 @@ export default function DashboardLayout({
     if (sidebarOpen && window.innerWidth < 768) {
       setSidebarOpen(false);
     }
-  }, [pathname]);
+    
+    // Abre automaticamente o submenu se a página atual estiver dentro dele
+    const equipamentosPaths = ['/dashboard/lista-pc', '/dashboard/impressoras', '/dashboard/relogios-ponto', '/dashboard/celulares'];
+    const redePaths = ['/dashboard/gestao-ip', '/dashboard/consulta-ip', '/dashboard/conectividades', '/dashboard/servidores'];
+    const gestaoPaths = ['/dashboard/tarefas', '/dashboard/documentos', '/dashboard/gpos', '/dashboard/automacoes'];
+    const credenciaisPaths = ['/dashboard/emails', '/dashboard/senhas'];
+    
+    if (equipamentosPaths.some(path => pathname === path)) {
+      setOpenSubmenus(prev => ({ ...prev, equipamentos: true }));
+    }
+    if (redePaths.some(path => pathname === path)) {
+      setOpenSubmenus(prev => ({ ...prev, rede: true }));
+    }
+    if (gestaoPaths.some(path => pathname === path)) {
+      setOpenSubmenus(prev => ({ ...prev, gestao: true }));
+    }
+    if (credenciaisPaths.some(path => pathname === path)) {
+      setOpenSubmenus(prev => ({ ...prev, credenciais: true }));
+    }
+    
+    // Show loading on page change with a delay to prevent flickering
+    const loadingTimer = setTimeout(() => {
+      setPageLoading(true);
+    }, 50); // Show loading after 50ms
+    
+    // Hide loading after a longer time to ensure visibility
+    const hideTimer = setTimeout(() => {
+      setPageLoading(false);
+    }, 800); // Hide loading after 800ms
+    
+    return () => {
+      clearTimeout(loadingTimer);
+      clearTimeout(hideTimer);
+    };
+  }, [pathname, sidebarOpen]);
 
   // Fecha sidebar ao redimensionar para desktop
   useEffect(() => {
@@ -144,6 +180,17 @@ export default function DashboardLayout({
 
   const isActive = (path: string) => pathname === path;
 
+  const toggleSubmenu = (key: string) => {
+    setOpenSubmenus(prev => ({
+      ...prev,
+      [key]: !prev[key]
+    }));
+  };
+
+  const isSubmenuActive = (paths: string[]) => {
+    return paths.some(path => pathname === path);
+  };
+
   return (
     <div className="min-h-screen bg-[#1e2228] w-full">
       {/* Mobile menu button */}
@@ -226,277 +273,386 @@ export default function DashboardLayout({
               Dashboard
             </Link>
 
-            <Link
-              href="/dashboard/lista-pc"
-              className={`flex items-center px-4 py-3 rounded-lg transition ${
-                isActive('/dashboard/lista-pc')
-                  ? 'bg-[#4CAF50] text-white'
-                  : 'text-gray-300 hover:bg-gray-700'
-              }`}
-              onClick={() => {
-                if (window.innerWidth < 768) {
-                  setSidebarOpen(false);
-                }
-              }}
-            >
-              <svg className="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 3v2m6-2v2M9 19v2m6-2v2M5 9H3m2 6H3m18-6h-2m2 6h-2M7 19h10a2 2 0 002-2V7a2 2 0 00-2-2H7a2 2 0 00-2 2v10a2 2 0 002 2zM9 9h6v6H9V9z" />
-              </svg>
-              Lista de PC
-            </Link>
+            {/* Equipamentos */}
+            <div>
+              <button
+                onClick={() => toggleSubmenu('equipamentos')}
+                className={`w-full flex items-center justify-between px-4 py-3 rounded-lg transition ${
+                  isSubmenuActive(['/dashboard/lista-pc', '/dashboard/impressoras', '/dashboard/relogios-ponto', '/dashboard/celulares'])
+                    ? 'bg-[#4CAF50] text-white'
+                    : 'text-gray-300 hover:bg-gray-700'
+                }`}
+              >
+                <div className="flex items-center">
+                  <svg className="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 3v2m6-2v2M9 19v2m6-2v2M5 9H3m2 6H3m18-6h-2m2 6h-2M7 19h10a2 2 0 002-2V7a2 2 0 00-2-2H7a2 2 0 00-2 2v10a2 2 0 002 2zM9 9h6v6H9V9z" />
+                  </svg>
+                  <span>Equipamentos</span>
+                </div>
+                <svg 
+                  className={`w-4 h-4 transition-transform ${openSubmenus.equipamentos ? 'rotate-180' : ''}`} 
+                  fill="none" 
+                  stroke="currentColor" 
+                  viewBox="0 0 24 24"
+                >
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                </svg>
+              </button>
+              {openSubmenus.equipamentos && (
+                <div className="ml-4 mt-1 space-y-1">
+                  <Link
+                    href="/dashboard/lista-pc"
+                    className={`flex items-center px-4 py-2 rounded-lg transition text-sm ${
+                      isActive('/dashboard/lista-pc')
+                        ? 'bg-[#4CAF50]/20 text-[#4CAF50]'
+                        : 'text-gray-400 hover:bg-gray-700/50'
+                    }`}
+                    onClick={() => {
+                      if (window.innerWidth < 768) {
+                        setSidebarOpen(false);
+                      }
+                    }}
+                  >
+                    <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 3v2m6-2v2M9 19v2m6-2v2M5 9H3m2 6H3m18-6h-2m2 6h-2M7 19h10a2 2 0 002-2V7a2 2 0 00-2-2H7a2 2 0 00-2 2v10a2 2 0 002 2zM9 9h6v6H9V9z" />
+                    </svg>
+                    Lista de PC
+                  </Link>
+                  <Link
+                    href="/dashboard/impressoras"
+                    className={`flex items-center px-4 py-2 rounded-lg transition text-sm ${
+                      isActive('/dashboard/impressoras')
+                        ? 'bg-[#4CAF50]/20 text-[#4CAF50]'
+                        : 'text-gray-400 hover:bg-gray-700/50'
+                    }`}
+                    onClick={() => {
+                      if (window.innerWidth < 768) {
+                        setSidebarOpen(false);
+                      }
+                    }}
+                  >
+                    <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" />
+                    </svg>
+                    Impressoras
+                  </Link>
+                  <Link
+                    href="/dashboard/relogios-ponto"
+                    className={`flex items-center px-4 py-2 rounded-lg transition text-sm ${
+                      isActive('/dashboard/relogios-ponto')
+                        ? 'bg-[#4CAF50]/20 text-[#4CAF50]'
+                        : 'text-gray-400 hover:bg-gray-700/50'
+                    }`}
+                    onClick={() => {
+                      if (window.innerWidth < 768) {
+                        setSidebarOpen(false);
+                      }
+                    }}
+                  >
+                    <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    Relógio de Ponto
+                  </Link>
+                  <Link
+                    href="/dashboard/celulares"
+                    className={`flex items-center px-4 py-2 rounded-lg transition text-sm ${
+                      isActive('/dashboard/celulares')
+                        ? 'bg-[#4CAF50]/20 text-[#4CAF50]'
+                        : 'text-gray-400 hover:bg-gray-700/50'
+                    }`}
+                    onClick={() => {
+                      if (window.innerWidth < 768) {
+                        setSidebarOpen(false);
+                      }
+                    }}
+                  >
+                    <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z" />
+                    </svg>
+                    Celulares
+                  </Link>
+                </div>
+              )}
+            </div>
 
-            <Link
-              href="/dashboard/gestao-ip"
-              className={`flex items-center px-4 py-3 rounded-lg transition ${
-                isActive('/dashboard/gestao-ip')
-                  ? 'bg-[#4CAF50] text-white'
-                  : 'text-gray-300 hover:bg-gray-700'
-              }`}
-              onClick={() => {
-                if (window.innerWidth < 768) {
-                  setSidebarOpen(false);
-                }
-              }}
-            >
-              <svg className="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
-              </svg>
-              Gestão de IP
-            </Link>
+            {/* Rede e IP */}
+            <div>
+              <button
+                onClick={() => toggleSubmenu('rede')}
+                className={`w-full flex items-center justify-between px-4 py-3 rounded-lg transition ${
+                  isSubmenuActive(['/dashboard/gestao-ip', '/dashboard/consulta-ip', '/dashboard/conectividades', '/dashboard/servidores'])
+                    ? 'bg-[#4CAF50] text-white'
+                    : 'text-gray-300 hover:bg-gray-700'
+                }`}
+              >
+                <div className="flex items-center">
+                  <svg className="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
+                  </svg>
+                  <span>Rede e IP</span>
+                </div>
+                <svg 
+                  className={`w-4 h-4 transition-transform ${openSubmenus.rede ? 'rotate-180' : ''}`} 
+                  fill="none" 
+                  stroke="currentColor" 
+                  viewBox="0 0 24 24"
+                >
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                </svg>
+              </button>
+              {openSubmenus.rede && (
+                <div className="ml-4 mt-1 space-y-1">
+                  <Link
+                    href="/dashboard/gestao-ip"
+                    className={`flex items-center px-4 py-2 rounded-lg transition text-sm ${
+                      isActive('/dashboard/gestao-ip')
+                        ? 'bg-[#4CAF50]/20 text-[#4CAF50]'
+                        : 'text-gray-400 hover:bg-gray-700/50'
+                    }`}
+                    onClick={() => {
+                      if (window.innerWidth < 768) {
+                        setSidebarOpen(false);
+                      }
+                    }}
+                  >
+                    <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
+                    </svg>
+                    Gestão de IP
+                  </Link>
+                  <Link
+                    href="/dashboard/consulta-ip"
+                    className={`flex items-center px-4 py-2 rounded-lg transition text-sm ${
+                      isActive('/dashboard/consulta-ip')
+                        ? 'bg-[#4CAF50]/20 text-[#4CAF50]'
+                        : 'text-gray-400 hover:bg-gray-700/50'
+                    }`}
+                    onClick={() => {
+                      if (window.innerWidth < 768) {
+                        setSidebarOpen(false);
+                      }
+                    }}
+                  >
+                    <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                    </svg>
+                    Consulta IP
+                  </Link>
+                  <Link
+                    href="/dashboard/conectividades"
+                    className={`flex items-center px-4 py-2 rounded-lg transition text-sm ${
+                      isActive('/dashboard/conectividades')
+                        ? 'bg-[#4CAF50]/20 text-[#4CAF50]'
+                        : 'text-gray-400 hover:bg-gray-700/50'
+                    }`}
+                    onClick={() => {
+                      if (window.innerWidth < 768) {
+                        setSidebarOpen(false);
+                      }
+                    }}
+                  >
+                    <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.111 16.404a5.5 5.5 0 017.778 0M12 20h.01m-7.08-7.071c3.904-3.905 10.236-3.905 14.141 0M1.394 9.393c5.857-5.857 15.355-5.857 21.213 0" />
+                    </svg>
+                    Conectividade
+                  </Link>
+                  <Link
+                    href="/dashboard/servidores"
+                    className={`flex items-center px-4 py-2 rounded-lg transition text-sm ${
+                      isActive('/dashboard/servidores')
+                        ? 'bg-[#4CAF50]/20 text-[#4CAF50]'
+                        : 'text-gray-400 hover:bg-gray-700/50'
+                    }`}
+                    onClick={() => {
+                      if (window.innerWidth < 768) {
+                        setSidebarOpen(false);
+                      }
+                    }}
+                  >
+                    <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 12h14M5 12a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v4a2 2 0 01-2 2M5 12a2 2 0 00-2 2v4a2 2 0 002 2h14a2 2 0 002-2v-4a2 2 0 00-2-2m-2-4h.01M17 16h.01" />
+                    </svg>
+                    Servidores
+                  </Link>
+                </div>
+              )}
+            </div>
 
-            <Link
-              href="/dashboard/consulta-ip"
-              className={`flex items-center px-4 py-3 rounded-lg transition ${
-                isActive('/dashboard/consulta-ip')
-                  ? 'bg-[#4CAF50] text-white'
-                  : 'text-gray-300 hover:bg-gray-700'
-              }`}
-              onClick={() => {
-                if (window.innerWidth < 768) {
-                  setSidebarOpen(false);
-                }
-              }}
-            >
-              <svg className="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-              </svg>
-              Consulta IP
-            </Link>
+            {/* Gestão */}
+            <div>
+              <button
+                onClick={() => toggleSubmenu('gestao')}
+                className={`w-full flex items-center justify-between px-4 py-3 rounded-lg transition ${
+                  isSubmenuActive(['/dashboard/tarefas', '/dashboard/documentos', '/dashboard/gpos', '/dashboard/automacoes'])
+                    ? 'bg-[#4CAF50] text-white'
+                    : 'text-gray-300 hover:bg-gray-700'
+                }`}
+              >
+                <div className="flex items-center">
+                  <svg className="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" />
+                  </svg>
+                  <span>Gestão</span>
+                </div>
+                <svg 
+                  className={`w-4 h-4 transition-transform ${openSubmenus.gestao ? 'rotate-180' : ''}`} 
+                  fill="none" 
+                  stroke="currentColor" 
+                  viewBox="0 0 24 24"
+                >
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                </svg>
+              </button>
+              {openSubmenus.gestao && (
+                <div className="ml-4 mt-1 space-y-1">
+                  <Link
+                    href="/dashboard/tarefas"
+                    className={`flex items-center px-4 py-2 rounded-lg transition text-sm ${
+                      isActive('/dashboard/tarefas')
+                        ? 'bg-[#4CAF50]/20 text-[#4CAF50]'
+                        : 'text-gray-400 hover:bg-gray-700/50'
+                    }`}
+                    onClick={() => {
+                      if (window.innerWidth < 768) {
+                        setSidebarOpen(false);
+                      }
+                    }}
+                  >
+                    <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
+                    </svg>
+                    Tarefas
+                  </Link>
+                  <Link
+                    href="/dashboard/documentos"
+                    className={`flex items-center px-4 py-2 rounded-lg transition text-sm ${
+                      isActive('/dashboard/documentos')
+                        ? 'bg-[#4CAF50]/20 text-[#4CAF50]'
+                        : 'text-gray-400 hover:bg-gray-700/50'
+                    }`}
+                    onClick={() => {
+                      if (window.innerWidth < 768) {
+                        setSidebarOpen(false);
+                      }
+                    }}
+                  >
+                    <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                    </svg>
+                    Documentos
+                  </Link>
+                  <Link
+                    href="/dashboard/gpos"
+                    className={`flex items-center px-4 py-2 rounded-lg transition text-sm ${
+                      isActive('/dashboard/gpos')
+                        ? 'bg-[#4CAF50]/20 text-[#4CAF50]'
+                        : 'text-gray-400 hover:bg-gray-700/50'
+                    }`}
+                    onClick={() => {
+                      if (window.innerWidth < 768) {
+                        setSidebarOpen(false);
+                      }
+                    }}
+                  >
+                    <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+                    </svg>
+                    GPOs
+                  </Link>
+                  <Link
+                    href="/dashboard/automacoes"
+                    className={`flex items-center px-4 py-2 rounded-lg transition text-sm ${
+                      isActive('/dashboard/automacoes')
+                        ? 'bg-[#4CAF50]/20 text-[#4CAF50]'
+                        : 'text-gray-400 hover:bg-gray-700/50'
+                    }`}
+                    onClick={() => {
+                      if (window.innerWidth < 768) {
+                        setSidebarOpen(false);
+                      }
+                    }}
+                  >
+                    <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
+                    </svg>
+                    Automações
+                  </Link>
+                </div>
+              )}
+            </div>
 
+            {/* Credenciais - Apenas admin e analista (não suporte) */}
             {(user.isAdmin || user.nivelAcesso === 'admin' || user.nivelAcesso === 'analista') && (
-              <>
-                <Link
-                  href="/dashboard/emails"
-                  className={`flex items-center px-4 py-3 rounded-lg transition ${
-                    isActive('/dashboard/emails')
+              <div>
+                <button
+                  onClick={() => toggleSubmenu('credenciais')}
+                  className={`w-full flex items-center justify-between px-4 py-3 rounded-lg transition ${
+                    isSubmenuActive(['/dashboard/emails', '/dashboard/senhas'])
                       ? 'bg-[#4CAF50] text-white'
                       : 'text-gray-300 hover:bg-gray-700'
                   }`}
-                  onClick={() => {
-                if (window.innerWidth < 768) {
-                  setSidebarOpen(false);
-                }
-              }}
                 >
-                  <svg className="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                  <div className="flex items-center">
+                    <svg className="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                    </svg>
+                    <span>Credenciais</span>
+                  </div>
+                  <svg 
+                    className={`w-4 h-4 transition-transform ${openSubmenus.credenciais ? 'rotate-180' : ''}`} 
+                    fill="none" 
+                    stroke="currentColor" 
+                    viewBox="0 0 24 24"
+                  >
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                   </svg>
-                  Email
-                </Link>
-
-                <Link
-                  href="/dashboard/senhas"
-                  className={`flex items-center px-4 py-3 rounded-lg transition ${
-                    isActive('/dashboard/senhas')
-                      ? 'bg-[#4CAF50] text-white'
-                      : 'text-gray-300 hover:bg-gray-700'
-                  }`}
-                  onClick={() => {
-                if (window.innerWidth < 768) {
-                  setSidebarOpen(false);
-                }
-              }}
-                >
-                  <svg className="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
-                  </svg>
-                  Senhas
-                </Link>
-              </>
+                </button>
+                {openSubmenus.credenciais && (
+                  <div className="ml-4 mt-1 space-y-1">
+                    <Link
+                      href="/dashboard/emails"
+                      className={`flex items-center px-4 py-2 rounded-lg transition text-sm ${
+                        isActive('/dashboard/emails')
+                          ? 'bg-[#4CAF50]/20 text-[#4CAF50]'
+                          : 'text-gray-400 hover:bg-gray-700/50'
+                      }`}
+                      onClick={() => {
+                        if (window.innerWidth < 768) {
+                          setSidebarOpen(false);
+                        }
+                      }}
+                    >
+                      <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                      </svg>
+                      Emails
+                    </Link>
+                    <Link
+                      href="/dashboard/senhas"
+                      className={`flex items-center px-4 py-2 rounded-lg transition text-sm ${
+                        isActive('/dashboard/senhas')
+                          ? 'bg-[#4CAF50]/20 text-[#4CAF50]'
+                          : 'text-gray-400 hover:bg-gray-700/50'
+                      }`}
+                      onClick={() => {
+                        if (window.innerWidth < 768) {
+                          setSidebarOpen(false);
+                        }
+                      }}
+                    >
+                      <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                      </svg>
+                      Senhas
+                    </Link>
+                  </div>
+                )}
+              </div>
             )}
 
-            <Link
-              href="/dashboard/impressoras"
-              className={`flex items-center px-4 py-3 rounded-lg transition ${
-                isActive('/dashboard/impressoras')
-                  ? 'bg-[#4CAF50] text-white'
-                  : 'text-gray-300 hover:bg-gray-700'
-              }`}
-              onClick={() => {
-                if (window.innerWidth < 768) {
-                  setSidebarOpen(false);
-                }
-              }}
-            >
-              <svg className="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" />
-              </svg>
-              Impressoras
-            </Link>
-
-            <Link
-              href="/dashboard/automacoes"
-              className={`flex items-center px-4 py-3 rounded-lg transition ${
-                isActive('/dashboard/automacoes')
-                  ? 'bg-[#4CAF50] text-white'
-                  : 'text-gray-300 hover:bg-gray-700'
-              }`}
-              onClick={() => {
-                if (window.innerWidth < 768) {
-                  setSidebarOpen(false);
-                }
-              }}
-            >
-              <svg className="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
-              </svg>
-              Automações
-            </Link>
-
-            <Link
-              href="/dashboard/relogios-ponto"
-              className={`flex items-center px-4 py-3 rounded-lg transition ${
-                isActive('/dashboard/relogios-ponto')
-                  ? 'bg-[#4CAF50] text-white'
-                  : 'text-gray-300 hover:bg-gray-700'
-              }`}
-              onClick={() => {
-                if (window.innerWidth < 768) {
-                  setSidebarOpen(false);
-                }
-              }}
-            >
-              <svg className="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-              </svg>
-              Relógio de Ponto
-            </Link>
-
-            <Link
-              href="/dashboard/servidores"
-              className={`flex items-center px-4 py-3 rounded-lg transition ${
-                isActive('/dashboard/servidores')
-                  ? 'bg-[#4CAF50] text-white'
-                  : 'text-gray-300 hover:bg-gray-700'
-              }`}
-              onClick={() => {
-                if (window.innerWidth < 768) {
-                  setSidebarOpen(false);
-                }
-              }}
-            >
-              <svg className="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 12h14M5 12a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v4a2 2 0 01-2 2M5 12a2 2 0 00-2 2v4a2 2 0 002 2h14a2 2 0 002-2v-4a2 2 0 00-2-2m-2-4h.01M17 16h.01" />
-              </svg>
-              Servidores
-            </Link>
-
-            <Link
-              href="/dashboard/gpos"
-              className={`flex items-center px-4 py-3 rounded-lg transition ${
-                isActive('/dashboard/gpos')
-                  ? 'bg-[#4CAF50] text-white'
-                  : 'text-gray-300 hover:bg-gray-700'
-              }`}
-              onClick={() => {
-                if (window.innerWidth < 768) {
-                  setSidebarOpen(false);
-                }
-              }}
-            >
-              <svg className="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
-              </svg>
-              GPOs
-            </Link>
-
-            <Link
-              href="/dashboard/conectividades"
-              className={`flex items-center px-4 py-3 rounded-lg transition ${
-                isActive('/dashboard/conectividades')
-                  ? 'bg-[#4CAF50] text-white'
-                  : 'text-gray-300 hover:bg-gray-700'
-              }`}
-              onClick={() => {
-                if (window.innerWidth < 768) {
-                  setSidebarOpen(false);
-                }
-              }}
-            >
-              <svg className="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.111 16.404a5.5 5.5 0 017.778 0M12 20h.01m-7.08-7.071c3.904-3.905 10.236-3.905 14.141 0M1.394 9.393c5.857-5.857 15.355-5.857 21.213 0" />
-              </svg>
-              Conectividade
-            </Link>
-
-            <Link
-              href="/dashboard/tarefas"
-              className={`flex items-center px-4 py-3 rounded-lg transition ${
-                isActive('/dashboard/tarefas')
-                  ? 'bg-[#4CAF50] text-white'
-                  : 'text-gray-300 hover:bg-gray-700'
-              }`}
-              onClick={() => {
-                if (window.innerWidth < 768) {
-                  setSidebarOpen(false);
-                }
-              }}
-            >
-              <svg className="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
-              </svg>
-              Tarefas
-            </Link>
-
-            <Link
-              href="/dashboard/documentos"
-              className={`flex items-center px-4 py-3 rounded-lg transition ${
-                isActive('/dashboard/documentos')
-                  ? 'bg-[#4CAF50] text-white'
-                  : 'text-gray-300 hover:bg-gray-700'
-              }`}
-              onClick={() => {
-                if (window.innerWidth < 768) {
-                  setSidebarOpen(false);
-                }
-              }}
-            >
-              <svg className="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-              </svg>
-              Documentos
-            </Link>
-
-            <Link
-              href="/dashboard/celulares"
-              className={`flex items-center px-4 py-3 rounded-lg transition ${
-                isActive('/dashboard/celulares')
-                  ? 'bg-[#4CAF50] text-white'
-                  : 'text-gray-300 hover:bg-gray-700'
-              }`}
-              onClick={() => {
-                if (window.innerWidth < 768) {
-                  setSidebarOpen(false);
-                }
-              }}
-            >
-              <svg className="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z" />
-              </svg>
-              Celulares
-            </Link>
-
-            {(user.isAdmin || user.nivelAcesso === 'admin') && (
+            {/* Configurações - Admin e analista (mas analista não vê Usuários) */}
+            {(user.isAdmin || user.nivelAcesso === 'admin' || user.nivelAcesso === 'analista') && (
               <div>
                 <button
                   onClick={() => setShowConfigMenu(!showConfigMenu)}
@@ -525,22 +681,25 @@ export default function DashboardLayout({
 
                 {showConfigMenu && (
                   <div className="ml-4 mt-1 space-y-1">
-                    <Link
-                      href="/dashboard/usuarios"
-                      className={`flex items-center px-4 py-2.5 rounded-lg transition text-sm w-full ${
-                        isActive('/dashboard/usuarios')
-                          ? 'bg-[#4CAF50]/20 text-[#4CAF50]'
-                          : 'text-gray-400 hover:bg-gray-700'
-                      }`}
-                      onClick={() => {
-                        setShowConfigMenu(false);
-                        if (window.innerWidth < 768) {
-                          setSidebarOpen(false);
-                        }
-                      }}
-                    >
-                      Usuários
-                    </Link>
+                    {/* Usuários - Apenas admin */}
+                    {(user.isAdmin || user.nivelAcesso === 'admin') && (
+                      <Link
+                        href="/dashboard/usuarios"
+                        className={`flex items-center px-4 py-2.5 rounded-lg transition text-sm w-full ${
+                          isActive('/dashboard/usuarios')
+                            ? 'bg-[#4CAF50]/20 text-[#4CAF50]'
+                            : 'text-gray-400 hover:bg-gray-700'
+                        }`}
+                        onClick={() => {
+                          setShowConfigMenu(false);
+                          if (window.innerWidth < 768) {
+                            setSidebarOpen(false);
+                          }
+                        }}
+                      >
+                        Usuários
+                      </Link>
+                    )}
                     <Link
                       href="/dashboard/parametros"
                       className={`flex items-center px-4 py-2.5 rounded-lg transition text-sm w-full ${
@@ -740,8 +899,19 @@ export default function DashboardLayout({
       </div>
 
       {/* Main Content */}
-      <div className="md:ml-64 p-4 md:p-6 lg:p-8 pt-20 md:pt-6 lg:pt-8 min-h-screen w-full md:w-[calc(100%-16rem)]">
-        {children}
+      <div className="md:ml-64 p-4 md:p-6 lg:p-8 pt-20 md:pt-6 lg:pt-8 min-h-screen w-full md:w-[calc(100%-16rem)] relative">
+        {pageLoading && (
+          <div className="absolute inset-0 bg-[#1e2228]/80 backdrop-blur-sm z-50 flex items-center justify-center transition-opacity duration-200">
+            <div className="text-center">
+              <div className="w-16 h-16 border-4 border-[#4CAF50] border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+              <p className="text-white text-lg font-semibold">Carregando...</p>
+              <p className="text-gray-400 text-sm mt-2">Aguarde um momento</p>
+            </div>
+          </div>
+        )}
+        <div className={`transition-opacity duration-200 ${pageLoading ? 'opacity-30' : 'opacity-100'}`}>
+          {children}
+        </div>
       </div>
     </div>
   );

@@ -413,7 +413,22 @@ export default function ListaPCPage() {
                   )}
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap">
-                  <div className="text-sm text-gray-300">{computador.anydesk}</div>
+                  <button
+                    onClick={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      const id = computador.anydesk.replace(/\s/g, '').trim();
+                      // Tentar abrir com o protocolo anydesk
+                      // O formato correto é anydesk:ID (sem barras)
+                      const link = document.createElement('a');
+                      link.href = `anydesk:${id}`;
+                      link.click();
+                    }}
+                    className="text-sm text-blue-400 hover:text-blue-300 hover:underline transition-colors cursor-pointer bg-transparent border-none p-0 text-left"
+                    title={`Conectar ao Anydesk ID: ${computador.anydesk}`}
+                  >
+                    {computador.anydesk}
+                  </button>
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap">
                   <div className="text-sm text-gray-300">{computador.so.nome}</div>

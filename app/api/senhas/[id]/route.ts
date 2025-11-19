@@ -38,6 +38,14 @@ export async function PUT(
       );
     }
 
+    // Suporte não pode acessar credenciais
+    if (auth.nivelAcesso === 'suporte') {
+      return NextResponse.json(
+        { error: 'Acesso negado. Você não tem permissão para acessar esta área.' },
+        { status: 403 }
+      );
+    }
+
     await connectDB();
     ensureModelsRegistered();
 
@@ -101,10 +109,18 @@ export async function DELETE(
   try {
     const auth = await checkAuth(request);
 
-    if (!auth || (auth as any).nivelAcesso !== 'admin') {
+    if (!auth) {
       return NextResponse.json(
         { error: 'Unauthorized' },
         { status: 401 }
+      );
+    }
+
+    // Suporte não pode acessar credenciais
+    if (auth.nivelAcesso === 'suporte') {
+      return NextResponse.json(
+        { error: 'Acesso negado. Você não tem permissão para acessar esta área.' },
+        { status: 403 }
       );
     }
 

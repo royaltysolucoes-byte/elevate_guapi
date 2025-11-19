@@ -40,10 +40,16 @@ export async function GET(request: NextRequest) {
       );
     }
 
+    // Apenas admin pode acessar usuários
+    if (!auth.isAdmin && auth.nivelAcesso !== 'admin') {
+      return NextResponse.json(
+        { error: 'Acesso negado. Apenas administradores podem acessar esta área.' },
+        { status: 403 }
+      );
+    }
+
     await connectDB();
 
-    // Para tarefas, qualquer usuário autenticado pode ver a lista de usuários
-    // Mas apenas admins podem ver todos os dados na página de usuários
     const users = await User.find({}, { password: 0 }).sort({ createdAt: -1 }).lean();
 
     return NextResponse.json({ 

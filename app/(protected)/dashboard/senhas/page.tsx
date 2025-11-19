@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState, useRef } from 'react';
+import { useRouter } from 'next/navigation';
 
 interface User {
   username: string;
@@ -34,6 +35,7 @@ interface ServicoType {
 }
 
 export default function SenhasPage() {
+  const router = useRouter();
   const [user, setUser] = useState<User | null>(null);
   const [senhas, setSenhas] = useState<SenhaType[]>([]);
   const [categorias, setCategorias] = useState<CategoriaType[]>([]);
@@ -74,8 +76,15 @@ export default function SenhasPage() {
   };
 
   useEffect(() => {
-    fetchSenhas(true); // Mostra loading apenas na mudança de página
-  }, [page]);
+    if (user) {
+      // Suporte não pode acessar credenciais
+      if (user.nivelAcesso === 'suporte') {
+        router.push('/dashboard');
+        return;
+      }
+      fetchSenhas(true); // Mostra loading apenas na mudança de página
+    }
+  }, [user, page, router]);
 
   // Debounce para busca enquanto digita
   useEffect(() => {

@@ -26,6 +26,14 @@ export async function GET(request: NextRequest) {
       );
     }
 
+    // Suporte não pode acessar credenciais
+    if (auth.nivelAcesso === 'suporte') {
+      return NextResponse.json(
+        { error: 'Acesso negado. Você não tem permissão para acessar esta área.' },
+        { status: 403 }
+      );
+    }
+
     await connectDB();
 
     const { searchParams } = new URL(request.url);
@@ -180,6 +188,14 @@ export async function POST(request: NextRequest) {
       return NextResponse.json(
         { error: 'Unauthorized' },
         { status: 401 }
+      );
+    }
+
+    // Suporte não pode acessar credenciais
+    if (auth.nivelAcesso === 'suporte') {
+      return NextResponse.json(
+        { error: 'Acesso negado. Você não tem permissão para acessar esta área.' },
+        { status: 403 }
       );
     }
 

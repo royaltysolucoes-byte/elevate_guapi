@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
 
 interface User {
   _id: string;
@@ -14,9 +15,11 @@ interface User {
 }
 
 export default function UsuariosPage() {
+  const router = useRouter();
   const [users, setUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
+  const [editingUser, setEditingUser] = useState<User | null>(null);
   const [formData, setFormData] = useState({
     username: '',
     password: '',
@@ -26,10 +29,35 @@ export default function UsuariosPage() {
     nivelAcesso: 'suporte',
   });
   const [error, setError] = useState('');
+  const [currentUser, setCurrentUser] = useState<User | null>(null);
 
   useEffect(() => {
-    fetchUsers();
+    fetchCurrentUser();
   }, []);
+
+  useEffect(() => {
+    if (currentUser) {
+      // Verificar se é admin
+      if (!currentUser.isAdmin && currentUser.nivelAcesso !== 'admin') {
+        router.push('/dashboard');
+        return;
+      }
+      fetchUsers();
+    }
+  }, [currentUser, router]);
+
+  const fetchCurrentUser = async () => {
+    try {
+      const response = await fetch('/api/users/profile');
+      if (response.ok) {
+        const data = await response.json();
+        setCurrentUser(data.user);
+      }
+    } catch (error) {
+      console.error('Error fetching current user:', error);
+      setLoading(false);
+    }
+  };
 
   const fetchUsers = async () => {
     try {
@@ -37,6 +65,8 @@ export default function UsuariosPage() {
       if (response.ok) {
         const data = await response.json();
         setUsers(data.users);
+      } else if (response.status === 403) {
+        router.push('/dashboard');
       }
     } catch (error) {
       console.error('Error fetching users:', error);
@@ -45,28 +75,77 @@ export default function UsuariosPage() {
     }
   };
 
+  const handleEdit = (user: User) => {
+    setEditingUser(user);
+    setFormData({
+      username: user.username,
+      password: '', // Senha vazia, só preenche se quiser alterar
+      fullName: user.fullName,
+      funcao: user.funcao,
+      isAdmin: user.isAdmin,
+      nivelAcesso: user.nivelAcesso,
+    });
+    setShowModal(true);
+    setError('');
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
 
     try {
-      const response = await fetch('/api/users', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(formData),
-      });
+      if (editingUser) {
+        // Editar usuário existente
+        const updateData: any = {
+          fullName: formData.fullName,
+          funcao: formData.funcao,
+          isAdmin: formData.isAdmin,
+          nivelAcesso: formData.nivelAcesso,
+        };
 
-      if (!response.ok) {
-        const data = await response.json();
-        setError(data.error || 'Erro ao criar usuário');
-        return;
+        // Só envia senha se foi preenchida
+        if (formData.password && formData.password.trim() !== '') {
+          updateData.password = formData.password;
+        }
+
+        const response = await fetch(`/api/users/${editingUser._id}`, {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(updateData),
+        });
+
+        if (!response.ok) {
+          const data = await response.json();
+          setError(data.error || 'Erro ao atualizar usuário');
+          return;
+        }
+
+        setShowModal(false);
+        setEditingUser(null);
+        setFormData({ username: '', password: '', fullName: '', funcao: '', isAdmin: false, nivelAcesso: 'suporte' });
+        fetchUsers();
+      } else {
+        // Criar novo usuário
+        const response = await fetch('/api/users', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(formData),
+        });
+
+        if (!response.ok) {
+          const data = await response.json();
+          setError(data.error || 'Erro ao criar usuário');
+          return;
+        }
+
+        setShowModal(false);
+        setFormData({ username: '', password: '', fullName: '', funcao: '', isAdmin: false, nivelAcesso: 'suporte' });
+        fetchUsers();
       }
-
-      setShowModal(false);
-      setFormData({ username: '', password: '', fullName: '', funcao: '', isAdmin: false, nivelAcesso: 'suporte' });
-      fetchUsers();
     } catch (error) {
       setError('Erro ao conectar com o servidor');
     }
@@ -180,10 +259,22 @@ export default function UsuariosPage() {
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                   <button
-                    onClick={() => handleDelete(user._id)}
-                    className="text-red-400 hover:text-red-300 mr-4"
+                    onClick={() => handleEdit(user)}
+                    className="text-blue-400 hover:text-blue-300 mr-4"
+                    title="Editar usuário"
                   >
-                    Excluir
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                    </svg>
+                  </button>
+                  <button
+                    onClick={() => handleDelete(user._id)}
+                    className="text-red-400 hover:text-red-300"
+                    title="Excluir usuário"
+                  >
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                    </svg>
                   </button>
                 </td>
               </tr>
@@ -196,7 +287,9 @@ export default function UsuariosPage() {
       {showModal && (
         <div className="fixed inset-0 bg-black/5 backdrop-blur-sm flex items-center justify-center z-50">
           <div className="bg-[#282c34]/98 backdrop-blur-xl rounded-lg shadow-md p-8 max-w-2xl w-full mx-4 border border-gray-700/50">
-            <h2 className="text-3xl font-bold text-white mb-8">Novo Usuário</h2>
+            <h2 className="text-3xl font-bold text-white mb-8">
+              {editingUser ? 'Editar Usuário' : 'Novo Usuário'}
+            </h2>
 
             <form onSubmit={handleSubmit} className="space-y-6">
               {error && (
@@ -204,18 +297,34 @@ export default function UsuariosPage() {
                   {error}
                 </div>
               )}
-              <div>
-                <label className="block text-sm font-medium text-gray-300 mb-2">
-                  Usuário
-                </label>
-                <input
-                  type="text"
-                  value={formData.username}
-                  onChange={(e) => setFormData({ ...formData, username: e.target.value })}
-                  className="w-full px-4 py-2 border border-gray-600 rounded-lg bg-[#363f4a] text-white placeholder-gray-400 focus:ring-2 focus:ring-[#4CAF50] focus:border-transparent"
-                  required
-                />
-              </div>
+              {!editingUser && (
+                <div>
+                  <label className="block text-sm font-medium text-gray-300 mb-2">
+                    Usuário
+                  </label>
+                  <input
+                    type="text"
+                    value={formData.username}
+                    onChange={(e) => setFormData({ ...formData, username: e.target.value })}
+                    className="w-full px-4 py-2 border border-gray-600 rounded-lg bg-[#363f4a] text-white placeholder-gray-400 focus:ring-2 focus:ring-[#4CAF50] focus:border-transparent"
+                    required
+                  />
+                </div>
+              )}
+              {editingUser && (
+                <div>
+                  <label className="block text-sm font-medium text-gray-300 mb-2">
+                    Usuário
+                  </label>
+                  <input
+                    type="text"
+                    value={formData.username}
+                    disabled
+                    className="w-full px-4 py-2 border border-gray-600 rounded-lg bg-[#363f4a]/50 text-gray-400 cursor-not-allowed"
+                  />
+                  <p className="text-xs text-gray-500 mt-1">O nome de usuário não pode ser alterado</p>
+                </div>
+              )}
 
               <div>
                 <label className="block text-sm font-medium text-gray-300 mb-2">
@@ -246,14 +355,15 @@ export default function UsuariosPage() {
 
               <div>
                 <label className="block text-sm font-medium text-gray-300 mb-2">
-                  Senha
+                  {editingUser ? 'Nova Senha (deixe em branco para não alterar)' : 'Senha'}
                 </label>
                 <input
                   type="password"
                   value={formData.password}
                   onChange={(e) => setFormData({ ...formData, password: e.target.value })}
                   className="w-full px-4 py-2 border border-gray-600 rounded-lg bg-[#363f4a] text-white placeholder-gray-400 focus:ring-2 focus:ring-[#4CAF50] focus:border-transparent"
-                  required
+                  placeholder={editingUser ? 'Deixe em branco para manter a senha atual' : ''}
+                  required={!editingUser}
                 />
               </div>
 
@@ -285,6 +395,7 @@ export default function UsuariosPage() {
                   type="button"
                   onClick={() => {
                     setShowModal(false);
+                    setEditingUser(null);
                     setFormData({ username: '', password: '', fullName: '', funcao: '', isAdmin: false, nivelAcesso: 'suporte' });
                     setError('');
                   }}
@@ -296,7 +407,7 @@ export default function UsuariosPage() {
                   type="submit"
                   className="flex-1 bg-[#4CAF50] hover:bg-[#45a049] text-white font-semibold py-2 rounded-lg transition"
                 >
-                  Criar
+                  {editingUser ? 'Salvar Alterações' : 'Criar'}
                 </button>
               </div>
             </form>

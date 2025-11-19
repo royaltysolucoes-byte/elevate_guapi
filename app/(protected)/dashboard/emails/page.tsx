@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState, useRef } from 'react';
+import { useRouter } from 'next/navigation';
 
 interface User {
   username: string;
@@ -21,6 +22,7 @@ interface EmailType {
 }
 
 export default function EmailsPage() {
+  const router = useRouter();
   const [user, setUser] = useState<User | null>(null);
   const [emails, setEmails] = useState<EmailType[]>([]);
   const [loading, setLoading] = useState(true);
@@ -42,8 +44,23 @@ export default function EmailsPage() {
 
   useEffect(() => {
     fetchUser();
-    fetchEmails(true); // Mostra loading apenas na mudança de página
-  }, [page]);
+  }, []);
+
+  useEffect(() => {
+    if (user) {
+      // Suporte não pode acessar credenciais
+      if (user.nivelAcesso === 'suporte') {
+        router.push('/dashboard');
+        return;
+      }
+    }
+  }, [user, router]);
+
+  useEffect(() => {
+    if (user && user.nivelAcesso !== 'suporte') {
+      fetchEmails(true); // Mostra loading apenas na mudança de página
+    }
+  }, [user, page]);
 
   const fetchUser = async () => {
     try {

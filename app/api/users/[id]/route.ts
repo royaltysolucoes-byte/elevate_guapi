@@ -28,10 +28,18 @@ export async function PUT(
       );
     }
 
+    // Apenas admin pode editar usuários
+    if (!auth.isAdmin && auth.nivelAcesso !== 'admin') {
+      return NextResponse.json(
+        { error: 'Acesso negado. Apenas administradores podem acessar esta área.' },
+        { status: 403 }
+      );
+    }
+
     await connectDB();
 
     const { id } = await params;
-    const { fullName, funcao, isAdmin, nivelAcesso } = await request.json();
+    const { fullName, funcao, isAdmin, nivelAcesso, password } = await request.json();
     const updateData: any = { fullName };
 
     if (funcao) {
@@ -42,6 +50,11 @@ export async function PUT(
     if (auth.isAdmin) {
       updateData.isAdmin = isAdmin;
       updateData.nivelAcesso = nivelAcesso;
+    }
+
+    // Update password if provided
+    if (password && password.trim() !== '') {
+      updateData.password = await hashPassword(password);
     }
 
     const user = await User.findByIdAndUpdate(
