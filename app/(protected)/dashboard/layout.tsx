@@ -31,18 +31,26 @@ export default function DashboardLayout({
   const [showProfileMenu, setShowProfileMenu] = useState(false);
   const [showConfigMenu, setShowConfigMenu] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [loading, setLoading] = useState(true);
   const [pageLoading, setPageLoading] = useState(false);
   const [notificacoes, setNotificacoes] = useState<Notificacao[]>([]);
   const [totalNaoLidas, setTotalNaoLidas] = useState(0);
   const [showNotificacoes, setShowNotificacoes] = useState(false);
   const [openSubmenus, setOpenSubmenus] = useState<{ [key: string]: boolean }>({});
+  const [hoveredItem, setHoveredItem] = useState<string | null>(null);
   const router = useRouter();
   const pathname = usePathname();
 
   useEffect(() => {
     fetchProfile();
     fetchNotificacoes();
+    
+    // Carregar preferência do menu do localStorage
+    const savedCollapsed = localStorage.getItem('sidebarCollapsed');
+    if (savedCollapsed !== null) {
+      setSidebarCollapsed(savedCollapsed === 'true');
+    }
     
     // Polling para verificar novas notificações a cada 10 segundos
     const interval = setInterval(() => {
@@ -181,10 +189,33 @@ export default function DashboardLayout({
   const isActive = (path: string) => pathname === path;
 
   const toggleSubmenu = (key: string) => {
-    setOpenSubmenus(prev => ({
-      ...prev,
-      [key]: !prev[key]
-    }));
+    // Se o menu estiver recolhido, expandir primeiro
+    if (sidebarCollapsed) {
+      setSidebarCollapsed(false);
+      localStorage.setItem('sidebarCollapsed', 'false');
+      // Aguardar um pouco para a animação antes de abrir o submenu
+      setTimeout(() => {
+        setOpenSubmenus(prev => ({
+          ...prev,
+          [key]: !prev[key]
+        }));
+      }, 100);
+    } else {
+      setOpenSubmenus(prev => ({
+        ...prev,
+        [key]: !prev[key]
+      }));
+    }
+  };
+
+  const toggleSidebarCollapse = () => {
+    const newState = !sidebarCollapsed;
+    setSidebarCollapsed(newState);
+    localStorage.setItem('sidebarCollapsed', String(newState));
+    // Fechar submenus quando recolher
+    if (newState) {
+      setOpenSubmenus({});
+    }
   };
 
   const isSubmenuActive = (paths: string[]) => {
@@ -217,26 +248,47 @@ export default function DashboardLayout({
       )}
 
       {/* Sidebar */}
-      <div className={`fixed left-0 top-0 h-full w-64 bg-[#282c34] shadow-2xl transform transition-transform duration-300 ease-in-out z-50 md:z-40 md:translate-x-0 overflow-y-auto overscroll-contain ${
+      <div className={`fixed left-0 top-0 h-full bg-[#282c34] shadow-2xl transform transition-all duration-300 ease-in-out z-50 md:z-40 md:translate-x-0 overflow-hidden overscroll-contain ${
         sidebarOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'
-      }`}>
-        <div className="p-4 pb-24 md:pb-28 min-h-full flex flex-col">
-          <div className="flex items-center justify-between mb-4 md:mb-6">
-            <h1 className="text-xl md:text-2xl font-bold">
-              <span className="text-white">Elevate</span>{' '}
-              <span 
-                style={{
-                  background: 'linear-gradient(90deg, #ffffff 0%, #4CAF50 50%, #ffffff 100%)',
-                  backgroundSize: '200% auto',
-                  WebkitBackgroundClip: 'text',
-                  WebkitTextFillColor: 'transparent',
-                  backgroundClip: 'text',
-                  animation: 'gradient-shift 3s ease infinite'
-                }}
+      } ${
+        sidebarCollapsed ? 'w-20' : 'w-64'
+      }`}
+      style={{
+        willChange: 'width'
+      }}>
+        <div className="p-4 pb-24 md:pb-28 min-h-full flex flex-col overflow-y-auto">
+          {/* Toggle collapse button - Desktop only, no topo */}
+          <div className="hidden md:flex justify-end mb-4">
+            <button
+              onClick={toggleSidebarCollapse}
+              className="bg-[#282c34] border border-gray-700 text-gray-400 hover:text-white p-1.5 rounded-lg shadow-lg hover:bg-gray-700 transition"
+              aria-label={sidebarCollapsed ? 'Expandir menu' : 'Recolher menu'}
+            >
+              <svg 
+                className={`w-4 h-4 transition-transform duration-300 ${sidebarCollapsed ? 'rotate-180' : ''}`} 
+                fill="none" 
+                stroke="currentColor" 
+                viewBox="0 0 24 24"
               >
-                Control
-              </span>
-            </h1>
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+              </svg>
+            </button>
+          </div>
+          
+          <div className="flex items-center justify-center mb-6 md:mb-8 relative">
+            {/* Logo Átomo - Estático */}
+            <div className={`relative flex items-center justify-center transition-all duration-300 ${sidebarCollapsed ? 'w-10 h-10' : 'w-14 h-14'}`}>
+              <svg className="w-full h-full" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+                {/* Órbitas fixas */}
+                <ellipse cx="32" cy="32" rx="24" ry="8" stroke="#4CAF50" strokeWidth="1.5" strokeOpacity="0.4" />
+                <ellipse cx="32" cy="32" rx="24" ry="8" stroke="#4CAF50" strokeWidth="1.5" strokeOpacity="0.4" transform="rotate(60 32 32)" />
+                <ellipse cx="32" cy="32" rx="24" ry="8" stroke="#4CAF50" strokeWidth="1.5" strokeOpacity="0.4" transform="rotate(120 32 32)" />
+                
+                {/* Núcleo central */}
+                <circle cx="32" cy="32" r="4" fill="#4CAF50" />
+                <circle cx="32" cy="32" r="6" fill="#4CAF50" fillOpacity="0.2" />
+              </svg>
+            </div>
             {/* Close button for mobile */}
             <button
               onClick={() => {
@@ -244,7 +296,7 @@ export default function DashboardLayout({
                   setSidebarOpen(false);
                 }
               }}
-              className="md:hidden text-gray-400 hover:text-white p-1 rounded-lg hover:bg-gray-700 transition"
+              className="md:hidden absolute top-0 right-0 text-gray-400 hover:text-white p-1 rounded-lg hover:bg-gray-700 transition"
               aria-label="Fechar menu"
             >
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -254,12 +306,78 @@ export default function DashboardLayout({
           </div>
 
           <nav className="space-y-1.5 md:space-y-2 flex-1">
+            <div className="relative">
             <Link
               href="/dashboard"
-              className={`flex items-center px-4 py-3 rounded-lg transition ${
+                className={`flex items-center px-4 py-3 rounded-lg transition group ${
                 isActive('/dashboard')
                   ? 'bg-[#4CAF50] text-white'
                   : 'text-gray-300 hover:bg-gray-700'
+                } ${sidebarCollapsed ? 'justify-center' : ''}`}
+              onClick={() => {
+                if (window.innerWidth < 768) {
+                  setSidebarOpen(false);
+                }
+              }}
+                onMouseEnter={() => setHoveredItem('dashboard')}
+                onMouseLeave={() => setHoveredItem(null)}
+            >
+                <svg className={`w-5 h-5 ${sidebarCollapsed ? '' : 'mr-3'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
+              </svg>
+                {!sidebarCollapsed && <span>Dashboard</span>}
+            </Link>
+              {sidebarCollapsed && hoveredItem === 'dashboard' && (
+                <div className="absolute left-full ml-2 px-3 py-2 bg-gray-800 text-white text-sm rounded-lg shadow-lg z-50 whitespace-nowrap">
+                  Dashboard
+                  <div className="absolute right-full top-1/2 -translate-y-1/2 border-4 border-transparent border-r-gray-800"></div>
+                </div>
+              )}
+            </div>
+
+            {/* Equipamentos */}
+            <div className="relative">
+              <button
+                onClick={() => toggleSubmenu('equipamentos')}
+                className={`w-full flex items-center justify-between px-4 py-3 rounded-lg transition group ${
+                  isSubmenuActive(['/dashboard/lista-pc', '/dashboard/impressoras', '/dashboard/relogios-ponto', '/dashboard/celulares'])
+                  ? 'bg-[#4CAF50] text-white'
+                  : 'text-gray-300 hover:bg-gray-700'
+                } ${sidebarCollapsed ? 'justify-center' : ''}`}
+                onMouseEnter={() => setHoveredItem('equipamentos')}
+                onMouseLeave={() => setHoveredItem(null)}
+              >
+                <div className={`flex items-center ${sidebarCollapsed ? '' : 'flex-1'}`}>
+                  <svg className={`w-5 h-5 ${sidebarCollapsed ? '' : 'mr-3'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 3v2m6-2v2M9 19v2m6-2v2M5 9H3m2 6H3m18-6h-2m2 6h-2M7 19h10a2 2 0 002-2V7a2 2 0 00-2-2H7a2 2 0 00-2 2v10a2 2 0 002 2zM9 9h6v6H9V9z" />
+                  </svg>
+                  {!sidebarCollapsed && <span>Equipamentos</span>}
+                </div>
+                {!sidebarCollapsed && (
+                  <svg 
+                    className={`w-4 h-4 transition-transform ${openSubmenus.equipamentos ? 'rotate-180' : ''}`} 
+                    fill="none" 
+                    stroke="currentColor" 
+                    viewBox="0 0 24 24"
+                  >
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                  </svg>
+                )}
+              </button>
+              {sidebarCollapsed && hoveredItem === 'equipamentos' && (
+                <div className="absolute left-full ml-2 px-3 py-2 bg-gray-800 text-white text-sm rounded-lg shadow-lg z-50 whitespace-nowrap">
+                  Equipamentos
+                  <div className="absolute right-full top-1/2 -translate-y-1/2 border-4 border-transparent border-r-gray-800"></div>
+                </div>
+              )}
+              {openSubmenus.equipamentos && !sidebarCollapsed && (
+                <div className="ml-4 mt-1 space-y-1">
+            <Link
+              href="/dashboard/lista-pc"
+                    className={`flex items-center px-4 py-2 rounded-lg transition text-sm ${
+                isActive('/dashboard/lista-pc')
+                        ? 'bg-[#4CAF50]/20 text-[#4CAF50]'
+                        : 'text-gray-400 hover:bg-gray-700/50'
               }`}
               onClick={() => {
                 if (window.innerWidth < 768) {
@@ -267,244 +385,218 @@ export default function DashboardLayout({
                 }
               }}
             >
-              <svg className="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
-              </svg>
-              Dashboard
-            </Link>
-
-            {/* Equipamentos */}
-            <div>
-              <button
-                onClick={() => toggleSubmenu('equipamentos')}
-                className={`w-full flex items-center justify-between px-4 py-3 rounded-lg transition ${
-                  isSubmenuActive(['/dashboard/lista-pc', '/dashboard/impressoras', '/dashboard/relogios-ponto', '/dashboard/celulares'])
-                    ? 'bg-[#4CAF50] text-white'
-                    : 'text-gray-300 hover:bg-gray-700'
-                }`}
-              >
-                <div className="flex items-center">
-                  <svg className="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 3v2m6-2v2M9 19v2m6-2v2M5 9H3m2 6H3m18-6h-2m2 6h-2M7 19h10a2 2 0 002-2V7a2 2 0 00-2-2H7a2 2 0 00-2 2v10a2 2 0 002 2zM9 9h6v6H9V9z" />
-                  </svg>
-                  <span>Equipamentos</span>
-                </div>
-                <svg 
-                  className={`w-4 h-4 transition-transform ${openSubmenus.equipamentos ? 'rotate-180' : ''}`} 
-                  fill="none" 
-                  stroke="currentColor" 
-                  viewBox="0 0 24 24"
-                >
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                </svg>
-              </button>
-              {openSubmenus.equipamentos && (
-                <div className="ml-4 mt-1 space-y-1">
-                  <Link
-                    href="/dashboard/lista-pc"
-                    className={`flex items-center px-4 py-2 rounded-lg transition text-sm ${
-                      isActive('/dashboard/lista-pc')
-                        ? 'bg-[#4CAF50]/20 text-[#4CAF50]'
-                        : 'text-gray-400 hover:bg-gray-700/50'
-                    }`}
-                    onClick={() => {
-                      if (window.innerWidth < 768) {
-                        setSidebarOpen(false);
-                      }
-                    }}
-                  >
                     <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 3v2m6-2v2M9 19v2m6-2v2M5 9H3m2 6H3m18-6h-2m2 6h-2M7 19h10a2 2 0 002-2V7a2 2 0 00-2-2H7a2 2 0 00-2 2v10a2 2 0 002 2zM9 9h6v6H9V9z" />
-                    </svg>
-                    Lista de PC
-                  </Link>
-                  <Link
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 3v2m6-2v2M9 19v2m6-2v2M5 9H3m2 6H3m18-6h-2m2 6h-2M7 19h10a2 2 0 002-2V7a2 2 0 00-2-2H7a2 2 0 00-2 2v10a2 2 0 002 2zM9 9h6v6H9V9z" />
+              </svg>
+              Lista de PC
+            </Link>
+            <Link
                     href="/dashboard/impressoras"
                     className={`flex items-center px-4 py-2 rounded-lg transition text-sm ${
                       isActive('/dashboard/impressoras')
                         ? 'bg-[#4CAF50]/20 text-[#4CAF50]'
                         : 'text-gray-400 hover:bg-gray-700/50'
-                    }`}
-                    onClick={() => {
-                      if (window.innerWidth < 768) {
-                        setSidebarOpen(false);
-                      }
-                    }}
-                  >
+              }`}
+              onClick={() => {
+                if (window.innerWidth < 768) {
+                  setSidebarOpen(false);
+                }
+              }}
+            >
                     <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" />
-                    </svg>
+              </svg>
                     Impressoras
-                  </Link>
-                  <Link
+            </Link>
+                <Link
                     href="/dashboard/relogios-ponto"
                     className={`flex items-center px-4 py-2 rounded-lg transition text-sm ${
                       isActive('/dashboard/relogios-ponto')
                         ? 'bg-[#4CAF50]/20 text-[#4CAF50]'
                         : 'text-gray-400 hover:bg-gray-700/50'
-                    }`}
-                    onClick={() => {
-                      if (window.innerWidth < 768) {
-                        setSidebarOpen(false);
-                      }
-                    }}
-                  >
+                  }`}
+                  onClick={() => {
+                if (window.innerWidth < 768) {
+                  setSidebarOpen(false);
+                }
+              }}
+                >
                     <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                    </svg>
+                  </svg>
                     Relógio de Ponto
-                  </Link>
-                  <Link
+                </Link>
+                <Link
                     href="/dashboard/celulares"
                     className={`flex items-center px-4 py-2 rounded-lg transition text-sm ${
                       isActive('/dashboard/celulares')
                         ? 'bg-[#4CAF50]/20 text-[#4CAF50]'
                         : 'text-gray-400 hover:bg-gray-700/50'
-                    }`}
-                    onClick={() => {
-                      if (window.innerWidth < 768) {
-                        setSidebarOpen(false);
-                      }
-                    }}
-                  >
+                  }`}
+                  onClick={() => {
+                if (window.innerWidth < 768) {
+                  setSidebarOpen(false);
+                }
+              }}
+                >
                     <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z" />
-                    </svg>
+                  </svg>
                     Celulares
-                  </Link>
+                </Link>
                 </div>
               )}
             </div>
 
             {/* Rede e IP */}
-            <div>
+            <div className="relative">
               <button
                 onClick={() => toggleSubmenu('rede')}
-                className={`w-full flex items-center justify-between px-4 py-3 rounded-lg transition ${
+                className={`w-full flex items-center justify-between px-4 py-3 rounded-lg transition group ${
                   isSubmenuActive(['/dashboard/gestao-ip', '/dashboard/consulta-ip', '/dashboard/conectividades', '/dashboard/servidores'])
-                    ? 'bg-[#4CAF50] text-white'
-                    : 'text-gray-300 hover:bg-gray-700'
-                }`}
+                  ? 'bg-[#4CAF50] text-white'
+                  : 'text-gray-300 hover:bg-gray-700'
+                } ${sidebarCollapsed ? 'justify-center' : ''}`}
+                onMouseEnter={() => setHoveredItem('rede')}
+                onMouseLeave={() => setHoveredItem(null)}
               >
-                <div className="flex items-center">
-                  <svg className="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <div className={`flex items-center ${sidebarCollapsed ? '' : 'flex-1'}`}>
+                  <svg className={`w-5 h-5 ${sidebarCollapsed ? '' : 'mr-3'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
                   </svg>
-                  <span>Rede e IP</span>
+                  {!sidebarCollapsed && <span>Rede e IP</span>}
                 </div>
-                <svg 
-                  className={`w-4 h-4 transition-transform ${openSubmenus.rede ? 'rotate-180' : ''}`} 
-                  fill="none" 
-                  stroke="currentColor" 
-                  viewBox="0 0 24 24"
-                >
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                </svg>
+                {!sidebarCollapsed && (
+                  <svg 
+                    className={`w-4 h-4 transition-transform ${openSubmenus.rede ? 'rotate-180' : ''}`} 
+                    fill="none" 
+                    stroke="currentColor" 
+                    viewBox="0 0 24 24"
+                  >
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                  </svg>
+                )}
               </button>
-              {openSubmenus.rede && (
+              {sidebarCollapsed && hoveredItem === 'rede' && (
+                <div className="absolute left-full ml-2 px-3 py-2 bg-gray-800 text-white text-sm rounded-lg shadow-lg z-50 whitespace-nowrap">
+                  Rede e IP
+                  <div className="absolute right-full top-1/2 -translate-y-1/2 border-4 border-transparent border-r-gray-800"></div>
+                </div>
+              )}
+              {openSubmenus.rede && !sidebarCollapsed && (
                 <div className="ml-4 mt-1 space-y-1">
-                  <Link
+            <Link
                     href="/dashboard/gestao-ip"
                     className={`flex items-center px-4 py-2 rounded-lg transition text-sm ${
                       isActive('/dashboard/gestao-ip')
                         ? 'bg-[#4CAF50]/20 text-[#4CAF50]'
                         : 'text-gray-400 hover:bg-gray-700/50'
-                    }`}
-                    onClick={() => {
-                      if (window.innerWidth < 768) {
-                        setSidebarOpen(false);
-                      }
-                    }}
-                  >
+              }`}
+              onClick={() => {
+                if (window.innerWidth < 768) {
+                  setSidebarOpen(false);
+                }
+              }}
+            >
                     <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
-                    </svg>
+              </svg>
                     Gestão de IP
-                  </Link>
-                  <Link
+            </Link>
+            <Link
                     href="/dashboard/consulta-ip"
                     className={`flex items-center px-4 py-2 rounded-lg transition text-sm ${
                       isActive('/dashboard/consulta-ip')
                         ? 'bg-[#4CAF50]/20 text-[#4CAF50]'
                         : 'text-gray-400 hover:bg-gray-700/50'
-                    }`}
-                    onClick={() => {
-                      if (window.innerWidth < 768) {
-                        setSidebarOpen(false);
-                      }
-                    }}
-                  >
+              }`}
+              onClick={() => {
+                if (window.innerWidth < 768) {
+                  setSidebarOpen(false);
+                }
+              }}
+            >
                     <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                    </svg>
+              </svg>
                     Consulta IP
-                  </Link>
-                  <Link
+            </Link>
+            <Link
                     href="/dashboard/conectividades"
                     className={`flex items-center px-4 py-2 rounded-lg transition text-sm ${
                       isActive('/dashboard/conectividades')
                         ? 'bg-[#4CAF50]/20 text-[#4CAF50]'
                         : 'text-gray-400 hover:bg-gray-700/50'
-                    }`}
-                    onClick={() => {
-                      if (window.innerWidth < 768) {
-                        setSidebarOpen(false);
-                      }
-                    }}
-                  >
+              }`}
+              onClick={() => {
+                if (window.innerWidth < 768) {
+                  setSidebarOpen(false);
+                }
+              }}
+            >
                     <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.111 16.404a5.5 5.5 0 017.778 0M12 20h.01m-7.08-7.071c3.904-3.905 10.236-3.905 14.141 0M1.394 9.393c5.857-5.857 15.355-5.857 21.213 0" />
-                    </svg>
+              </svg>
                     Conectividade
-                  </Link>
-                  <Link
-                    href="/dashboard/servidores"
+            </Link>
+            <Link
+              href="/dashboard/servidores"
                     className={`flex items-center px-4 py-2 rounded-lg transition text-sm ${
-                      isActive('/dashboard/servidores')
+                isActive('/dashboard/servidores')
                         ? 'bg-[#4CAF50]/20 text-[#4CAF50]'
                         : 'text-gray-400 hover:bg-gray-700/50'
-                    }`}
-                    onClick={() => {
-                      if (window.innerWidth < 768) {
-                        setSidebarOpen(false);
-                      }
-                    }}
-                  >
+              }`}
+              onClick={() => {
+                if (window.innerWidth < 768) {
+                  setSidebarOpen(false);
+                }
+              }}
+            >
                     <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 12h14M5 12a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v4a2 2 0 01-2 2M5 12a2 2 0 00-2 2v4a2 2 0 002 2h14a2 2 0 002-2v-4a2 2 0 00-2-2m-2-4h.01M17 16h.01" />
-                    </svg>
-                    Servidores
-                  </Link>
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 12h14M5 12a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v4a2 2 0 01-2 2M5 12a2 2 0 00-2 2v4a2 2 0 002 2h14a2 2 0 002-2v-4a2 2 0 00-2-2m-2-4h.01M17 16h.01" />
+              </svg>
+              Servidores
+            </Link>
                 </div>
               )}
             </div>
 
             {/* Gestão */}
-            <div>
+            <div className="relative">
               <button
                 onClick={() => toggleSubmenu('gestao')}
-                className={`w-full flex items-center justify-between px-4 py-3 rounded-lg transition ${
+                className={`w-full flex items-center justify-between px-4 py-3 rounded-lg transition group ${
                   isSubmenuActive(['/dashboard/tarefas', '/dashboard/documentos', '/dashboard/gpos', '/dashboard/automacoes'])
-                    ? 'bg-[#4CAF50] text-white'
-                    : 'text-gray-300 hover:bg-gray-700'
-                }`}
+                  ? 'bg-[#4CAF50] text-white'
+                  : 'text-gray-300 hover:bg-gray-700'
+                } ${sidebarCollapsed ? 'justify-center' : ''}`}
+                onMouseEnter={() => setHoveredItem('gestao')}
+                onMouseLeave={() => setHoveredItem(null)}
               >
-                <div className="flex items-center">
-                  <svg className="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <div className={`flex items-center ${sidebarCollapsed ? '' : 'flex-1'}`}>
+                  <svg className={`w-5 h-5 ${sidebarCollapsed ? '' : 'mr-3'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" />
                   </svg>
-                  <span>Gestão</span>
+                  {!sidebarCollapsed && <span>Gestão</span>}
                 </div>
-                <svg 
-                  className={`w-4 h-4 transition-transform ${openSubmenus.gestao ? 'rotate-180' : ''}`} 
-                  fill="none" 
-                  stroke="currentColor" 
-                  viewBox="0 0 24 24"
-                >
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                </svg>
+                {!sidebarCollapsed && (
+                  <svg 
+                    className={`w-4 h-4 transition-transform ${openSubmenus.gestao ? 'rotate-180' : ''}`} 
+                    fill="none" 
+                    stroke="currentColor" 
+                    viewBox="0 0 24 24"
+                  >
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                  </svg>
+                )}
               </button>
-              {openSubmenus.gestao && (
+              {sidebarCollapsed && hoveredItem === 'gestao' && (
+                <div className="absolute left-full ml-2 px-3 py-2 bg-gray-800 text-white text-sm rounded-lg shadow-lg z-50 whitespace-nowrap">
+                  Gestão
+                  <div className="absolute right-full top-1/2 -translate-y-1/2 border-4 border-transparent border-r-gray-800"></div>
+                </div>
+              )}
+              {openSubmenus.gestao && !sidebarCollapsed && (
                 <div className="ml-4 mt-1 space-y-1">
                   <Link
                     href="/dashboard/tarefas"
@@ -512,67 +604,67 @@ export default function DashboardLayout({
                       isActive('/dashboard/tarefas')
                         ? 'bg-[#4CAF50]/20 text-[#4CAF50]'
                         : 'text-gray-400 hover:bg-gray-700/50'
-                    }`}
-                    onClick={() => {
-                      if (window.innerWidth < 768) {
-                        setSidebarOpen(false);
-                      }
-                    }}
-                  >
+              }`}
+              onClick={() => {
+                if (window.innerWidth < 768) {
+                  setSidebarOpen(false);
+                }
+              }}
+            >
                     <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
-                    </svg>
+              </svg>
                     Tarefas
-                  </Link>
-                  <Link
+            </Link>
+            <Link
                     href="/dashboard/documentos"
                     className={`flex items-center px-4 py-2 rounded-lg transition text-sm ${
                       isActive('/dashboard/documentos')
                         ? 'bg-[#4CAF50]/20 text-[#4CAF50]'
                         : 'text-gray-400 hover:bg-gray-700/50'
-                    }`}
-                    onClick={() => {
-                      if (window.innerWidth < 768) {
-                        setSidebarOpen(false);
-                      }
-                    }}
-                  >
+              }`}
+              onClick={() => {
+                if (window.innerWidth < 768) {
+                  setSidebarOpen(false);
+                }
+              }}
+            >
                     <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                    </svg>
+              </svg>
                     Documentos
-                  </Link>
-                  <Link
+            </Link>
+            <Link
                     href="/dashboard/gpos"
                     className={`flex items-center px-4 py-2 rounded-lg transition text-sm ${
                       isActive('/dashboard/gpos')
                         ? 'bg-[#4CAF50]/20 text-[#4CAF50]'
                         : 'text-gray-400 hover:bg-gray-700/50'
-                    }`}
-                    onClick={() => {
-                      if (window.innerWidth < 768) {
-                        setSidebarOpen(false);
-                      }
-                    }}
-                  >
+              }`}
+              onClick={() => {
+                if (window.innerWidth < 768) {
+                  setSidebarOpen(false);
+                }
+              }}
+            >
                     <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
-                    </svg>
+              </svg>
                     GPOs
-                  </Link>
-                  <Link
+            </Link>
+            <Link
                     href="/dashboard/automacoes"
                     className={`flex items-center px-4 py-2 rounded-lg transition text-sm ${
                       isActive('/dashboard/automacoes')
                         ? 'bg-[#4CAF50]/20 text-[#4CAF50]'
                         : 'text-gray-400 hover:bg-gray-700/50'
-                    }`}
-                    onClick={() => {
-                      if (window.innerWidth < 768) {
-                        setSidebarOpen(false);
-                      }
-                    }}
-                  >
+              }`}
+              onClick={() => {
+                if (window.innerWidth < 768) {
+                  setSidebarOpen(false);
+                }
+              }}
+            >
                     <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
                     </svg>
@@ -584,31 +676,41 @@ export default function DashboardLayout({
 
             {/* Credenciais - Apenas admin e analista (não suporte) */}
             {(user.isAdmin || user.nivelAcesso === 'admin' || user.nivelAcesso === 'analista') && (
-              <div>
+              <div className="relative">
                 <button
                   onClick={() => toggleSubmenu('credenciais')}
-                  className={`w-full flex items-center justify-between px-4 py-3 rounded-lg transition ${
+                  className={`w-full flex items-center justify-between px-4 py-3 rounded-lg transition group ${
                     isSubmenuActive(['/dashboard/emails', '/dashboard/senhas'])
-                      ? 'bg-[#4CAF50] text-white'
-                      : 'text-gray-300 hover:bg-gray-700'
-                  }`}
+                  ? 'bg-[#4CAF50] text-white'
+                  : 'text-gray-300 hover:bg-gray-700'
+                  } ${sidebarCollapsed ? 'justify-center' : ''}`}
+                  onMouseEnter={() => setHoveredItem('credenciais')}
+                  onMouseLeave={() => setHoveredItem(null)}
                 >
-                  <div className="flex items-center">
-                    <svg className="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <div className={`flex items-center ${sidebarCollapsed ? '' : 'flex-1'}`}>
+                    <svg className={`w-5 h-5 ${sidebarCollapsed ? '' : 'mr-3'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
                     </svg>
-                    <span>Credenciais</span>
+                    {!sidebarCollapsed && <span>Credenciais</span>}
                   </div>
-                  <svg 
-                    className={`w-4 h-4 transition-transform ${openSubmenus.credenciais ? 'rotate-180' : ''}`} 
-                    fill="none" 
-                    stroke="currentColor" 
-                    viewBox="0 0 24 24"
-                  >
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                  </svg>
+                  {!sidebarCollapsed && (
+                    <svg 
+                      className={`w-4 h-4 transition-transform ${openSubmenus.credenciais ? 'rotate-180' : ''}`} 
+                      fill="none" 
+                      stroke="currentColor" 
+                      viewBox="0 0 24 24"
+                    >
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                    </svg>
+                  )}
                 </button>
-                {openSubmenus.credenciais && (
+                {sidebarCollapsed && hoveredItem === 'credenciais' && (
+                  <div className="absolute left-full ml-2 px-3 py-2 bg-gray-800 text-white text-sm rounded-lg shadow-lg z-50 whitespace-nowrap">
+                    Credenciais
+                    <div className="absolute right-full top-1/2 -translate-y-1/2 border-4 border-transparent border-r-gray-800"></div>
+                  </div>
+                )}
+                {openSubmenus.credenciais && !sidebarCollapsed && (
                   <div className="ml-4 mt-1 space-y-1">
                     <Link
                       href="/dashboard/emails"
@@ -616,18 +718,18 @@ export default function DashboardLayout({
                         isActive('/dashboard/emails')
                           ? 'bg-[#4CAF50]/20 text-[#4CAF50]'
                           : 'text-gray-400 hover:bg-gray-700/50'
-                      }`}
-                      onClick={() => {
-                        if (window.innerWidth < 768) {
-                          setSidebarOpen(false);
-                        }
-                      }}
-                    >
+              }`}
+              onClick={() => {
+                if (window.innerWidth < 768) {
+                  setSidebarOpen(false);
+                }
+              }}
+            >
                       <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-                      </svg>
+              </svg>
                       Emails
-                    </Link>
+            </Link>
                     <Link
                       href="/dashboard/senhas"
                       className={`flex items-center px-4 py-2 rounded-lg transition text-sm ${
@@ -643,9 +745,9 @@ export default function DashboardLayout({
                     >
                       <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
-                      </svg>
+              </svg>
                       Senhas
-                    </Link>
+            </Link>
                   </div>
                 )}
               </div>
@@ -653,52 +755,71 @@ export default function DashboardLayout({
 
             {/* Configurações - Admin e analista (mas analista não vê Usuários) */}
             {(user.isAdmin || user.nivelAcesso === 'admin' || user.nivelAcesso === 'analista') && (
-              <div>
+              <div className="relative">
                 <button
-                  onClick={() => setShowConfigMenu(!showConfigMenu)}
-                  className={`w-full flex items-center px-4 py-3 rounded-lg transition ${
+                  onClick={() => {
+                    if (sidebarCollapsed) {
+                      setSidebarCollapsed(false);
+                      localStorage.setItem('sidebarCollapsed', 'false');
+                      setTimeout(() => setShowConfigMenu(!showConfigMenu), 100);
+                    } else {
+                      setShowConfigMenu(!showConfigMenu);
+                    }
+                  }}
+                  className={`w-full flex items-center justify-between px-4 py-3 rounded-lg transition group ${
                     isActive('/dashboard/usuarios') || isActive('/dashboard/parametros')
                       ? 'bg-[#4CAF50] text-white'
                       : 'text-gray-300 hover:bg-gray-700'
-                  }`}
+                  } ${sidebarCollapsed ? 'justify-center' : ''}`}
+                  onMouseEnter={() => setHoveredItem('configuracoes')}
+                  onMouseLeave={() => setHoveredItem(null)}
                 >
-                  <svg className="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                  </svg>
-                  Configurações
-                  <svg
-                    className={`w-5 h-5 ml-auto transition transform ${
-                      showConfigMenu ? 'rotate-180' : ''
-                    }`}
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                  </svg>
+                  <div className={`flex items-center ${sidebarCollapsed ? '' : 'flex-1'}`}>
+                    <svg className={`w-5 h-5 ${sidebarCollapsed ? '' : 'mr-3'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                    </svg>
+                    {!sidebarCollapsed && <span>Configurações</span>}
+                  </div>
+                  {!sidebarCollapsed && (
+                    <svg
+                      className={`w-4 h-4 transition-transform ${
+                        showConfigMenu ? 'rotate-180' : ''
+                      }`}
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                    </svg>
+                  )}
                 </button>
-
-                {showConfigMenu && (
+                {sidebarCollapsed && hoveredItem === 'configuracoes' && (
+                  <div className="absolute left-full ml-2 px-3 py-2 bg-gray-800 text-white text-sm rounded-lg shadow-lg z-50 whitespace-nowrap">
+                    Configurações
+                    <div className="absolute right-full top-1/2 -translate-y-1/2 border-4 border-transparent border-r-gray-800"></div>
+                  </div>
+                )}
+                {showConfigMenu && !sidebarCollapsed && (
                   <div className="ml-4 mt-1 space-y-1">
                     {/* Usuários - Apenas admin */}
                     {(user.isAdmin || user.nivelAcesso === 'admin') && (
-                      <Link
-                        href="/dashboard/usuarios"
-                        className={`flex items-center px-4 py-2.5 rounded-lg transition text-sm w-full ${
-                          isActive('/dashboard/usuarios')
-                            ? 'bg-[#4CAF50]/20 text-[#4CAF50]'
-                            : 'text-gray-400 hover:bg-gray-700'
-                        }`}
-                        onClick={() => {
-                          setShowConfigMenu(false);
-                          if (window.innerWidth < 768) {
-                            setSidebarOpen(false);
-                          }
-                        }}
-                      >
-                        Usuários
-                      </Link>
+                    <Link
+                      href="/dashboard/usuarios"
+                      className={`flex items-center px-4 py-2.5 rounded-lg transition text-sm w-full ${
+                        isActive('/dashboard/usuarios')
+                          ? 'bg-[#4CAF50]/20 text-[#4CAF50]'
+                          : 'text-gray-400 hover:bg-gray-700'
+                      }`}
+                      onClick={() => {
+                        setShowConfigMenu(false);
+                        if (window.innerWidth < 768) {
+                          setSidebarOpen(false);
+                        }
+                      }}
+                    >
+                      Usuários
+                    </Link>
                     )}
                     <Link
                       href="/dashboard/parametros"
@@ -727,14 +848,28 @@ export default function DashboardLayout({
         <div className="sticky bottom-0 left-0 right-0 p-4 border-t border-gray-700 bg-[#282c34] mt-auto">
           <div className="relative">
             <button
-              onClick={() => setShowProfileMenu(!showProfileMenu)}
-              className="w-full flex items-center px-4 py-3 rounded-lg hover:bg-gray-700 transition"
+              onClick={() => {
+                if (sidebarCollapsed) {
+                  setSidebarCollapsed(false);
+                  localStorage.setItem('sidebarCollapsed', 'false');
+                  setTimeout(() => setShowProfileMenu(!showProfileMenu), 100);
+                } else {
+                  setShowProfileMenu(!showProfileMenu);
+                }
+              }}
+              className={`w-full flex items-center px-4 py-3 rounded-lg hover:bg-gray-700 transition group ${
+                sidebarCollapsed ? 'justify-center' : ''
+              }`}
+              onMouseEnter={() => setHoveredItem('profile')}
+              onMouseLeave={() => setHoveredItem(null)}
             >
-              <div className="w-10 h-10 rounded-full bg-[#4CAF50] flex items-center justify-center mr-3 flex-shrink-0">
+              <div className={`w-10 h-10 rounded-full bg-[#4CAF50] flex items-center justify-center flex-shrink-0 ${sidebarCollapsed ? '' : 'mr-3'}`}>
                 <span className="text-white font-semibold text-sm">
                   {user.fullName.charAt(0).toUpperCase()}
                 </span>
               </div>
+              {!sidebarCollapsed && (
+                <>
               <div className="flex-1 text-left min-w-0">
                 <p className="text-white font-medium text-sm truncate">{user.fullName}</p>
                 <p className="text-gray-400 text-xs truncate">{user.funcao}</p>
@@ -749,9 +884,18 @@ export default function DashboardLayout({
               >
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
               </svg>
+                </>
+              )}
             </button>
+            {sidebarCollapsed && hoveredItem === 'profile' && (
+              <div className="absolute left-full ml-2 px-3 py-2 bg-gray-800 text-white text-sm rounded-lg shadow-lg z-50 whitespace-nowrap">
+                <p className="font-medium">{user.fullName}</p>
+                <p className="text-xs text-gray-400">{user.funcao}</p>
+                <div className="absolute right-full top-1/2 -translate-y-1/2 border-4 border-transparent border-r-gray-800"></div>
+              </div>
+            )}
 
-            {showProfileMenu && (
+            {showProfileMenu && !sidebarCollapsed && (
               <div className="absolute bottom-full left-0 w-full mb-2 bg-gray-800 rounded-lg shadow-xl overflow-hidden z-10 min-w-[200px]">
                 <Link
                   href="/dashboard/perfil"
@@ -899,18 +1043,42 @@ export default function DashboardLayout({
       </div>
 
       {/* Main Content */}
-      <div className="md:ml-64 p-4 md:p-6 lg:p-8 pt-20 md:pt-6 lg:pt-8 min-h-screen w-full md:w-[calc(100%-16rem)] relative">
+      <div 
+        className={`p-4 md:p-6 lg:p-8 pt-20 md:pt-6 lg:pt-8 min-h-screen relative transition-all duration-300 ease-in-out ${
+          sidebarCollapsed 
+            ? 'md:ml-20 md:w-[calc(100%-5rem)]' 
+            : 'md:ml-64 md:w-[calc(100%-16rem)]'
+        }`}
+      >
         {pageLoading && (
           <div className="absolute inset-0 bg-[#1e2228]/80 backdrop-blur-sm z-50 flex items-center justify-center transition-opacity duration-200">
             <div className="text-center">
-              <div className="w-16 h-16 border-4 border-[#4CAF50] border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+              {/* Logo Átomo Animado - Apenas órbitas girando */}
+              <div className="relative w-20 h-20 flex items-center justify-center mx-auto mb-4">
+                <svg className="w-full h-full" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  {/* Órbitas girando */}
+                  <g style={{ animation: 'rotate-orbit-1 8s linear infinite', transformOrigin: '32px 32px' }}>
+                    <ellipse cx="32" cy="32" rx="24" ry="8" stroke="#4CAF50" strokeWidth="1.5" strokeOpacity="0.4" />
+                  </g>
+                  <g style={{ animation: 'rotate-orbit-2 10s linear infinite', transformOrigin: '32px 32px' }}>
+                    <ellipse cx="32" cy="32" rx="24" ry="8" stroke="#4CAF50" strokeWidth="1.5" strokeOpacity="0.4" transform="rotate(60 32 32)" />
+                  </g>
+                  <g style={{ animation: 'rotate-orbit-3 12s linear infinite', transformOrigin: '32px 32px' }}>
+                    <ellipse cx="32" cy="32" rx="24" ry="8" stroke="#4CAF50" strokeWidth="1.5" strokeOpacity="0.4" transform="rotate(120 32 32)" />
+                  </g>
+                  
+                  {/* Núcleo central com pulse sutil */}
+                  <circle cx="32" cy="32" r="4" fill="#4CAF50" className="animate-pulse" style={{ animationDuration: '4s' }} />
+                  <circle cx="32" cy="32" r="6" fill="#4CAF50" fillOpacity="0.2" />
+                </svg>
+              </div>
               <p className="text-white text-lg font-semibold">Carregando...</p>
               <p className="text-gray-400 text-sm mt-2">Aguarde um momento</p>
             </div>
           </div>
         )}
         <div className={`transition-opacity duration-200 ${pageLoading ? 'opacity-30' : 'opacity-100'}`}>
-          {children}
+        {children}
         </div>
       </div>
     </div>
