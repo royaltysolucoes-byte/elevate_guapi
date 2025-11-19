@@ -22,6 +22,7 @@ interface Stats {
   totalCelulares: number;
   totalGPOs: number;
   totalDocumentos: number;
+  totalEquipamentosIP: number;
 }
 
 interface TarefasStats {
@@ -47,6 +48,7 @@ export default function DashboardPage() {
     totalCelulares: 0,
     totalGPOs: 0,
     totalDocumentos: 0,
+    totalEquipamentosIP: 0,
   });
   const [tarefasStats, setTarefasStats] = useState<TarefasStats>({
     total: 0,
@@ -112,6 +114,7 @@ export default function DashboardPage() {
         celularesRes,
         gposRes,
         documentosRes,
+        equipamentosIPRes,
         tarefasRes,
       ] = await Promise.all([
         fetch('/api/users'),
@@ -127,6 +130,7 @@ export default function DashboardPage() {
         fetch('/api/celulares?page=1'),
         fetch('/api/gpos?page=1'),
         fetch('/api/documentos?page=1'),
+        fetch('/api/consulta-ip'),
         fetch('/api/tarefas/stats'),
       ]);
 
@@ -144,6 +148,7 @@ export default function DashboardPage() {
         totalCelulares: celularesRes.ok ? (await celularesRes.json()).pagination.total : 0,
         totalGPOs: gposRes.ok ? (await gposRes.json()).pagination.total : 0,
         totalDocumentos: documentosRes.ok ? (await documentosRes.json()).pagination.total : 0,
+        totalEquipamentosIP: equipamentosIPRes.ok ? (await equipamentosIPRes.json()).equipamentos.length : 0,
       };
 
       const tarefasData: TarefasStats = tarefasRes.ok
@@ -185,7 +190,8 @@ export default function DashboardPage() {
     stats.totalConectividades +
     stats.totalCelulares +
     stats.totalGPOs +
-    stats.totalDocumentos;
+    stats.totalDocumentos +
+    stats.totalEquipamentosIP;
 
   const statsData = [
     { label: 'Usuários', value: stats.totalUsers, icon: 'users', color: 'from-blue-500/20 to-cyan-500/10' },
@@ -201,6 +207,7 @@ export default function DashboardPage() {
     { label: 'Conectividades', value: stats.totalConectividades, icon: 'connectivity', color: 'from-emerald-500/20 to-green-500/10' },
     { label: 'Celulares', value: stats.totalCelulares, icon: 'phones', color: 'from-violet-500/20 to-purple-500/10' },
     { label: 'Documentos', value: stats.totalDocumentos, icon: 'documents', color: 'from-slate-500/20 to-gray-500/10' },
+    { label: 'Equipamentos IP', value: stats.totalEquipamentosIP, icon: 'equipamentos-ip', color: 'from-cyan-500/20 to-blue-500/10' },
   ];
 
   const getIcon = (type: string) => {
@@ -268,6 +275,11 @@ export default function DashboardPage() {
       documents: (
         <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+        </svg>
+      ),
+      'equipamentos-ip': (
+        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
         </svg>
       ),
     };
