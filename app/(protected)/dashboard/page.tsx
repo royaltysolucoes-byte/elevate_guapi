@@ -21,6 +21,7 @@ interface Stats {
   totalConectividades: number;
   totalCelulares: number;
   totalGPOs: number;
+  totalDocumentos: number;
 }
 
 interface TarefasStats {
@@ -45,6 +46,7 @@ export default function DashboardPage() {
     totalConectividades: 0,
     totalCelulares: 0,
     totalGPOs: 0,
+    totalDocumentos: 0,
   });
   const [tarefasStats, setTarefasStats] = useState<TarefasStats>({
     total: 0,
@@ -109,6 +111,7 @@ export default function DashboardPage() {
         conectividadesRes,
         celularesRes,
         gposRes,
+        documentosRes,
         tarefasRes,
       ] = await Promise.all([
         fetch('/api/users'),
@@ -123,6 +126,7 @@ export default function DashboardPage() {
         fetch('/api/conectividades?page=1'),
         fetch('/api/celulares?page=1'),
         fetch('/api/gpos?page=1'),
+        fetch('/api/documentos?page=1'),
         fetch('/api/tarefas/stats'),
       ]);
 
@@ -139,6 +143,7 @@ export default function DashboardPage() {
         totalConectividades: conectividadesRes.ok ? (await conectividadesRes.json()).pagination.total : 0,
         totalCelulares: celularesRes.ok ? (await celularesRes.json()).pagination.total : 0,
         totalGPOs: gposRes.ok ? (await gposRes.json()).pagination.total : 0,
+        totalDocumentos: documentosRes.ok ? (await documentosRes.json()).pagination.total : 0,
       };
 
       const tarefasData: TarefasStats = tarefasRes.ok
@@ -179,7 +184,8 @@ export default function DashboardPage() {
     stats.totalServidores +
     stats.totalConectividades +
     stats.totalCelulares +
-    stats.totalGPOs;
+    stats.totalGPOs +
+    stats.totalDocumentos;
 
   const statsData = [
     { label: 'Usuários', value: stats.totalUsers, icon: 'users', color: 'from-blue-500/20 to-cyan-500/10' },
@@ -194,6 +200,7 @@ export default function DashboardPage() {
     { label: 'GPOs', value: stats.totalGPOs, icon: 'gpos', color: 'from-green-500/20 to-emerald-500/10' },
     { label: 'Conectividades', value: stats.totalConectividades, icon: 'connectivity', color: 'from-emerald-500/20 to-green-500/10' },
     { label: 'Celulares', value: stats.totalCelulares, icon: 'phones', color: 'from-violet-500/20 to-purple-500/10' },
+    { label: 'Documentos', value: stats.totalDocumentos, icon: 'documents', color: 'from-slate-500/20 to-gray-500/10' },
   ];
 
   const getIcon = (type: string) => {
@@ -256,6 +263,11 @@ export default function DashboardPage() {
       gpos: (
         <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+        </svg>
+      ),
+      documents: (
+        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
         </svg>
       ),
     };

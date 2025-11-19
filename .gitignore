@@ -43,3 +43,7 @@ VERCEL_SETUP.md
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# uploads
+/uploads/*
+!/uploads/.gitkeep
