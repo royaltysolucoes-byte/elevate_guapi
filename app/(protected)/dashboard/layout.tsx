@@ -39,6 +39,7 @@ export default function DashboardLayout({
   const [showNotificacoes, setShowNotificacoes] = useState(false);
   const [openSubmenus, setOpenSubmenus] = useState<{ [key: string]: boolean }>({});
   const [hoveredItem, setHoveredItem] = useState<string | null>(null);
+  const [ultimaPaginaRegistrada, setUltimaPaginaRegistrada] = useState<string>('');
   const router = useRouter();
   const pathname = usePathname();
 
@@ -85,6 +86,13 @@ export default function DashboardLayout({
       setOpenSubmenus(prev => ({ ...prev, credenciais: true }));
     }
     
+    // Registrar acesso à página no log de auditoria (evitar duplicatas)
+    if (user && pathname && pathname !== ultimaPaginaRegistrada && pathname.startsWith('/dashboard')) {
+      const nomePagina = getNomePagina(pathname);
+      setUltimaPaginaRegistrada(pathname);
+      registrarAcessoPagina(pathname, nomePagina);
+    }
+    
     // Show loading on page change with a delay to prevent flickering
     const loadingTimer = setTimeout(() => {
       setPageLoading(true);
@@ -99,7 +107,7 @@ export default function DashboardLayout({
       clearTimeout(loadingTimer);
       clearTimeout(hideTimer);
     };
-  }, [pathname, sidebarOpen]);
+  }, [pathname, sidebarOpen, user]);
 
   // Fecha sidebar ao redimensionar para desktop
   useEffect(() => {
@@ -171,6 +179,58 @@ export default function DashboardLayout({
       fetchNotificacoes();
     } catch (error) {
       console.error('Error marking all notifications as read:', error);
+    }
+  };
+
+  const getNomePagina = (path: string): string => {
+    const nomes: { [key: string]: string } = {
+      '/dashboard': 'Dashboard',
+      '/dashboard/lista-pc': 'Lista de PC',
+      '/dashboard/impressoras': 'Impressoras',
+      '/dashboard/relogios-ponto': 'Relógios de Ponto',
+      '/dashboard/celulares': 'Celulares',
+      '/dashboard/gestao-ip': 'Gestão de IP',
+      '/dashboard/consulta-ip': 'Consulta IP',
+      '/dashboard/conectividades': 'Conectividade',
+      '/dashboard/servidores': 'Servidores',
+      '/dashboard/tarefas': 'Tarefas',
+      '/dashboard/documentos': 'Documentos',
+      '/dashboard/gpos': 'GPOs',
+      '/dashboard/automacoes': 'Automações',
+      '/dashboard/emails': 'Emails',
+      '/dashboard/senhas': 'Senhas',
+      '/dashboard/usuarios': 'Usuários',
+      '/dashboard/parametros': 'Parâmetros',
+      '/dashboard/auditoria': 'Auditoria',
+      '/dashboard/perfil': 'Perfil',
+      '/dashboard/trocar-senha': 'Trocar Senha',
+    };
+    return nomes[path] || path.replace('/dashboard/', '').replace(/-/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+  };
+
+  const registrarAcessoPagina = async (path: string, nomePagina: string) => {
+    if (!user) return;
+    
+    try {
+      // Determinar se é uma página sensível
+      const paginasSensiveis = ['/dashboard/emails', '/dashboard/senhas', '/dashboard/usuarios', '/dashboard/auditoria'];
+      const sensivel = paginasSensiveis.includes(path);
+
+      await fetch('/api/auditoria/log', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          acao: 'acessar',
+          entidade: 'pagina',
+          entidadeId: path,
+          descricao: `Acessou a página: ${nomePagina}`,
+          nivelAcesso: user.nivelAcesso || 'admin',
+          sensivel,
+        }),
+      });
+    } catch (error) {
+      // Não bloquear a navegação se o log falhar
+      console.error('Error logging page access:', error);
     }
   };
 
@@ -837,6 +897,38 @@ export default function DashboardLayout({
                     >
                       Parâmetros
                     </Link>
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* Auditoria - Apenas admin */}
+            {(user.isAdmin || user.nivelAcesso === 'admin') && (
+              <div className="relative">
+                <Link
+                  href="/dashboard/auditoria"
+                  className={`flex items-center px-4 py-3 rounded-lg transition group ${
+                    isActive('/dashboard/auditoria')
+                      ? 'bg-[#4CAF50] text-white'
+                      : 'text-gray-300 hover:bg-gray-700'
+                  } ${sidebarCollapsed ? 'justify-center' : ''}`}
+                  onClick={() => {
+                    if (window.innerWidth < 768) {
+                      setSidebarOpen(false);
+                    }
+                  }}
+                  onMouseEnter={() => setHoveredItem('auditoria')}
+                  onMouseLeave={() => setHoveredItem(null)}
+                >
+                  <svg className={`w-5 h-5 ${sidebarCollapsed ? '' : 'mr-3'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                  </svg>
+                  {!sidebarCollapsed && <span>Auditoria</span>}
+                </Link>
+                {sidebarCollapsed && hoveredItem === 'auditoria' && (
+                  <div className="absolute left-full ml-2 px-3 py-2 bg-gray-800 text-white text-sm rounded-lg shadow-lg z-50 whitespace-nowrap">
+                    Auditoria
+                    <div className="absolute right-full top-1/2 -translate-y-1/2 border-4 border-transparent border-r-gray-800"></div>
                   </div>
                 )}
               </div>

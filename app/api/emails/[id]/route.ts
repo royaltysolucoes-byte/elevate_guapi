@@ -3,6 +3,7 @@ import connectDB from '@/lib/db';
 import Email from '@/lib/models/Email';
 import { verifyToken, hashPassword } from '@/lib/auth';
 import { encrypt, decrypt } from '@/lib/utils/encryption';
+import { registrarAuditoria, sanitizarDadosSensiveis } from '@/lib/utils/auditoria';
 
 async function checkAuth(request: NextRequest) {
   const token = request.cookies.get('token')?.value;
@@ -42,6 +43,15 @@ export async function PUT(
     const { id } = await params;
     const body = await request.json();
 
+    // Buscar email antigo para auditoria
+    const emailAntigo = await Email.findById(id);
+    if (!emailAntigo) {
+      return NextResponse.json(
+        { error: 'Email not found' },
+        { status: 404 }
+      );
+    }
+
     // Build update object, only include senha if provided
     const updateData: any = {
       email: body.email,
@@ -66,6 +76,20 @@ export async function PUT(
         { status: 404 }
       );
     }
+
+    // Registrar auditoria de edição
+    await registrarAuditoria({
+      usuario: auth.username,
+      acao: 'editar',
+      entidade: 'email',
+      entidadeId: id,
+      descricao: `Editou email ${emailAntigo.email} -> ${body.email}`,
+      dadosAntigos: sanitizarDadosSensiveis({ email: emailAntigo.email, colaborador: emailAntigo.colaborador, nome: emailAntigo.nome }),
+      dadosNovos: sanitizarDadosSensiveis({ email: body.email, colaborador: body.colaborador, nome: body.nome }),
+      nivelAcesso: auth.nivelAcesso || 'admin',
+      sensivel: true,
+      request,
+    });
 
     // Return decrypted password for frontend
     return NextResponse.json({ 
@@ -108,7 +132,7 @@ export async function DELETE(
     await connectDB();
 
     const { id } = await params;
-    const email = await Email.findByIdAndDelete(id);
+    const email = await Email.findById(id);
 
     if (!email) {
       return NextResponse.json(
@@ -116,6 +140,21 @@ export async function DELETE(
         { status: 404 }
       );
     }
+
+    await Email.findByIdAndDelete(id);
+
+    // Registrar auditoria de exclusão
+    await registrarAuditoria({
+      usuario: auth.username,
+      acao: 'excluir',
+      entidade: 'email',
+      entidadeId: id,
+      descricao: `Excluiu email ${email.email} (${email.colaborador})`,
+      dadosAntigos: sanitizarDadosSensiveis({ email: email.email, colaborador: email.colaborador, nome: email.nome }),
+      nivelAcesso: auth.nivelAcesso || 'admin',
+      sensivel: true,
+      request,
+    });
 
     return NextResponse.json({ message: 'Email deleted successfully' });
   } catch (error) {

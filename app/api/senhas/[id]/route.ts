@@ -5,6 +5,7 @@ import Senha from '@/lib/models/Senha';
 import Servico from '@/lib/models/Servico';
 import { verifyToken } from '@/lib/auth';
 import { encrypt, decrypt } from '@/lib/utils/encryption';
+import { registrarAuditoria, sanitizarDadosSensiveis } from '@/lib/utils/auditoria';
 
 // Ensure models are registered
 const ensureModelsRegistered = () => {
@@ -52,6 +53,15 @@ export async function PUT(
     const { id } = await params;
     const body = await request.json();
 
+    // Buscar senha antiga para auditoria
+    const senhaAntiga = await Senha.findById(id);
+    if (!senhaAntiga) {
+      return NextResponse.json(
+        { error: 'Senha not found' },
+        { status: 404 }
+      );
+    }
+
     // Build update object, only include senha if provided
     const updateData: any = {
       id: body.id,
@@ -76,6 +86,20 @@ export async function PUT(
         { status: 404 }
       );
     }
+
+    // Registrar auditoria de edição
+    await registrarAuditoria({
+      usuario: auth.username,
+      acao: 'editar',
+      entidade: 'senha',
+      entidadeId: id,
+      descricao: `Editou senha ${senhaAntiga.id} -> ${body.id} (${body.categoria})`,
+      dadosAntigos: sanitizarDadosSensiveis({ id: senhaAntiga.id, categoria: senhaAntiga.categoria }),
+      dadosNovos: sanitizarDadosSensiveis({ id: body.id, categoria: body.categoria }),
+      nivelAcesso: auth.nivelAcesso || 'admin',
+      sensivel: true,
+      request,
+    });
 
     // Return decrypted password for frontend
     const senhaData = senhaUpdated as any;
@@ -127,7 +151,7 @@ export async function DELETE(
     await connectDB();
 
     const { id } = await params;
-    const senha = await Senha.findByIdAndDelete(id);
+    const senha = await Senha.findById(id);
 
     if (!senha) {
       return NextResponse.json(
@@ -135,6 +159,21 @@ export async function DELETE(
         { status: 404 }
       );
     }
+
+    await Senha.findByIdAndDelete(id);
+
+    // Registrar auditoria de exclusão
+    await registrarAuditoria({
+      usuario: auth.username,
+      acao: 'excluir',
+      entidade: 'senha',
+      entidadeId: id,
+      descricao: `Excluiu senha ${senha.id} (${senha.categoria})`,
+      dadosAntigos: sanitizarDadosSensiveis({ id: senha.id, categoria: senha.categoria }),
+      nivelAcesso: auth.nivelAcesso || 'admin',
+      sensivel: true,
+      request,
+    });
 
     return NextResponse.json({ message: 'Senha deleted successfully' });
   } catch (error) {

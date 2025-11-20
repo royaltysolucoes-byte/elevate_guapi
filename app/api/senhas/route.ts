@@ -5,6 +5,7 @@ import Senha from '@/lib/models/Senha';
 import Servico from '@/lib/models/Servico';
 import { verifyToken } from '@/lib/auth';
 import { encrypt, decrypt } from '@/lib/utils/encryption';
+import { registrarAuditoria, sanitizarDadosSensiveis } from '@/lib/utils/auditoria';
 
 // Ensure models are registered
 const ensureModelsRegistered = () => {
@@ -79,6 +80,17 @@ export async function GET(request: NextRequest) {
       updatedAt: senha.updatedAt,
     }));
 
+    // Registrar auditoria de visualização
+    await registrarAuditoria({
+      usuario: auth.username,
+      acao: 'visualizar',
+      entidade: 'senha',
+      descricao: `Visualizou lista de senhas${search ? ` (busca: ${search})` : ''}`,
+      nivelAcesso: auth.nivelAcesso || 'admin',
+      sensivel: true,
+      request,
+    });
+
     return NextResponse.json({
       senhas,
       pagination: {
@@ -146,6 +158,19 @@ export async function POST(request: NextRequest) {
     });
 
     const senhaPopulada = await Senha.findById(newSenha._id).populate('servico');
+
+    // Registrar auditoria de criação
+    await registrarAuditoria({
+      usuario: auth.username,
+      acao: 'criar',
+      entidade: 'senha',
+      entidadeId: newSenha._id.toString(),
+      descricao: `Criou senha ${id} (${categoria})`,
+      dadosNovos: sanitizarDadosSensiveis({ id, categoria, servico }),
+      nivelAcesso: auth.nivelAcesso || 'admin',
+      sensivel: true,
+      request,
+    });
 
     // Return decrypted password for frontend
     const senhaData = senhaPopulada as any;

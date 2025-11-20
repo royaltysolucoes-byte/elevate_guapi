@@ -3,6 +3,7 @@ import connectDB from '@/lib/db';
 import Email from '@/lib/models/Email';
 import { verifyToken, hashPassword } from '@/lib/auth';
 import { encrypt, decrypt } from '@/lib/utils/encryption';
+import { registrarAuditoria, sanitizarDadosSensiveis } from '@/lib/utils/auditoria';
 
 async function checkAuth(request: NextRequest) {
   const token = request.cookies.get('token')?.value;
@@ -163,6 +164,17 @@ export async function GET(request: NextRequest) {
       }
     });
 
+    // Registrar auditoria de visualização
+    await registrarAuditoria({
+      usuario: auth.username,
+      acao: 'visualizar',
+      entidade: 'email',
+      descricao: `Visualizou lista de emails${search ? ` (busca: ${search})` : ''}`,
+      nivelAcesso: auth.nivelAcesso || 'admin',
+      sensivel: true,
+      request,
+    });
+
     return NextResponse.json({
       emails,
       pagination: {
@@ -218,6 +230,19 @@ export async function POST(request: NextRequest) {
       colaborador,
       nome,
       senha: encryptedSenha, // Store encrypted password
+    });
+
+    // Registrar auditoria de criação
+    await registrarAuditoria({
+      usuario: auth.username,
+      acao: 'criar',
+      entidade: 'email',
+      entidadeId: newEmail._id.toString(),
+      descricao: `Criou email para ${colaborador} (${email})`,
+      dadosNovos: sanitizarDadosSensiveis({ email, colaborador, nome }),
+      nivelAcesso: auth.nivelAcesso || 'admin',
+      sensivel: true,
+      request,
     });
 
     // Return decrypted password for frontend
