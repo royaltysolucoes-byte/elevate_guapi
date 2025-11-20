@@ -274,3 +274,83 @@ body {
     transform: rotate(480deg);
   }
 }
+
+@keyframes float-smooth {
+  0%, 100% {
+    transform: translateY(0px) translateX(0px);
+    opacity: 0.25;
+  }
+  25% {
+    transform: translateY(-15px) translateX(8px);
+    opacity: 0.35;
+  }
+  50% {
+    transform: translateY(-8px) translateX(-8px);
+    opacity: 0.3;
+  }
+  75% {
+    transform: translateY(-20px) translateX(5px);
+    opacity: 0.4;
+  }
+}
+
+@keyframes pulse-smooth {
+  0%, 100% {
+    transform: scale(1);
+    opacity: 0.15;
+  }
+  50% {
+    transform: scale(1.5);
+    opacity: 0.25;
+  }
+}
+
+@keyframes network-line-1 {
+  0% {
+    opacity: 0.1;
+  }
+  50% {
+    opacity: 0.25;
+  }
+  100% {
+    opacity: 0.1;
+  }
+}
+
+@keyframes network-line-2 {
+  0% {
+    opacity: 0.15;
+  }
+  50% {
+    opacity: 0.3;
+  }
+  100% {
+    opacity: 0.15;
+  }
+}
+
+@keyframes network-line-3 {
+  0% {
+    opacity: 0.12;
+  }
+  50% {
+    opacity: 0.28;
+  }
+  100% {
+    opacity: 0.12;
+  }
+}
+
+.animate-network-line-1 {
+  animation: network-line-1 4s ease-in-out infinite;
+}
+
+.animate-network-line-2 {
+  animation: network-line-2 5s ease-in-out infinite;
+  animation-delay: 1s;
+}
+
+.animate-network-line-3 {
+  animation: network-line-3 6s ease-in-out infinite;
+  animation-delay: 2s;
+}

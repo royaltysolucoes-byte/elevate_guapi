@@ -335,9 +335,99 @@ export default function DashboardPage() {
   const currentDateFormatted = currentTime.toLocaleDateString('pt-BR', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
 
   return (
-    <div className="min-h-screen bg-[#1e2228] p-6">
+    <div className="min-h-screen bg-[#1e2228] p-6 relative overflow-hidden">
+      {/* Background Network Animations */}
+      <div className="fixed inset-0 pointer-events-none z-0 overflow-hidden">
+        {/* Grid Pattern */}
+        <div className="absolute inset-0 opacity-5">
+          <div className="h-full w-full" style={{
+            backgroundImage: `
+              linear-gradient(rgba(76, 175, 80, 0.2) 1px, transparent 1px),
+              linear-gradient(90deg, rgba(76, 175, 80, 0.2) 1px, transparent 1px)
+            `,
+            backgroundSize: '50px 50px',
+            willChange: 'transform'
+          }}></div>
+        </div>
+
+        {/* Animated Lines - Smooth */}
+        <div className="absolute inset-0">
+          <svg className="w-full h-full opacity-15" style={{ willChange: 'opacity' }}>
+          <defs>
+              <linearGradient id="lineGradient1" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stopColor="#4CAF50" stopOpacity="0" />
+                <stop offset="50%" stopColor="#4CAF50" stopOpacity="0.6" />
+                <stop offset="100%" stopColor="#4CAF50" stopOpacity="0" />
+              </linearGradient>
+              <linearGradient id="lineGradient2" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stopColor="#4CAF50" stopOpacity="0" />
+                <stop offset="50%" stopColor="#4CAF50" stopOpacity="0.4" />
+                <stop offset="100%" stopColor="#4CAF50" stopOpacity="0" />
+              </linearGradient>
+          </defs>
+            <line x1="0" y1="20%" x2="100%" y2="30%" stroke="url(#lineGradient1)" strokeWidth="1.5" className="animate-network-line-1" />
+            <line x1="0" y1="50%" x2="100%" y2="60%" stroke="url(#lineGradient2)" strokeWidth="1.5" className="animate-network-line-2" />
+            <line x1="0" y1="80%" x2="100%" y2="70%" stroke="url(#lineGradient1)" strokeWidth="1.5" className="animate-network-line-3" />
+        </svg>
+      </div>
+
+        {/* Floating Particles - Fixed positions */}
+        <div className="absolute inset-0">
+          {[
+            { left: '10%', top: '15%', delay: '0s', duration: '8s' },
+            { left: '25%', top: '35%', delay: '1s', duration: '10s' },
+            { left: '45%', top: '20%', delay: '2s', duration: '9s' },
+            { left: '60%', top: '45%', delay: '0.5s', duration: '11s' },
+            { left: '75%', top: '30%', delay: '1.5s', duration: '8.5s' },
+            { left: '85%', top: '60%', delay: '2.5s', duration: '9.5s' },
+            { left: '30%', top: '70%', delay: '0.8s', duration: '10.5s' },
+            { left: '55%', top: '80%', delay: '1.2s', duration: '8.8s' },
+            { left: '15%', top: '55%', delay: '2.2s', duration: '9.2s' },
+            { left: '70%', top: '15%', delay: '0.3s', duration: '10.2s' },
+          ].map((particle, i) => (
+          <div
+            key={i}
+              className="absolute w-1 h-1 bg-[#4CAF50] rounded-full opacity-25"
+            style={{
+                left: particle.left,
+                top: particle.top,
+                animation: `float-smooth ${particle.duration} ease-in-out infinite`,
+                animationDelay: particle.delay,
+                willChange: 'transform'
+            }}
+          />
+        ))}
+      </div>
+
+        {/* Pulsing Nodes - Fixed positions */}
+        <div className="absolute inset-0">
+          {[
+            { left: '20%', top: '25%', delay: '0s' },
+            { left: '40%', top: '50%', delay: '1s' },
+            { left: '60%', top: '35%', delay: '2s' },
+            { left: '80%', top: '60%', delay: '0.5s' },
+            { left: '30%', top: '75%', delay: '1.5s' },
+            { left: '70%', top: '20%', delay: '2.5s' },
+            { left: '50%', top: '80%', delay: '0.8s' },
+            { left: '15%', top: '45%', delay: '1.8s' },
+          ].map((node, i) => (
+          <div
+            key={i}
+              className="absolute w-2 h-2 bg-[#4CAF50] rounded-full opacity-15"
+            style={{
+                left: node.left,
+                top: node.top,
+                animation: `pulse-smooth 4s ease-in-out infinite`,
+                animationDelay: node.delay,
+                boxShadow: '0 0 8px rgba(76, 175, 80, 0.3)',
+                willChange: 'transform, opacity'
+            }}
+          />
+        ))}
+      </div>
+      </div>
       {/* Header Melhorado */}
-      <div className="bg-gradient-to-r from-[#282c34] to-[#1e2228] rounded-lg border border-gray-700/50 p-6 mb-8">
+      <div className="bg-gradient-to-r from-[#282c34] to-[#1e2228] rounded-lg border border-gray-700/50 p-6 mb-8 relative z-10">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div className="flex-1">
             <div className="flex items-center gap-3 mb-2">
@@ -379,7 +469,7 @@ export default function DashboardPage() {
         </div>
             </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 relative z-10">
         {/* Coluna Principal */}
         <div className="lg:col-span-3 space-y-6">
           {/* Cards Principais com Hover Interativo */}
@@ -697,6 +787,9 @@ export default function DashboardPage() {
                 const isPastDate = isPast(day);
                 const isSelected = selectedDate && day.toDateString() === selectedDate.toDateString();
 
+                const hasAtrasadas = dayTarefas.some(t => isPastDate && t.status !== 'done');
+                const hasUrgentes = dayTarefas.some(t => t.prioridade === 'urgente');
+
                 return (
                   <button
                     key={index}
@@ -708,23 +801,30 @@ export default function DashboardPage() {
                         ? 'bg-blue-500/20 border border-blue-500 text-blue-400'
                         : isPastDate && dayTarefas.length > 0
                         ? 'bg-red-500/10 border border-red-500/30 text-red-400'
+                        : dayTarefas.length > 0
+                        ? 'bg-[#4CAF50]/10 border border-[#4CAF50]/30 text-white'
                         : 'hover:bg-gray-700/50 border border-transparent text-gray-300'
                     }`}
                   >
-                    {day.getDate()}
+                    <span className="relative z-10">{day.getDate()}</span>
                     {dayTarefas.length > 0 && (
-                      <div className="absolute bottom-0 left-1/2 transform -translate-x-1/2 flex gap-0.5">
-                        {dayTarefas.slice(0, 1).map((tarefa, idx) => (
+                      <div className="absolute bottom-0.5 left-0 right-0 flex items-center justify-center gap-0.5 px-0.5">
+                        {dayTarefas.slice(0, 3).map((tarefa, idx) => (
                           <div
                             key={idx}
-                            className={`w-0.5 h-0.5 rounded-full ${getPrioridadeColor(tarefa.prioridade)}`}
+                            className={`flex-1 h-1 rounded-full ${getPrioridadeColor(tarefa.prioridade)} ${
+                              hasUrgentes && tarefa.prioridade === 'urgente' ? 'animate-pulse' : ''
+                            }`}
                             title={tarefa.titulo}
                           />
                         ))}
-                        {dayTarefas.length > 1 && (
-                          <div className="w-0.5 h-0.5 rounded-full bg-gray-500" />
+                        {dayTarefas.length > 3 && (
+                          <div className="w-1 h-1 rounded-full bg-gray-500 flex-shrink-0" title={`+${dayTarefas.length - 3} mais`} />
                         )}
                       </div>
+                    )}
+                    {hasAtrasadas && (
+                      <div className="absolute top-0.5 right-0.5 w-1.5 h-1.5 bg-red-500 rounded-full animate-pulse" />
                     )}
                   </button>
                 );
@@ -735,42 +835,111 @@ export default function DashboardPage() {
           {/* Tarefas do dia selecionado */}
           {selectedDate && (
             <div className="bg-[#282c34] rounded-lg border border-gray-700/50 p-4">
-              <div className="flex items-center justify-between mb-3">
-                <h4 className="text-xs font-semibold text-white">
-                  {selectedDate.toLocaleDateString('pt-BR', { day: '2-digit', month: 'short' })}
-                </h4>
+              <div className="flex items-center justify-between mb-4">
+                <div>
+                  <h4 className="text-sm font-bold text-white">
+                    {selectedDate.toLocaleDateString('pt-BR', { weekday: 'long', day: '2-digit', month: 'long' })}
+                  </h4>
+                  <p className="text-xs text-gray-400 mt-0.5">
+                    {selectedTarefas.length} {selectedTarefas.length === 1 ? 'tarefa' : 'tarefas'}
+                  </p>
+                </div>
                 <button
                   onClick={() => setSelectedDate(null)}
-                  className="text-gray-400 hover:text-white"
+                  className="text-gray-400 hover:text-white p-1 rounded hover:bg-gray-700 transition"
                 >
-                  <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                   </svg>
                 </button>
               </div>
-              <div className="space-y-1.5 max-h-48 overflow-y-auto">
+              <div className="space-y-2 max-h-96 overflow-y-auto">
                 {selectedTarefas.length === 0 ? (
-                  <p className="text-xs text-gray-400 text-center py-3">Nenhuma tarefa</p>
+                  <div className="text-center py-6">
+                    <svg className="w-12 h-12 text-gray-600 mx-auto mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+                    </svg>
+                    <p className="text-xs text-gray-400">Nenhuma tarefa para este dia</p>
+                  </div>
                 ) : (
-                  selectedTarefas.map(tarefa => (
-                    <div
-                      key={tarefa._id}
-                      className="p-2 bg-[#1e2228] rounded border border-gray-700/50 hover:border-[#4CAF50]/50 transition cursor-pointer group"
-                      onClick={() => router.push('/dashboard/tarefas')}
-                    >
-                      <div className="flex items-start justify-between mb-1">
-                        <h5 className="text-xs text-white font-medium flex-1 truncate group-hover:text-[#4CAF50] transition">{tarefa.titulo}</h5>
-                        <div className={`w-1 h-1 rounded-full ${getPrioridadeColor(tarefa.prioridade)} ml-1 flex-shrink-0`} />
+                  selectedTarefas.map(tarefa => {
+                    const isAtrasada = isPast(selectedDate) && tarefa.status !== 'done';
+                    return (
+                      <div
+                        key={tarefa._id}
+                        className="p-3 bg-[#1e2228] rounded-lg border border-gray-700/50 hover:border-[#4CAF50]/50 transition cursor-pointer group"
+                        onClick={() => router.push('/dashboard/tarefas')}
+                      >
+                        <div className="flex items-start justify-between mb-2">
+                          <h5 className="text-sm text-white font-semibold flex-1 group-hover:text-[#4CAF50] transition pr-2">
+                            {tarefa.titulo}
+                          </h5>
+                          {isAtrasada && (
+                            <span className="text-[10px] text-red-400 font-medium bg-red-500/10 px-1.5 py-0.5 rounded flex-shrink-0">
+                              Atrasada
+                            </span>
+                          )}
+                        </div>
+                        
+                        {tarefa.descricao && (
+                          <p className="text-xs text-gray-400 mb-2 line-clamp-2">
+                            {tarefa.descricao}
+                          </p>
+                        )}
+
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <span className={`inline-flex items-center gap-1 px-2 py-1 text-[10px] rounded font-medium ${getStatusColor(tarefa.status)} text-white`}>
+                            {tarefa.status === 'todo' ? 'A Fazer' : 
+                             tarefa.status === 'in-progress' ? 'Em Andamento' :
+                             tarefa.status === 'review' ? 'Revisão' : 'Concluída'}
+                          </span>
+                          
+                          <span className={`inline-flex items-center gap-1 px-2 py-1 text-[10px] rounded font-medium ${getPrioridadeColor(tarefa.prioridade)} text-white`}>
+                            <div className={`w-1.5 h-1.5 rounded-full ${getPrioridadeColor(tarefa.prioridade)}`}></div>
+                            {tarefa.prioridade === 'urgente' ? 'Urgente' :
+                             tarefa.prioridade === 'alta' ? 'Alta' :
+                             tarefa.prioridade === 'media' ? 'Média' : 'Baixa'}
+                          </span>
+
+                          {tarefa.responsavel && (
+                            <span className="text-[10px] text-gray-400 flex items-center gap-1">
+                              <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                              </svg>
+                              {tarefa.responsavel}
+                            </span>
+                          )}
+
+                          {tarefa.tags && tarefa.tags.length > 0 && (
+                            <div className="flex items-center gap-1 flex-wrap">
+                              {tarefa.tags.slice(0, 2).map((tag, idx) => (
+                                <span key={idx} className="text-[10px] text-gray-500 bg-gray-700/50 px-1.5 py-0.5 rounded">
+                                  {tag}
+                                </span>
+                              ))}
+                              {tarefa.tags.length > 2 && (
+                                <span className="text-[10px] text-gray-500">+{tarefa.tags.length - 2}</span>
+                              )}
+                            </div>
+                          )}
+                        </div>
                       </div>
-                      <span className={`inline-block px-1.5 py-0.5 text-[10px] rounded ${getStatusColor(tarefa.status)} text-white`}>
-                        {tarefa.status === 'todo' ? 'A Fazer' : 
-                         tarefa.status === 'in-progress' ? 'Em Andamento' :
-                         tarefa.status === 'review' ? 'Revisão' : 'Concluída'}
-                      </span>
-                    </div>
-                  ))
+                    );
+                  })
                 )}
               </div>
+              
+              {selectedTarefas.length > 0 && (
+                <button
+                  onClick={() => router.push('/dashboard/tarefas')}
+                  className="mt-3 w-full py-2 bg-[#4CAF50]/10 hover:bg-[#4CAF50]/20 text-[#4CAF50] text-xs font-medium rounded-lg transition flex items-center justify-center gap-1"
+                >
+                  Ver todas as tarefas
+                  <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                  </svg>
+                </button>
+              )}
             </div>
           )}
 
