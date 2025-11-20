@@ -52,6 +52,14 @@ export async function PUT(
       );
     }
 
+    // Verificar se o usuário atual é o criador da tarefa
+    if (tarefaAtual.criadoPor !== auth.username) {
+      return NextResponse.json(
+        { error: 'Você só pode editar tarefas que você criou' },
+        { status: 403 }
+      );
+    }
+
     const updateData: any = {};
     if (body.titulo !== undefined) updateData.titulo = body.titulo;
     if (body.descricao !== undefined) updateData.descricao = body.descricao;

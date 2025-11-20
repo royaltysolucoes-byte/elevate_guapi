@@ -44,6 +44,8 @@ export default function TarefasPage() {
   const [users, setUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
+  const [showViewModal, setShowViewModal] = useState(false);
+  const [viewingTarefa, setViewingTarefa] = useState<Tarefa | null>(null);
   const [editingTarefa, setEditingTarefa] = useState<Tarefa | null>(null);
   const [draggedTarefa, setDraggedTarefa] = useState<Tarefa | null>(null);
   const [formData, setFormData] = useState({
@@ -454,27 +456,40 @@ export default function TarefasPage() {
                         <div className="flex items-start justify-between mb-3">
                           <h3 className="font-bold text-white text-base flex-1 leading-tight pr-2 group-hover:text-[#4CAF50] transition-colors">{tarefa.titulo}</h3>
                           <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                            {user?.nivelAcesso !== 'suporte' && (
-                              <button
-                                onClick={() => handleEdit(tarefa)}
-                                className="text-gray-400 hover:text-[#4CAF50] hover:bg-[#4CAF50]/10 transition p-1.5 rounded-lg"
-                                title="Editar"
-                              >
-                                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                                </svg>
-                              </button>
-                            )}
+                            <button
+                              onClick={() => {
+                                setViewingTarefa(tarefa);
+                                setShowViewModal(true);
+                              }}
+                              className="text-gray-400 hover:text-blue-400 hover:bg-blue-500/10 transition p-1.5 rounded-lg"
+                              title="Ver Detalhes"
+                            >
+                              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                              </svg>
+                            </button>
                             {user?.username === tarefa.criadoPor && (
-                              <button
-                                onClick={() => handleDelete(tarefa._id)}
-                                className="text-gray-400 hover:text-red-400 hover:bg-red-500/10 transition p-1.5 rounded-lg"
-                                title="Excluir"
-                              >
-                                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                                </svg>
-                              </button>
+                              <>
+                                <button
+                                  onClick={() => handleEdit(tarefa)}
+                                  className="text-gray-400 hover:text-[#4CAF50] hover:bg-[#4CAF50]/10 transition p-1.5 rounded-lg"
+                                  title="Editar"
+                                >
+                                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                                  </svg>
+                                </button>
+                                <button
+                                  onClick={() => handleDelete(tarefa._id)}
+                                  className="text-gray-400 hover:text-red-400 hover:bg-red-500/10 transition p-1.5 rounded-lg"
+                                  title="Excluir"
+                                >
+                                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                  </svg>
+                                </button>
+                              </>
                             )}
                           </div>
                         </div>
@@ -664,6 +679,181 @@ export default function TarefasPage() {
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* Modal de Visualização */}
+      {showViewModal && viewingTarefa && (
+        <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4 backdrop-blur-sm">
+          <div className="bg-[#282c34] rounded-xl p-6 w-full max-w-2xl border border-gray-700/50 shadow-2xl max-h-[90vh] overflow-y-auto">
+            <div className="flex items-center justify-between mb-6">
+              <h2 className="text-2xl font-bold text-white">Detalhes da Tarefa</h2>
+              <button
+                onClick={() => {
+                  setShowViewModal(false);
+                  setViewingTarefa(null);
+                }}
+                className="text-gray-400 hover:text-white transition"
+              >
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+
+            <div className="space-y-6">
+              {/* Título */}
+              <div>
+                <label className="block text-sm font-medium text-gray-400 mb-2">Título</label>
+                <h3 className="text-xl font-bold text-white">{viewingTarefa.titulo}</h3>
+              </div>
+
+              {/* Descrição */}
+              {viewingTarefa.descricao && (
+                <div>
+                  <label className="block text-sm font-medium text-gray-400 mb-2">Descrição</label>
+                  <p className="text-gray-300 whitespace-pre-wrap bg-[#1e2228] p-4 rounded-lg border border-gray-700/50">
+                    {viewingTarefa.descricao}
+                  </p>
+                </div>
+              )}
+
+              {/* Informações em Grid */}
+              <div className="grid grid-cols-2 gap-4">
+                {/* Status */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-400 mb-2">Status</label>
+                  <div className="flex items-center gap-2">
+                    <span className={`px-3 py-1.5 rounded-lg text-sm font-medium ${
+                      viewingTarefa.status === 'todo' ? 'bg-gray-700 text-gray-300' :
+                      viewingTarefa.status === 'in-progress' ? 'bg-blue-500/20 text-blue-400' :
+                      viewingTarefa.status === 'review' ? 'bg-purple-500/20 text-purple-400' :
+                      'bg-green-500/20 text-green-400'
+                    }`}>
+                      {viewingTarefa.status === 'todo' ? 'A Fazer' :
+                       viewingTarefa.status === 'in-progress' ? 'Em Andamento' :
+                       viewingTarefa.status === 'review' ? 'Revisão' : 'Concluída'}
+                    </span>
+                  </div>
+                </div>
+
+                {/* Prioridade */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-400 mb-2">Prioridade</label>
+                  <div className="flex items-center gap-2">
+                    <span className={`px-3 py-1.5 rounded-lg text-sm font-medium ${
+                      viewingTarefa.prioridade === 'urgente' ? 'bg-red-500/20 text-red-400' :
+                      viewingTarefa.prioridade === 'alta' ? 'bg-orange-500/20 text-orange-400' :
+                      viewingTarefa.prioridade === 'media' ? 'bg-yellow-500/20 text-yellow-400' :
+                      'bg-blue-500/20 text-blue-400'
+                    }`}>
+                      {viewingTarefa.prioridade === 'urgente' ? 'Urgente' :
+                       viewingTarefa.prioridade === 'alta' ? 'Alta' :
+                       viewingTarefa.prioridade === 'media' ? 'Média' : 'Baixa'}
+                    </span>
+                  </div>
+                </div>
+
+                {/* Responsável */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-400 mb-2">Responsável</label>
+                  <p className="text-white">
+                    {users.find(u => u.username === viewingTarefa.responsavel)?.fullName || viewingTarefa.responsavel || 'Não atribuído'}
+                  </p>
+                </div>
+
+                {/* Prazo */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-400 mb-2">Prazo para Execução</label>
+                  <p className={`text-white ${
+                    viewingTarefa.prazo && viewingTarefa.prazo !== null && viewingTarefa.prazo !== '' && new Date(viewingTarefa.prazo) < new Date() && viewingTarefa.status !== 'done'
+                      ? 'text-red-400 font-semibold'
+                      : ''
+                  }`}>
+                    {viewingTarefa.prazo && viewingTarefa.prazo !== null && viewingTarefa.prazo !== '' && !isNaN(new Date(viewingTarefa.prazo).getTime())
+                      ? new Date(viewingTarefa.prazo).toLocaleDateString('pt-BR', {
+                          day: '2-digit',
+                          month: 'long',
+                          year: 'numeric'
+                        })
+                      : 'Sem prazo definido'}
+                    {viewingTarefa.prazo && viewingTarefa.prazo !== null && viewingTarefa.prazo !== '' && !isNaN(new Date(viewingTarefa.prazo).getTime()) && new Date(viewingTarefa.prazo) < new Date() && viewingTarefa.status !== 'done' && (
+                      <span className="ml-2 text-xs text-red-400">(Atrasada)</span>
+                    )}
+                  </p>
+                </div>
+              </div>
+
+              {/* Tags */}
+              {viewingTarefa.tags && viewingTarefa.tags.length > 0 && (
+                <div>
+                  <label className="block text-sm font-medium text-gray-400 mb-2">Tags</label>
+                  <div className="flex flex-wrap gap-2">
+                    {viewingTarefa.tags.map((tag, index) => (
+                      <span
+                        key={index}
+                        className="px-3 py-1 bg-[#4CAF50]/10 text-[#4CAF50] rounded-lg text-sm border border-[#4CAF50]/30"
+                      >
+                        {tag}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Datas */}
+              <div className="grid grid-cols-2 gap-4 pt-4 border-t border-gray-700/50">
+                <div>
+                  <label className="block text-sm font-medium text-gray-400 mb-2">Criada em</label>
+                  <p className="text-gray-300 text-sm">
+                    {new Date(viewingTarefa.createdAt).toLocaleString('pt-BR', {
+                      day: '2-digit',
+                      month: '2-digit',
+                      year: 'numeric',
+                      hour: '2-digit',
+                      minute: '2-digit'
+                    })}
+                  </p>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-400 mb-2">Última atualização</label>
+                  <p className="text-gray-300 text-sm">
+                    {new Date(viewingTarefa.updatedAt).toLocaleString('pt-BR', {
+                      day: '2-digit',
+                      month: '2-digit',
+                      year: 'numeric',
+                      hour: '2-digit',
+                      minute: '2-digit'
+                    })}
+                  </p>
+                </div>
+              </div>
+
+              {/* Botões de Ação */}
+              <div className="flex gap-3 pt-4 border-t border-gray-700/50">
+                <button
+                  onClick={() => {
+                    setShowViewModal(false);
+                    setViewingTarefa(null);
+                  }}
+                  className="flex-1 bg-gray-700 hover:bg-gray-600 text-white px-4 py-2.5 rounded-lg transition font-medium"
+                >
+                  Fechar
+                </button>
+                {user?.username === viewingTarefa.criadoPor && (
+                  <button
+                    onClick={() => {
+                      setShowViewModal(false);
+                      handleEdit(viewingTarefa);
+                    }}
+                    className="flex-1 bg-[#4CAF50] hover:bg-[#45a049] text-white px-4 py-2.5 rounded-lg transition font-medium"
+                  >
+                    Editar Tarefa
+                  </button>
+                )}
+              </div>
+            </div>
           </div>
         </div>
       )}
