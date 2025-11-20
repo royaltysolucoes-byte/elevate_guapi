@@ -88,15 +88,18 @@ export async function PUT(
     }
 
     // Registrar auditoria de edição
+    const username = 'username' in auth && typeof auth.username === 'string' ? auth.username : '';
+    const nivelAcesso = 'nivelAcesso' in auth && typeof auth.nivelAcesso === 'string' ? auth.nivelAcesso : 'admin';
+    
     await registrarAuditoria({
-      usuario: auth.username,
+      usuario: username,
       acao: 'editar',
       entidade: 'senha',
       entidadeId: id,
       descricao: `Editou senha ${senhaAntiga.id} -> ${body.id} (${body.categoria})`,
       dadosAntigos: sanitizarDadosSensiveis({ id: senhaAntiga.id, categoria: senhaAntiga.categoria }),
       dadosNovos: sanitizarDadosSensiveis({ id: body.id, categoria: body.categoria }),
-      nivelAcesso: auth.nivelAcesso || 'admin',
+      nivelAcesso: nivelAcesso,
       sensivel: true,
       request,
     });
@@ -163,14 +166,17 @@ export async function DELETE(
     await Senha.findByIdAndDelete(id);
 
     // Registrar auditoria de exclusão
+    const username = 'username' in auth && typeof auth.username === 'string' ? auth.username : '';
+    const nivelAcesso = 'nivelAcesso' in auth && typeof auth.nivelAcesso === 'string' ? auth.nivelAcesso : 'admin';
+    
     await registrarAuditoria({
-      usuario: auth.username,
+      usuario: username,
       acao: 'excluir',
       entidade: 'senha',
       entidadeId: id,
       descricao: `Excluiu senha ${senha.id} (${senha.categoria})`,
       dadosAntigos: sanitizarDadosSensiveis({ id: senha.id, categoria: senha.categoria }),
-      nivelAcesso: auth.nivelAcesso || 'admin',
+      nivelAcesso: nivelAcesso,
       sensivel: true,
       request,
     });

@@ -165,12 +165,15 @@ export async function GET(request: NextRequest) {
     });
 
     // Registrar auditoria de visualização
+    const username = 'username' in auth && typeof auth.username === 'string' ? auth.username : '';
+    const nivelAcesso = 'nivelAcesso' in auth && typeof auth.nivelAcesso === 'string' ? auth.nivelAcesso : 'admin';
+    
     await registrarAuditoria({
-      usuario: auth.username,
+      usuario: username,
       acao: 'visualizar',
       entidade: 'email',
       descricao: `Visualizou lista de emails${search ? ` (busca: ${search})` : ''}`,
-      nivelAcesso: auth.nivelAcesso || 'admin',
+      nivelAcesso: nivelAcesso,
       sensivel: true,
       request,
     });
@@ -233,14 +236,17 @@ export async function POST(request: NextRequest) {
     });
 
     // Registrar auditoria de criação
+    const username = 'username' in auth && typeof auth.username === 'string' ? auth.username : '';
+    const nivelAcesso = 'nivelAcesso' in auth && typeof auth.nivelAcesso === 'string' ? auth.nivelAcesso : 'admin';
+    
     await registrarAuditoria({
-      usuario: auth.username,
+      usuario: username,
       acao: 'criar',
       entidade: 'email',
       entidadeId: newEmail._id.toString(),
       descricao: `Criou email para ${colaborador} (${email})`,
       dadosNovos: sanitizarDadosSensiveis({ email, colaborador, nome }),
-      nivelAcesso: auth.nivelAcesso || 'admin',
+      nivelAcesso: nivelAcesso,
       sensivel: true,
       request,
     });

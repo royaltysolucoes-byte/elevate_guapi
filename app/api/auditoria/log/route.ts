@@ -10,7 +10,11 @@ async function checkAuth(request: NextRequest) {
   }
 
   const payload = await verifyToken(token);
-  return payload;
+  if (!payload || typeof payload !== 'object') {
+    return null;
+  }
+
+  return payload as { username: string; isAdmin: boolean; nivelAcesso?: string };
 }
 
 export async function POST(request: NextRequest) {
@@ -26,13 +30,16 @@ export async function POST(request: NextRequest) {
 
     const body = await request.json();
 
+    const username = 'username' in auth && typeof auth.username === 'string' ? auth.username : '';
+    const nivelAcesso = 'nivelAcesso' in auth && typeof auth.nivelAcesso === 'string' ? auth.nivelAcesso : 'admin';
+
     await registrarAuditoria({
-      usuario: auth.username,
+      usuario: username,
       acao: body.acao || 'acessar',
       entidade: body.entidade || 'pagina',
       entidadeId: body.entidadeId,
       descricao: body.descricao || '',
-      nivelAcesso: body.nivelAcesso || auth.nivelAcesso || 'admin',
+      nivelAcesso: body.nivelAcesso || nivelAcesso,
       sensivel: body.sensivel || false,
       request,
     });

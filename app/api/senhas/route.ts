@@ -81,12 +81,15 @@ export async function GET(request: NextRequest) {
     }));
 
     // Registrar auditoria de visualização
+    const username = 'username' in auth && typeof auth.username === 'string' ? auth.username : '';
+    const nivelAcesso = 'nivelAcesso' in auth && typeof auth.nivelAcesso === 'string' ? auth.nivelAcesso : 'admin';
+    
     await registrarAuditoria({
-      usuario: auth.username,
+      usuario: username,
       acao: 'visualizar',
       entidade: 'senha',
       descricao: `Visualizou lista de senhas${search ? ` (busca: ${search})` : ''}`,
-      nivelAcesso: auth.nivelAcesso || 'admin',
+      nivelAcesso: nivelAcesso,
       sensivel: true,
       request,
     });
@@ -160,14 +163,17 @@ export async function POST(request: NextRequest) {
     const senhaPopulada = await Senha.findById(newSenha._id).populate('servico');
 
     // Registrar auditoria de criação
+    const username = 'username' in auth && typeof auth.username === 'string' ? auth.username : '';
+    const nivelAcesso = 'nivelAcesso' in auth && typeof auth.nivelAcesso === 'string' ? auth.nivelAcesso : 'admin';
+    
     await registrarAuditoria({
-      usuario: auth.username,
+      usuario: username,
       acao: 'criar',
       entidade: 'senha',
       entidadeId: newSenha._id.toString(),
       descricao: `Criou senha ${id} (${categoria})`,
       dadosNovos: sanitizarDadosSensiveis({ id, categoria, servico }),
-      nivelAcesso: auth.nivelAcesso || 'admin',
+      nivelAcesso: nivelAcesso,
       sensivel: true,
       request,
     });

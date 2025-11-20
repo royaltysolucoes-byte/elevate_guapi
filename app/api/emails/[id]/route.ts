@@ -78,15 +78,18 @@ export async function PUT(
     }
 
     // Registrar auditoria de edição
+    const username = 'username' in auth && typeof auth.username === 'string' ? auth.username : '';
+    const nivelAcesso = 'nivelAcesso' in auth && typeof auth.nivelAcesso === 'string' ? auth.nivelAcesso : 'admin';
+    
     await registrarAuditoria({
-      usuario: auth.username,
+      usuario: username,
       acao: 'editar',
       entidade: 'email',
       entidadeId: id,
       descricao: `Editou email ${emailAntigo.email} -> ${body.email}`,
       dadosAntigos: sanitizarDadosSensiveis({ email: emailAntigo.email, colaborador: emailAntigo.colaborador, nome: emailAntigo.nome }),
       dadosNovos: sanitizarDadosSensiveis({ email: body.email, colaborador: body.colaborador, nome: body.nome }),
-      nivelAcesso: auth.nivelAcesso || 'admin',
+      nivelAcesso: nivelAcesso,
       sensivel: true,
       request,
     });
@@ -144,14 +147,17 @@ export async function DELETE(
     await Email.findByIdAndDelete(id);
 
     // Registrar auditoria de exclusão
+    const username = 'username' in auth && typeof auth.username === 'string' ? auth.username : '';
+    const nivelAcesso = 'nivelAcesso' in auth && typeof auth.nivelAcesso === 'string' ? auth.nivelAcesso : 'admin';
+    
     await registrarAuditoria({
-      usuario: auth.username,
+      usuario: username,
       acao: 'excluir',
       entidade: 'email',
       entidadeId: id,
       descricao: `Excluiu email ${email.email} (${email.colaborador})`,
       dadosAntigos: sanitizarDadosSensiveis({ email: email.email, colaborador: email.colaborador, nome: email.nome }),
-      nivelAcesso: auth.nivelAcesso || 'admin',
+      nivelAcesso: nivelAcesso,
       sensivel: true,
       request,
     });
