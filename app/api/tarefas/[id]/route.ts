@@ -52,14 +52,22 @@ export async function PUT(
       );
     }
 
-    // Verificar se o usuário atual é o criador da tarefa
-    if (tarefaAtual.criadoPor !== auth.username) {
+    const username = 'username' in auth && typeof auth.username === 'string' ? auth.username : '';
+    const isCriador = tarefaAtual.criadoPor === username;
+
+    // Verificar quais campos estão sendo alterados
+    const camposSensiveis = ['titulo', 'descricao', 'prioridade', 'responsavel', 'prazo', 'tags'];
+    const alterandoCamposSensiveis = camposSensiveis.some(campo => body[campo] !== undefined);
+
+    // Se está alterando campos sensíveis, apenas o criador pode fazer
+    if (alterandoCamposSensiveis && !isCriador) {
       return NextResponse.json(
         { error: 'Você só pode editar tarefas que você criou' },
         { status: 403 }
       );
     }
 
+    // Qualquer usuário pode alterar o status
     const updateData: any = {};
     if (body.titulo !== undefined) updateData.titulo = body.titulo;
     if (body.descricao !== undefined) updateData.descricao = body.descricao;
@@ -82,15 +90,15 @@ export async function PUT(
       );
     }
 
-    // Criar notificação se responsável foi atribuído ou alterado
-    if (body.responsavel !== undefined && body.responsavel && body.responsavel !== tarefaAtual.responsavel) {
+    // Criar notificação se responsável foi atribuído ou alterado (apenas se for o criador)
+    if (isCriador && body.responsavel !== undefined && body.responsavel && body.responsavel !== tarefaAtual.responsavel) {
       try {
         const tarefaAtualizadaTyped = tarefaAtualizada as any;
         await Notificacao.create({
           usuario: body.responsavel,
           tipo: 'tarefa_atribuida',
-          titulo: 'Nova tarefa atribuída',
-          mensagem: `${auth.username} atribuiu a tarefa "${tarefaAtualizadaTyped?.titulo || tarefaAtual.titulo}" para você`,
+          titulo: 'Tarefa atribuída',
+          mensagem: `${username} atribuiu a tarefa "${tarefaAtualizadaTyped?.titulo || tarefaAtual.titulo}" para você`,
           tarefaId: id,
           lida: false,
         });
@@ -154,7 +162,8 @@ export async function DELETE(
     }
 
     // Verificar se o usuário atual é o criador da tarefa
-    if (tarefa.criadoPor !== auth.username) {
+    const username = 'username' in auth && typeof auth.username === 'string' ? auth.username : '';
+    if (tarefa.criadoPor !== username) {
       return NextResponse.json(
         { error: 'Você só pode excluir tarefas que você criou' },
         { status: 403 }

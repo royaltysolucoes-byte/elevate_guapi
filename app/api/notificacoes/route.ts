@@ -41,7 +41,15 @@ export async function GET(request: NextRequest) {
     const apenasNaoLidas = searchParams.get('apenasNaoLidas') === 'true';
     const limit = parseInt(searchParams.get('limit') || '20');
 
-    const query: any = { usuario: auth.username };
+    const username = 'username' in auth && typeof auth.username === 'string' ? auth.username : '';
+    if (!username) {
+      return NextResponse.json(
+        { error: 'Unauthorized' },
+        { status: 401 }
+      );
+    }
+
+    const query: any = { usuario: username };
     if (apenasNaoLidas) {
       query.lida = false;
     }
@@ -52,7 +60,7 @@ export async function GET(request: NextRequest) {
       .lean();
 
     const totalNaoLidas = await Notificacao.countDocuments({
-      usuario: auth.username,
+      usuario: username,
       lida: false,
     });
 
@@ -92,16 +100,24 @@ export async function POST(request: NextRequest) {
     await connectDB();
     ensureNotificacaoModel();
 
+    const username = 'username' in auth && typeof auth.username === 'string' ? auth.username : '';
+    if (!username) {
+      return NextResponse.json(
+        { error: 'Unauthorized' },
+        { status: 401 }
+      );
+    }
+
     const { notificacaoId, marcarTodas } = await request.json();
 
     if (marcarTodas) {
       await Notificacao.updateMany(
-        { usuario: auth.username, lida: false },
+        { usuario: username, lida: false },
         { $set: { lida: true } }
       );
     } else if (notificacaoId) {
       await Notificacao.updateOne(
-        { _id: notificacaoId, usuario: auth.username },
+        { _id: notificacaoId, usuario: username },
         { $set: { lida: true } }
       );
     } else {

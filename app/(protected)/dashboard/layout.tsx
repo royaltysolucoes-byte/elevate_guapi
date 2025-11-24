@@ -1045,16 +1045,23 @@ export default function DashboardLayout({
         <div className="relative">
           <button
             onClick={() => setShowNotificacoes(!showNotificacoes)}
-            className="relative bg-[#282c34] hover:bg-gray-700 text-white p-2.5 md:p-3 rounded-lg shadow-lg transition-all border border-gray-700/50"
+            className={`relative bg-[#282c34] hover:bg-gray-700 text-white p-3 md:p-3.5 rounded-xl shadow-2xl transition-all border-2 ${
+              totalNaoLidas > 0 
+                ? 'border-[#4CAF50] shadow-[#4CAF50]/50 animate-pulse' 
+                : 'border-gray-700/50'
+            }`}
             aria-label="Notificações"
           >
-            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg className="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
             </svg>
             {totalNaoLidas > 0 && (
-              <span className="absolute -top-1 -right-1 bg-[#4CAF50] text-white text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center animate-pulse">
+              <>
+                <span className="absolute -top-2 -right-2 bg-red-500 text-white text-sm font-extrabold rounded-full w-7 h-7 flex items-center justify-center animate-bounce shadow-lg shadow-red-500/50 border-2 border-white">
                 {totalNaoLidas > 9 ? '9+' : totalNaoLidas}
               </span>
+                <span className="absolute -top-2 -right-2 bg-red-500 rounded-full w-7 h-7 animate-ping opacity-75"></span>
+              </>
             )}
           </button>
 
@@ -1065,15 +1072,25 @@ export default function DashboardLayout({
                 className="fixed inset-0 z-40"
                 onClick={() => setShowNotificacoes(false)}
               />
-              <div className="absolute right-0 top-full mt-2 w-[calc(100vw-2rem)] sm:w-80 md:w-96 bg-[#282c34] rounded-lg shadow-2xl border border-gray-700/50 max-h-[calc(100vh-8rem)] overflow-hidden z-50">
-                <div className="p-4 border-b border-gray-700/50 flex items-center justify-between">
-                  <h3 className="text-white font-semibold">Notificações</h3>
+              <div className="absolute right-0 top-full mt-2 w-[calc(100vw-2rem)] sm:w-80 md:w-96 bg-[#282c34] rounded-xl shadow-2xl border-2 border-gray-700/50 max-h-[calc(100vh-8rem)] overflow-hidden z-50">
+                <div className="p-4 border-b-2 border-gray-700/50 flex items-center justify-between bg-gradient-to-r from-[#1e2228] to-[#282c34]">
+                  <div className="flex items-center gap-2">
+                    <svg className="w-5 h-5 text-[#4CAF50]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
+                    </svg>
+                    <h3 className="text-white font-bold text-lg">Notificações</h3>
+                    {totalNaoLidas > 0 && (
+                      <span className="bg-red-500 text-white text-xs font-bold px-2 py-0.5 rounded-full">
+                        {totalNaoLidas}
+                      </span>
+                    )}
+                  </div>
                   {totalNaoLidas > 0 && (
                     <button
                       onClick={marcarTodasComoLidas}
-                      className="text-[#4CAF50] text-xs hover:underline"
+                      className="text-[#4CAF50] text-xs font-medium hover:underline hover:text-[#45a049] transition"
                     >
-                      Marcar todas como lidas
+                      Marcar todas
                     </button>
                   )}
                 </div>
@@ -1087,8 +1104,10 @@ export default function DashboardLayout({
                       {notificacoes.map((notif) => (
                         <div
                           key={notif._id}
-                          className={`p-4 hover:bg-gray-800/50 transition cursor-pointer ${
-                            !notif.lida ? 'bg-gray-800/30' : ''
+                          className={`p-4 hover:bg-gray-800/70 transition-all cursor-pointer border-l-4 ${
+                            !notif.lida 
+                              ? 'bg-gradient-to-r from-gray-800/50 to-transparent border-[#4CAF50] shadow-lg' 
+                              : 'border-transparent'
                           }`}
                           onClick={() => {
                             if (!notif.lida) {
@@ -1101,19 +1120,31 @@ export default function DashboardLayout({
                           }}
                         >
                           <div className="flex items-start gap-3">
-                            <div className={`w-2 h-2 rounded-full mt-2 flex-shrink-0 ${
-                              !notif.lida ? 'bg-[#4CAF50]' : 'bg-transparent'
-                            }`} />
+                            {!notif.lida && (
+                              <div className="w-3 h-3 rounded-full mt-1.5 flex-shrink-0 bg-[#4CAF50] animate-pulse shadow-lg shadow-[#4CAF50]/50" />
+                            )}
                             <div className="flex-1 min-w-0">
-                              <p className={`text-sm font-semibold mb-1 ${
+                              <div className="flex items-center gap-2 mb-1.5">
+                                <p className={`text-sm font-bold ${
                                 !notif.lida ? 'text-white' : 'text-gray-300'
                               }`}>
                                 {notif.titulo}
                               </p>
-                              <p className="text-gray-400 text-xs mb-2">
+                                {!notif.lida && (
+                                  <span className="bg-[#4CAF50] text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full">
+                                    NOVA
+                                  </span>
+                                )}
+                              </div>
+                              <p className={`text-xs mb-2 leading-relaxed ${
+                                !notif.lida ? 'text-gray-200' : 'text-gray-400'
+                              }`}>
                                 {notif.mensagem}
                               </p>
-                              <p className="text-gray-500 text-[10px]">
+                              <p className="text-gray-500 text-[10px] flex items-center gap-1">
+                                <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                </svg>
                                 {new Date(notif.createdAt).toLocaleString('pt-BR', {
                                   day: '2-digit',
                                   month: '2-digit',

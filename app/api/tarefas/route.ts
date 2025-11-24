@@ -99,11 +99,12 @@ export async function POST(request: NextRequest) {
     // Criar notificação se responsável foi atribuído
     if (responsavel) {
       try {
+        const username = 'username' in auth && typeof auth.username === 'string' ? auth.username : 'Sistema';
         await Notificacao.create({
           usuario: responsavel,
           tipo: 'tarefa_atribuida',
           titulo: 'Nova tarefa atribuída',
-          mensagem: `${auth.username} atribuiu a tarefa "${titulo}" para você`,
+          mensagem: `${username} atribuiu a tarefa "${titulo}" para você`,
           tarefaId: novaTarefa._id.toString(),
           lida: false,
         });
