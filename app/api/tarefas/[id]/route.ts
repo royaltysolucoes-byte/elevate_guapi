@@ -90,10 +90,11 @@ export async function PUT(
       );
     }
 
+    const tarefaAtualizadaTyped = tarefaAtualizada as any;
+
     // Criar notificação se responsável foi atribuído ou alterado (apenas se for o criador)
     if (isCriador && body.responsavel !== undefined && body.responsavel && body.responsavel !== tarefaAtual.responsavel) {
       try {
-        const tarefaAtualizadaTyped = tarefaAtualizada as any;
         await Notificacao.create({
           usuario: body.responsavel,
           tipo: 'tarefa_atribuida',
@@ -104,6 +105,36 @@ export async function PUT(
         });
       } catch (notifError) {
         console.error('Error creating notification:', notifError);
+        // Não falhar a atualização da tarefa se a notificação falhar
+      }
+    }
+
+    // Criar notificação se status foi alterado e há um responsável
+    if (body.status !== undefined && body.status !== tarefaAtual.status && tarefaAtualizadaTyped?.responsavel) {
+      try {
+        const statusLabels: { [key: string]: string } = {
+          'todo': 'A Fazer',
+          'in-progress': 'Em Andamento',
+          'review': 'Em Revisão',
+          'done': 'Concluída'
+        };
+
+        const statusAnterior = statusLabels[tarefaAtual.status] || tarefaAtual.status;
+        const statusNovo = statusLabels[body.status] || body.status;
+
+        // Não notificar se quem moveu foi o próprio responsável
+        if (tarefaAtualizadaTyped.responsavel !== username) {
+          await Notificacao.create({
+            usuario: tarefaAtualizadaTyped.responsavel,
+            tipo: 'tarefa_atualizada',
+            titulo: 'Status da tarefa alterado',
+            mensagem: `${username} moveu a tarefa "${tarefaAtualizadaTyped?.titulo || tarefaAtual.titulo}" de ${statusAnterior} para ${statusNovo}`,
+            tarefaId: id,
+            lida: false,
+          });
+        }
+      } catch (notifError) {
+        console.error('Error creating status change notification:', notifError);
         // Não falhar a atualização da tarefa se a notificação falhar
       }
     }
