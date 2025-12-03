@@ -427,29 +427,29 @@ export default function DashboardPage() {
       </div>
       </div>
       {/* Header Melhorado */}
-      <div className="bg-gradient-to-r from-[#282c34] to-[#1e2228] rounded-lg border border-gray-700/50 p-6 mb-8 relative z-10">
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+      <div className="bg-gradient-to-r from-[#282c34] to-[#1e2228] rounded-lg border border-gray-700/50 p-4 mb-6 relative z-10">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
           <div className="flex-1">
-            <div className="flex items-center gap-3 mb-2">
-              <div className="w-10 h-10 rounded-lg bg-[#4CAF50]/10 flex items-center justify-center">
-                <svg className="w-5 h-5 text-[#4CAF50]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <div className="flex items-center gap-2.5 mb-1.5">
+              <div className="w-8 h-8 rounded-md bg-[#4CAF50]/10 flex items-center justify-center">
+                <svg className="w-4 h-4 text-[#4CAF50]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
         </svg>
       </div>
               <div>
-                <h1 className="text-xl font-bold text-white">Dashboard</h1>
-                <p className="text-xs text-gray-400">{user?.fullName ? `Olá, ${user.fullName.split(' ')[0]}` : 'Sistema'}</p>
+                <h1 className="text-lg font-bold text-white">Dashboard</h1>
+                <p className="text-[11px] text-gray-400">{user?.fullName ? `Olá, ${user.fullName.split(' ')[0]}` : 'Sistema'}</p>
       </div>
       </div>
-            <div className="flex items-center gap-4 mt-3 text-xs text-gray-400">
-              <div className="flex items-center gap-1.5">
-                <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <div className="flex items-center gap-3 mt-2 text-[11px] text-gray-400">
+              <div className="flex items-center gap-1">
+                <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
                 </svg>
                 <span className="capitalize">{currentDateFormatted}</span>
       </div>
-              <div className="flex items-center gap-1.5">
-                <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <div className="flex items-center gap-1">
+                <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
                 </svg>
                 <span>{currentTimeFormatted}</span>
@@ -459,9 +459,9 @@ export default function DashboardPage() {
               <button
                 onClick={handleRefresh}
                 disabled={refreshing}
-            className="flex items-center gap-2 px-4 py-2 bg-[#282c34] hover:bg-[#363f4a] text-white rounded-lg transition disabled:opacity-50 border border-gray-700 self-start sm:self-auto"
+            className="flex items-center gap-1.5 px-3 py-1.5 bg-[#282c34] hover:bg-[#363f4a] text-white rounded-md transition disabled:opacity-50 border border-gray-700/50 text-sm self-start sm:self-auto"
               >
-            <svg className={`w-4 h-4 ${refreshing ? 'animate-spin' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg className={`w-3.5 h-3.5 ${refreshing ? 'animate-spin' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
                 </svg>
                 {refreshing ? 'Atualizando...' : 'Atualizar'}
@@ -469,27 +469,27 @@ export default function DashboardPage() {
         </div>
             </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 relative z-10">
+      <div className="grid grid-cols-1 lg:grid-cols-4 gap-4 relative z-10">
         {/* Coluna Principal */}
-        <div className="lg:col-span-3 space-y-6">
+        <div className="lg:col-span-3 space-y-4">
           {/* Cards Principais com Hover Interativo */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
             {/* Card Equipamentos */}
             <div 
-              className="group relative bg-[#282c34] rounded-lg border border-gray-700/50 p-6 hover:border-blue-500/50 transition-all cursor-pointer overflow-hidden"
+              className="group relative bg-[#282c34] rounded-lg border border-gray-700/50 p-4 hover:border-blue-500/50 transition-all cursor-pointer overflow-hidden"
               onMouseEnter={() => setHoveredCard('equipamentos')}
               onMouseLeave={() => setHoveredCard(null)}
               onClick={() => router.push('/dashboard/lista-pc')}
             >
-              <div className="flex items-center justify-between mb-4">
-                <div className="w-12 h-12 rounded-lg bg-blue-500/10 flex items-center justify-center group-hover:scale-110 transition">
-                  <svg className="w-6 h-6 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <div className="flex items-center justify-between mb-3">
+                <div className="w-10 h-10 rounded-md bg-blue-500/10 flex items-center justify-center group-hover:scale-110 transition">
+                  <svg className="w-5 h-5 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 3v2m6-2v2M9 19v2m6-2v2M5 9H3m2 6H3m18-6h-2m2 6h-2M7 19h10a2 2 0 002-2V7a2 2 0 00-2-2H7a2 2 0 00-2 2v10a2 2 0 002 2zM9 9h6v6H9V9z" />
                   </svg>
                 </div>
               </div>
-              <p className="text-sm text-gray-400 mb-1">Equipamentos</p>
-              <p className="text-3xl font-bold text-white mb-4">{stats.totalPCs + stats.totalImpressoras + stats.totalRelogios + stats.totalCelulares}</p>
+              <p className="text-xs text-gray-400 mb-1">Equipamentos</p>
+              <p className="text-2xl font-bold text-white mb-3">{stats.totalPCs + stats.totalImpressoras + stats.totalRelogios + stats.totalCelulares}</p>
               
               {/* Info no Hover */}
               {hoveredCard === 'equipamentos' && (
@@ -523,7 +523,7 @@ export default function DashboardPage() {
 
             {/* Card Rede */}
             <div 
-              className="group relative bg-[#282c34] rounded-lg border border-gray-700/50 p-6 hover:border-cyan-500/50 transition-all cursor-pointer overflow-hidden"
+              className="group relative bg-[#282c34] rounded-lg border border-gray-700/50 p-4 hover:border-cyan-500/50 transition-all cursor-pointer overflow-hidden"
               onMouseEnter={() => setHoveredCard('rede')}
               onMouseLeave={() => setHoveredCard(null)}
               onClick={() => router.push('/dashboard/gestao-ip')}
@@ -535,8 +535,8 @@ export default function DashboardPage() {
                         </svg>
                 </div>
               </div>
-              <p className="text-sm text-gray-400 mb-1">Rede & Infra</p>
-              <p className="text-3xl font-bold text-white mb-4">{stats.totalIPs + stats.totalServidores + stats.totalConectividades}</p>
+              <p className="text-xs text-gray-400 mb-1">Rede & Infra</p>
+              <p className="text-2xl font-bold text-white mb-3">{stats.totalIPs + stats.totalServidores + stats.totalConectividades}</p>
               
               {hoveredCard === 'rede' && (
                 <div className="absolute inset-0 bg-[#282c34] p-6 animate-fadeIn">
@@ -581,8 +581,8 @@ export default function DashboardPage() {
                   </svg>
                 </div>
               </div>
-              <p className="text-sm text-gray-400 mb-1">Tarefas</p>
-              <p className="text-3xl font-bold text-white mb-4">{tarefasStats.total}</p>
+              <p className="text-xs text-gray-400 mb-1">Tarefas</p>
+              <p className="text-2xl font-bold text-white mb-3">{tarefasStats.total}</p>
               
               {hoveredCard === 'tarefas' && (
                 <div className="absolute inset-0 bg-[#282c34] p-6 animate-fadeIn">

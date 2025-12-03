@@ -311,14 +311,14 @@ export default function DashboardLayout({
       <div className={`fixed left-0 top-0 h-full bg-[#282c34] shadow-2xl transform transition-all duration-300 ease-in-out z-50 md:z-40 md:translate-x-0 overflow-hidden overscroll-contain ${
         sidebarOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'
       } ${
-        sidebarCollapsed ? 'w-20' : 'w-64'
+        sidebarCollapsed ? 'w-16' : 'w-56'
       }`}
                 style={{
         willChange: 'width'
       }}>
-        <div className="p-4 pb-24 md:pb-28 min-h-full flex flex-col overflow-y-auto">
+        <div className="p-3 pb-20 md:pb-24 min-h-full flex flex-col overflow-y-auto">
           {/* Toggle collapse button - Desktop only, no topo */}
-          <div className="hidden md:flex justify-end mb-4">
+          <div className="hidden md:flex justify-end mb-3">
             <button
               onClick={toggleSidebarCollapse}
               className="bg-[#282c34] border border-gray-700 text-gray-400 hover:text-white p-1.5 rounded-lg shadow-lg hover:bg-gray-700 transition"
@@ -335,9 +335,9 @@ export default function DashboardLayout({
             </button>
           </div>
           
-          <div className="flex items-center justify-center mb-6 md:mb-8 relative">
+          <div className="flex items-center justify-center mb-4 md:mb-5 relative">
             {/* Logo Átomo - Estático */}
-            <div className={`relative flex items-center justify-center transition-all duration-300 ${sidebarCollapsed ? 'w-10 h-10' : 'w-14 h-14'}`}>
+            <div className={`relative flex items-center justify-center transition-all duration-300 ${sidebarCollapsed ? 'w-8 h-8' : 'w-10 h-10'}`}>
               <svg className="w-full h-full" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
                 {/* Órbitas fixas */}
                 <ellipse cx="32" cy="32" rx="24" ry="8" stroke="#4CAF50" strokeWidth="1.5" strokeOpacity="0.4" />
@@ -365,14 +365,14 @@ export default function DashboardLayout({
             </button>
           </div>
 
-          <nav className="space-y-1.5 md:space-y-2 flex-1">
+          <nav className="space-y-1 flex-1">
             <div className="relative">
             <Link
               href="/dashboard"
-                className={`flex items-center px-4 py-3 rounded-lg transition group ${
+                className={`flex items-center px-3 py-2 rounded-md transition group ${
                 isActive('/dashboard')
-                  ? 'bg-[#4CAF50] text-white'
-                  : 'text-gray-300 hover:bg-gray-700'
+                  ? 'bg-[#4CAF50] text-white shadow-sm'
+                  : 'text-gray-300 hover:bg-gray-700/60'
                 } ${sidebarCollapsed ? 'justify-center' : ''}`}
               onClick={() => {
                 if (window.innerWidth < 768) {
@@ -382,10 +382,10 @@ export default function DashboardLayout({
                 onMouseEnter={() => setHoveredItem('dashboard')}
                 onMouseLeave={() => setHoveredItem(null)}
             >
-                <svg className={`w-5 h-5 ${sidebarCollapsed ? '' : 'mr-3'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg className={`w-4 h-4 ${sidebarCollapsed ? '' : 'mr-2.5'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
               </svg>
-                {!sidebarCollapsed && <span>Dashboard</span>}
+                {!sidebarCollapsed && <span className="text-sm font-medium">Dashboard</span>}
             </Link>
               {sidebarCollapsed && hoveredItem === 'dashboard' && (
                 <div className="absolute left-full ml-2 px-3 py-2 bg-gray-800 text-white text-sm rounded-lg shadow-lg z-50 whitespace-nowrap">
@@ -399,23 +399,23 @@ export default function DashboardLayout({
             <div className="relative">
               <button
                 onClick={() => toggleSubmenu('equipamentos')}
-                className={`w-full flex items-center justify-between px-4 py-3 rounded-lg transition group ${
+                className={`w-full flex items-center justify-between px-3 py-2 rounded-md transition group ${
                   isSubmenuActive(['/dashboard/lista-pc', '/dashboard/impressoras', '/dashboard/relogios-ponto', '/dashboard/celulares'])
-                  ? 'bg-[#4CAF50] text-white'
-                  : 'text-gray-300 hover:bg-gray-700'
+                  ? 'bg-[#4CAF50] text-white shadow-sm'
+                  : 'text-gray-300 hover:bg-gray-700/60'
                 } ${sidebarCollapsed ? 'justify-center' : ''}`}
                 onMouseEnter={() => setHoveredItem('equipamentos')}
                 onMouseLeave={() => setHoveredItem(null)}
               >
                 <div className={`flex items-center ${sidebarCollapsed ? '' : 'flex-1'}`}>
-                  <svg className={`w-5 h-5 ${sidebarCollapsed ? '' : 'mr-3'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <svg className={`w-4 h-4 ${sidebarCollapsed ? '' : 'mr-2.5'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 3v2m6-2v2M9 19v2m6-2v2M5 9H3m2 6H3m18-6h-2m2 6h-2M7 19h10a2 2 0 002-2V7a2 2 0 00-2-2H7a2 2 0 00-2 2v10a2 2 0 002 2zM9 9h6v6H9V9z" />
                   </svg>
-                  {!sidebarCollapsed && <span>Equipamentos</span>}
+                  {!sidebarCollapsed && <span className="text-sm font-medium">Equipamentos</span>}
                 </div>
                 {!sidebarCollapsed && (
                   <svg 
-                    className={`w-4 h-4 transition-transform ${openSubmenus.equipamentos ? 'rotate-180' : ''}`} 
+                    className={`w-3.5 h-3.5 transition-transform ${openSubmenus.equipamentos ? 'rotate-180' : ''}`} 
                     fill="none" 
                     stroke="currentColor" 
                     viewBox="0 0 24 24"
@@ -431,13 +431,13 @@ export default function DashboardLayout({
                 </div>
               )}
               {openSubmenus.equipamentos && !sidebarCollapsed && (
-                <div className="ml-4 mt-1 space-y-1">
+                <div className="ml-3 mt-0.5 space-y-0.5">
             <Link
               href="/dashboard/lista-pc"
-                    className={`flex items-center px-4 py-2 rounded-lg transition text-sm ${
+                    className={`flex items-center px-3 py-1.5 rounded-md transition text-sm ${
                 isActive('/dashboard/lista-pc')
-                        ? 'bg-[#4CAF50]/20 text-[#4CAF50]'
-                        : 'text-gray-400 hover:bg-gray-700/50'
+                        ? 'bg-[#4CAF50]/20 text-[#4CAF50] font-medium'
+                        : 'text-gray-400 hover:bg-gray-700/40'
               }`}
               onClick={() => {
                 if (window.innerWidth < 768) {
@@ -445,17 +445,17 @@ export default function DashboardLayout({
                 }
               }}
             >
-                    <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <svg className="w-3.5 h-3.5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 3v2m6-2v2M9 19v2m6-2v2M5 9H3m2 6H3m18-6h-2m2 6h-2M7 19h10a2 2 0 002-2V7a2 2 0 00-2-2H7a2 2 0 00-2 2v10a2 2 0 002 2zM9 9h6v6H9V9z" />
               </svg>
               Lista de PC
             </Link>
             <Link
                     href="/dashboard/impressoras"
-                    className={`flex items-center px-4 py-2 rounded-lg transition text-sm ${
+                    className={`flex items-center px-3 py-1.5 rounded-md transition text-sm ${
                       isActive('/dashboard/impressoras')
-                        ? 'bg-[#4CAF50]/20 text-[#4CAF50]'
-                        : 'text-gray-400 hover:bg-gray-700/50'
+                        ? 'bg-[#4CAF50]/20 text-[#4CAF50] font-medium'
+                        : 'text-gray-400 hover:bg-gray-700/40'
               }`}
               onClick={() => {
                 if (window.innerWidth < 768) {
@@ -463,17 +463,17 @@ export default function DashboardLayout({
                 }
               }}
             >
-                    <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <svg className="w-3.5 h-3.5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" />
               </svg>
                     Impressoras
             </Link>
                 <Link
                     href="/dashboard/relogios-ponto"
-                    className={`flex items-center px-4 py-2 rounded-lg transition text-sm ${
+                    className={`flex items-center px-3 py-1.5 rounded-md transition text-sm ${
                       isActive('/dashboard/relogios-ponto')
-                        ? 'bg-[#4CAF50]/20 text-[#4CAF50]'
-                        : 'text-gray-400 hover:bg-gray-700/50'
+                        ? 'bg-[#4CAF50]/20 text-[#4CAF50] font-medium'
+                        : 'text-gray-400 hover:bg-gray-700/40'
                   }`}
                   onClick={() => {
                 if (window.innerWidth < 768) {
@@ -481,17 +481,17 @@ export default function DashboardLayout({
                 }
               }}
                 >
-                    <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <svg className="w-3.5 h-3.5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
                   </svg>
                     Relógio de Ponto
                 </Link>
                 <Link
                     href="/dashboard/celulares"
-                    className={`flex items-center px-4 py-2 rounded-lg transition text-sm ${
+                    className={`flex items-center px-3 py-1.5 rounded-md transition text-sm ${
                       isActive('/dashboard/celulares')
-                        ? 'bg-[#4CAF50]/20 text-[#4CAF50]'
-                        : 'text-gray-400 hover:bg-gray-700/50'
+                        ? 'bg-[#4CAF50]/20 text-[#4CAF50] font-medium'
+                        : 'text-gray-400 hover:bg-gray-700/40'
                   }`}
                   onClick={() => {
                 if (window.innerWidth < 768) {
@@ -499,7 +499,7 @@ export default function DashboardLayout({
                 }
               }}
                 >
-                    <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <svg className="w-3.5 h-3.5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z" />
                   </svg>
                     Celulares
@@ -512,23 +512,23 @@ export default function DashboardLayout({
             <div className="relative">
               <button
                 onClick={() => toggleSubmenu('rede')}
-                className={`w-full flex items-center justify-between px-4 py-3 rounded-lg transition group ${
+                className={`w-full flex items-center justify-between px-3 py-2 rounded-md transition group ${
                   isSubmenuActive(['/dashboard/gestao-ip', '/dashboard/consulta-ip', '/dashboard/conectividades', '/dashboard/servidores'])
-                  ? 'bg-[#4CAF50] text-white'
-                  : 'text-gray-300 hover:bg-gray-700'
+                  ? 'bg-[#4CAF50] text-white shadow-sm'
+                  : 'text-gray-300 hover:bg-gray-700/60'
                 } ${sidebarCollapsed ? 'justify-center' : ''}`}
                 onMouseEnter={() => setHoveredItem('rede')}
                 onMouseLeave={() => setHoveredItem(null)}
               >
                 <div className={`flex items-center ${sidebarCollapsed ? '' : 'flex-1'}`}>
-                  <svg className={`w-5 h-5 ${sidebarCollapsed ? '' : 'mr-3'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <svg className={`w-4 h-4 ${sidebarCollapsed ? '' : 'mr-2.5'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
                   </svg>
-                  {!sidebarCollapsed && <span>Rede e IP</span>}
+                  {!sidebarCollapsed && <span className="text-sm font-medium">Rede e IP</span>}
                 </div>
                 {!sidebarCollapsed && (
                   <svg 
-                    className={`w-4 h-4 transition-transform ${openSubmenus.rede ? 'rotate-180' : ''}`} 
+                    className={`w-3.5 h-3.5 transition-transform ${openSubmenus.rede ? 'rotate-180' : ''}`} 
                     fill="none" 
                     stroke="currentColor" 
                     viewBox="0 0 24 24"
@@ -544,13 +544,13 @@ export default function DashboardLayout({
                 </div>
               )}
               {openSubmenus.rede && !sidebarCollapsed && (
-                <div className="ml-4 mt-1 space-y-1">
+                <div className="ml-3 mt-0.5 space-y-0.5">
             <Link
                     href="/dashboard/gestao-ip"
-                    className={`flex items-center px-4 py-2 rounded-lg transition text-sm ${
+                    className={`flex items-center px-3 py-1.5 rounded-md transition text-sm ${
                       isActive('/dashboard/gestao-ip')
-                        ? 'bg-[#4CAF50]/20 text-[#4CAF50]'
-                        : 'text-gray-400 hover:bg-gray-700/50'
+                        ? 'bg-[#4CAF50]/20 text-[#4CAF50] font-medium'
+                        : 'text-gray-400 hover:bg-gray-700/40'
               }`}
               onClick={() => {
                 if (window.innerWidth < 768) {
@@ -558,17 +558,17 @@ export default function DashboardLayout({
                 }
               }}
             >
-                    <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <svg className="w-3.5 h-3.5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
               </svg>
                     Gestão de IP
             </Link>
             <Link
                     href="/dashboard/consulta-ip"
-                    className={`flex items-center px-4 py-2 rounded-lg transition text-sm ${
+                    className={`flex items-center px-3 py-1.5 rounded-md transition text-sm ${
                       isActive('/dashboard/consulta-ip')
-                        ? 'bg-[#4CAF50]/20 text-[#4CAF50]'
-                        : 'text-gray-400 hover:bg-gray-700/50'
+                        ? 'bg-[#4CAF50]/20 text-[#4CAF50] font-medium'
+                        : 'text-gray-400 hover:bg-gray-700/40'
               }`}
               onClick={() => {
                 if (window.innerWidth < 768) {
@@ -576,17 +576,17 @@ export default function DashboardLayout({
                 }
               }}
             >
-                    <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <svg className="w-3.5 h-3.5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
               </svg>
                     Consulta IP
             </Link>
             <Link
                     href="/dashboard/conectividades"
-                    className={`flex items-center px-4 py-2 rounded-lg transition text-sm ${
+                    className={`flex items-center px-3 py-1.5 rounded-md transition text-sm ${
                       isActive('/dashboard/conectividades')
-                        ? 'bg-[#4CAF50]/20 text-[#4CAF50]'
-                        : 'text-gray-400 hover:bg-gray-700/50'
+                        ? 'bg-[#4CAF50]/20 text-[#4CAF50] font-medium'
+                        : 'text-gray-400 hover:bg-gray-700/40'
               }`}
               onClick={() => {
                 if (window.innerWidth < 768) {
@@ -594,17 +594,17 @@ export default function DashboardLayout({
                 }
               }}
             >
-                    <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <svg className="w-3.5 h-3.5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.111 16.404a5.5 5.5 0 017.778 0M12 20h.01m-7.08-7.071c3.904-3.905 10.236-3.905 14.141 0M1.394 9.393c5.857-5.857 15.355-5.857 21.213 0" />
               </svg>
                     Conectividade
             </Link>
             <Link
               href="/dashboard/servidores"
-                    className={`flex items-center px-4 py-2 rounded-lg transition text-sm ${
+                    className={`flex items-center px-3 py-1.5 rounded-md transition text-sm ${
                 isActive('/dashboard/servidores')
-                        ? 'bg-[#4CAF50]/20 text-[#4CAF50]'
-                        : 'text-gray-400 hover:bg-gray-700/50'
+                        ? 'bg-[#4CAF50]/20 text-[#4CAF50] font-medium'
+                        : 'text-gray-400 hover:bg-gray-700/40'
               }`}
               onClick={() => {
                 if (window.innerWidth < 768) {
@@ -612,7 +612,7 @@ export default function DashboardLayout({
                 }
               }}
             >
-                    <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <svg className="w-3.5 h-3.5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 12h14M5 12a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v4a2 2 0 01-2 2M5 12a2 2 0 00-2 2v4a2 2 0 002 2h14a2 2 0 002-2v-4a2 2 0 00-2-2m-2-4h.01M17 16h.01" />
               </svg>
               Servidores
@@ -625,23 +625,23 @@ export default function DashboardLayout({
             <div className="relative">
               <button
                 onClick={() => toggleSubmenu('gestao')}
-                className={`w-full flex items-center justify-between px-4 py-3 rounded-lg transition group ${
+                className={`w-full flex items-center justify-between px-3 py-2 rounded-md transition group ${
                   isSubmenuActive(['/dashboard/tarefas', '/dashboard/documentos', '/dashboard/gpos', '/dashboard/automacoes'])
-                  ? 'bg-[#4CAF50] text-white'
-                  : 'text-gray-300 hover:bg-gray-700'
+                  ? 'bg-[#4CAF50] text-white shadow-sm'
+                  : 'text-gray-300 hover:bg-gray-700/60'
                 } ${sidebarCollapsed ? 'justify-center' : ''}`}
                 onMouseEnter={() => setHoveredItem('gestao')}
                 onMouseLeave={() => setHoveredItem(null)}
               >
                 <div className={`flex items-center ${sidebarCollapsed ? '' : 'flex-1'}`}>
-                  <svg className={`w-5 h-5 ${sidebarCollapsed ? '' : 'mr-3'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <svg className={`w-4 h-4 ${sidebarCollapsed ? '' : 'mr-2.5'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" />
                   </svg>
-                  {!sidebarCollapsed && <span>Gestão</span>}
+                  {!sidebarCollapsed && <span className="text-sm font-medium">Gestão</span>}
                 </div>
                 {!sidebarCollapsed && (
                   <svg 
-                    className={`w-4 h-4 transition-transform ${openSubmenus.gestao ? 'rotate-180' : ''}`} 
+                    className={`w-3.5 h-3.5 transition-transform ${openSubmenus.gestao ? 'rotate-180' : ''}`} 
                     fill="none" 
                     stroke="currentColor" 
                     viewBox="0 0 24 24"
@@ -657,13 +657,13 @@ export default function DashboardLayout({
                 </div>
               )}
               {openSubmenus.gestao && !sidebarCollapsed && (
-                <div className="ml-4 mt-1 space-y-1">
+                <div className="ml-3 mt-0.5 space-y-0.5">
                   <Link
                     href="/dashboard/tarefas"
-                    className={`flex items-center px-4 py-2 rounded-lg transition text-sm ${
+                    className={`flex items-center px-3 py-1.5 rounded-md transition text-sm ${
                       isActive('/dashboard/tarefas')
-                        ? 'bg-[#4CAF50]/20 text-[#4CAF50]'
-                        : 'text-gray-400 hover:bg-gray-700/50'
+                        ? 'bg-[#4CAF50]/20 text-[#4CAF50] font-medium'
+                        : 'text-gray-400 hover:bg-gray-700/40'
               }`}
               onClick={() => {
                 if (window.innerWidth < 768) {
@@ -671,17 +671,17 @@ export default function DashboardLayout({
                 }
               }}
             >
-                    <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <svg className="w-3.5 h-3.5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
               </svg>
                     Tarefas
             </Link>
             <Link
                     href="/dashboard/documentos"
-                    className={`flex items-center px-4 py-2 rounded-lg transition text-sm ${
+                    className={`flex items-center px-3 py-1.5 rounded-md transition text-sm ${
                       isActive('/dashboard/documentos')
-                        ? 'bg-[#4CAF50]/20 text-[#4CAF50]'
-                        : 'text-gray-400 hover:bg-gray-700/50'
+                        ? 'bg-[#4CAF50]/20 text-[#4CAF50] font-medium'
+                        : 'text-gray-400 hover:bg-gray-700/40'
               }`}
               onClick={() => {
                 if (window.innerWidth < 768) {
@@ -689,17 +689,17 @@ export default function DashboardLayout({
                 }
               }}
             >
-                    <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <svg className="w-3.5 h-3.5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
               </svg>
                     Documentos
             </Link>
             <Link
                     href="/dashboard/gpos"
-                    className={`flex items-center px-4 py-2 rounded-lg transition text-sm ${
+                    className={`flex items-center px-3 py-1.5 rounded-md transition text-sm ${
                       isActive('/dashboard/gpos')
-                        ? 'bg-[#4CAF50]/20 text-[#4CAF50]'
-                        : 'text-gray-400 hover:bg-gray-700/50'
+                        ? 'bg-[#4CAF50]/20 text-[#4CAF50] font-medium'
+                        : 'text-gray-400 hover:bg-gray-700/40'
               }`}
               onClick={() => {
                 if (window.innerWidth < 768) {
@@ -707,17 +707,17 @@ export default function DashboardLayout({
                 }
               }}
             >
-                    <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <svg className="w-3.5 h-3.5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
               </svg>
                     GPOs
             </Link>
             <Link
                     href="/dashboard/automacoes"
-                    className={`flex items-center px-4 py-2 rounded-lg transition text-sm ${
+                    className={`flex items-center px-3 py-1.5 rounded-md transition text-sm ${
                       isActive('/dashboard/automacoes')
-                        ? 'bg-[#4CAF50]/20 text-[#4CAF50]'
-                        : 'text-gray-400 hover:bg-gray-700/50'
+                        ? 'bg-[#4CAF50]/20 text-[#4CAF50] font-medium'
+                        : 'text-gray-400 hover:bg-gray-700/40'
               }`}
               onClick={() => {
                 if (window.innerWidth < 768) {
@@ -739,23 +739,23 @@ export default function DashboardLayout({
               <div className="relative">
                 <button
                   onClick={() => toggleSubmenu('credenciais')}
-                  className={`w-full flex items-center justify-between px-4 py-3 rounded-lg transition group ${
+                  className={`w-full flex items-center justify-between px-3 py-2 rounded-md transition group ${
                     isSubmenuActive(['/dashboard/emails', '/dashboard/senhas'])
-                  ? 'bg-[#4CAF50] text-white'
-                  : 'text-gray-300 hover:bg-gray-700'
+                  ? 'bg-[#4CAF50] text-white shadow-sm'
+                  : 'text-gray-300 hover:bg-gray-700/60'
                   } ${sidebarCollapsed ? 'justify-center' : ''}`}
                   onMouseEnter={() => setHoveredItem('credenciais')}
                   onMouseLeave={() => setHoveredItem(null)}
                 >
                   <div className={`flex items-center ${sidebarCollapsed ? '' : 'flex-1'}`}>
-                    <svg className={`w-5 h-5 ${sidebarCollapsed ? '' : 'mr-3'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <svg className={`w-4 h-4 ${sidebarCollapsed ? '' : 'mr-2.5'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
                     </svg>
-                    {!sidebarCollapsed && <span>Credenciais</span>}
+                    {!sidebarCollapsed && <span className="text-sm font-medium">Credenciais</span>}
                   </div>
                   {!sidebarCollapsed && (
                     <svg 
-                      className={`w-4 h-4 transition-transform ${openSubmenus.credenciais ? 'rotate-180' : ''}`} 
+                      className={`w-3.5 h-3.5 transition-transform ${openSubmenus.credenciais ? 'rotate-180' : ''}`} 
                       fill="none" 
                       stroke="currentColor" 
                       viewBox="0 0 24 24"
@@ -771,13 +771,13 @@ export default function DashboardLayout({
                   </div>
                 )}
                 {openSubmenus.credenciais && !sidebarCollapsed && (
-                  <div className="ml-4 mt-1 space-y-1">
+                  <div className="ml-3 mt-0.5 space-y-0.5">
                     <Link
                       href="/dashboard/emails"
-                      className={`flex items-center px-4 py-2 rounded-lg transition text-sm ${
+                      className={`flex items-center px-3 py-1.5 rounded-md transition text-sm ${
                         isActive('/dashboard/emails')
-                          ? 'bg-[#4CAF50]/20 text-[#4CAF50]'
-                          : 'text-gray-400 hover:bg-gray-700/50'
+                          ? 'bg-[#4CAF50]/20 text-[#4CAF50] font-medium'
+                          : 'text-gray-400 hover:bg-gray-700/40'
               }`}
               onClick={() => {
                 if (window.innerWidth < 768) {
@@ -785,17 +785,17 @@ export default function DashboardLayout({
                 }
               }}
             >
-                      <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <svg className="w-3.5 h-3.5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
               </svg>
                       Emails
             </Link>
                     <Link
                       href="/dashboard/senhas"
-                      className={`flex items-center px-4 py-2 rounded-lg transition text-sm ${
+                      className={`flex items-center px-3 py-1.5 rounded-md transition text-sm ${
                         isActive('/dashboard/senhas')
-                          ? 'bg-[#4CAF50]/20 text-[#4CAF50]'
-                          : 'text-gray-400 hover:bg-gray-700/50'
+                          ? 'bg-[#4CAF50]/20 text-[#4CAF50] font-medium'
+                          : 'text-gray-400 hover:bg-gray-700/40'
                       }`}
                       onClick={() => {
                         if (window.innerWidth < 768) {
@@ -803,7 +803,7 @@ export default function DashboardLayout({
                         }
                       }}
                     >
-                      <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <svg className="w-3.5 h-3.5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
               </svg>
                       Senhas
@@ -826,24 +826,24 @@ export default function DashboardLayout({
                       setShowConfigMenu(!showConfigMenu);
                     }
                   }}
-                  className={`w-full flex items-center justify-between px-4 py-3 rounded-lg transition group ${
+                  className={`w-full flex items-center justify-between px-3 py-2 rounded-md transition group ${
                     isActive('/dashboard/usuarios') || isActive('/dashboard/parametros')
-                      ? 'bg-[#4CAF50] text-white'
-                      : 'text-gray-300 hover:bg-gray-700'
+                      ? 'bg-[#4CAF50] text-white shadow-sm'
+                      : 'text-gray-300 hover:bg-gray-700/60'
                   } ${sidebarCollapsed ? 'justify-center' : ''}`}
                   onMouseEnter={() => setHoveredItem('configuracoes')}
                   onMouseLeave={() => setHoveredItem(null)}
                 >
                   <div className={`flex items-center ${sidebarCollapsed ? '' : 'flex-1'}`}>
-                    <svg className={`w-5 h-5 ${sidebarCollapsed ? '' : 'mr-3'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <svg className={`w-4 h-4 ${sidebarCollapsed ? '' : 'mr-2.5'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
                   </svg>
-                    {!sidebarCollapsed && <span>Configurações</span>}
+                    {!sidebarCollapsed && <span className="text-sm font-medium">Configurações</span>}
                   </div>
                   {!sidebarCollapsed && (
                   <svg
-                      className={`w-4 h-4 transition-transform ${
+                      className={`w-3.5 h-3.5 transition-transform ${
                       showConfigMenu ? 'rotate-180' : ''
                     }`}
                     fill="none"
@@ -861,15 +861,15 @@ export default function DashboardLayout({
                   </div>
                 )}
                 {showConfigMenu && !sidebarCollapsed && (
-                  <div className="ml-4 mt-1 space-y-1">
+                  <div className="ml-3 mt-0.5 space-y-0.5">
                     {/* Usuários - Apenas admin */}
                     {(user.isAdmin || user.nivelAcesso === 'admin') && (
                     <Link
                       href="/dashboard/usuarios"
-                      className={`flex items-center px-4 py-2.5 rounded-lg transition text-sm w-full ${
+                      className={`flex items-center px-3 py-1.5 rounded-md transition text-sm w-full ${
                         isActive('/dashboard/usuarios')
-                          ? 'bg-[#4CAF50]/20 text-[#4CAF50]'
-                          : 'text-gray-400 hover:bg-gray-700'
+                          ? 'bg-[#4CAF50]/20 text-[#4CAF50] font-medium'
+                          : 'text-gray-400 hover:bg-gray-700/40'
                       }`}
                       onClick={() => {
                         setShowConfigMenu(false);
@@ -883,10 +883,10 @@ export default function DashboardLayout({
                     )}
                     <Link
                       href="/dashboard/parametros"
-                      className={`flex items-center px-4 py-2.5 rounded-lg transition text-sm w-full ${
+                      className={`flex items-center px-3 py-1.5 rounded-md transition text-sm w-full ${
                         isActive('/dashboard/parametros')
-                          ? 'bg-[#4CAF50]/20 text-[#4CAF50]'
-                          : 'text-gray-400 hover:bg-gray-700'
+                          ? 'bg-[#4CAF50]/20 text-[#4CAF50] font-medium'
+                          : 'text-gray-400 hover:bg-gray-700/40'
                       }`}
                       onClick={() => {
                         setShowConfigMenu(false);
@@ -907,10 +907,10 @@ export default function DashboardLayout({
               <div className="relative">
                 <Link
                   href="/dashboard/auditoria"
-                  className={`flex items-center px-4 py-3 rounded-lg transition group ${
+                  className={`flex items-center px-3 py-2 rounded-md transition group ${
                     isActive('/dashboard/auditoria')
-                      ? 'bg-[#4CAF50] text-white'
-                      : 'text-gray-300 hover:bg-gray-700'
+                      ? 'bg-[#4CAF50] text-white shadow-sm'
+                      : 'text-gray-300 hover:bg-gray-700/60'
                   } ${sidebarCollapsed ? 'justify-center' : ''}`}
                   onClick={() => {
                     if (window.innerWidth < 768) {
@@ -920,10 +920,10 @@ export default function DashboardLayout({
                   onMouseEnter={() => setHoveredItem('auditoria')}
                   onMouseLeave={() => setHoveredItem(null)}
                 >
-                  <svg className={`w-5 h-5 ${sidebarCollapsed ? '' : 'mr-3'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <svg className={`w-4 h-4 ${sidebarCollapsed ? '' : 'mr-2.5'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                   </svg>
-                  {!sidebarCollapsed && <span>Auditoria</span>}
+                  {!sidebarCollapsed && <span className="text-sm font-medium">Auditoria</span>}
                 </Link>
                 {sidebarCollapsed && hoveredItem === 'auditoria' && (
                   <div className="absolute left-full ml-2 px-3 py-2 bg-gray-800 text-white text-sm rounded-lg shadow-lg z-50 whitespace-nowrap">
@@ -937,7 +937,7 @@ export default function DashboardLayout({
         </div>
 
         {/* User Profile Section */}
-        <div className="sticky bottom-0 left-0 right-0 p-4 border-t border-gray-700 bg-[#282c34] mt-auto">
+        <div className="sticky bottom-0 left-0 right-0 p-3 border-t border-gray-700/50 bg-[#282c34] mt-auto">
           <div className="relative">
             <button
               onClick={() => {
@@ -949,25 +949,25 @@ export default function DashboardLayout({
                   setShowProfileMenu(!showProfileMenu);
                 }
               }}
-              className={`w-full flex items-center px-4 py-3 rounded-lg hover:bg-gray-700 transition group ${
+              className={`w-full flex items-center px-3 py-2 rounded-md hover:bg-gray-700/60 transition group ${
                 sidebarCollapsed ? 'justify-center' : ''
               }`}
               onMouseEnter={() => setHoveredItem('profile')}
               onMouseLeave={() => setHoveredItem(null)}
             >
-              <div className={`w-10 h-10 rounded-full bg-[#4CAF50] flex items-center justify-center flex-shrink-0 ${sidebarCollapsed ? '' : 'mr-3'}`}>
-                <span className="text-white font-semibold text-sm">
+              <div className={`w-8 h-8 rounded-full bg-[#4CAF50] flex items-center justify-center flex-shrink-0 ${sidebarCollapsed ? '' : 'mr-2.5'}`}>
+                <span className="text-white font-medium text-xs">
                   {user.fullName.charAt(0).toUpperCase()}
                 </span>
               </div>
               {!sidebarCollapsed && (
                 <>
               <div className="flex-1 text-left min-w-0">
-                <p className="text-white font-medium text-sm truncate">{user.fullName}</p>
-                <p className="text-gray-400 text-xs truncate">{user.funcao}</p>
+                <p className="text-white font-medium text-xs truncate">{user.fullName}</p>
+                <p className="text-gray-400 text-[10px] truncate">{user.funcao}</p>
               </div>
               <svg
-                className={`w-5 h-5 text-gray-400 transition transform flex-shrink-0 ${
+                className={`w-4 h-4 text-gray-400 transition transform flex-shrink-0 ${
                   showProfileMenu ? 'rotate-180' : ''
                 }`}
                 fill="none"
@@ -1173,8 +1173,8 @@ export default function DashboardLayout({
       <div 
         className={`p-4 md:p-6 lg:p-8 pt-20 md:pt-6 lg:pt-8 min-h-screen relative transition-all duration-300 ease-in-out ${
           sidebarCollapsed 
-            ? 'md:ml-20 md:w-[calc(100%-5rem)]' 
-            : 'md:ml-64 md:w-[calc(100%-16rem)]'
+            ? 'md:ml-16 md:w-[calc(100%-4rem)]' 
+            : 'md:ml-56 md:w-[calc(100%-14rem)]'
         }`}
       >
         {pageLoading && (
