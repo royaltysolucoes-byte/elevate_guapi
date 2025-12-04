@@ -54,7 +54,7 @@ export async function PUT(
 
     if (!piholeAtualizado) {
       return NextResponse.json(
-        { error: 'Máquina Pi-hole não encontrada' },
+        { error: 'Máquina Pi-Hole não encontrada' },
         { status: 404 }
       );
     }
@@ -103,12 +103,12 @@ export async function DELETE(
 
     if (!pihole) {
       return NextResponse.json(
-        { error: 'Máquina Pi-hole não encontrada' },
+        { error: 'Máquina Pi-Hole não encontrada' },
         { status: 404 }
       );
     }
 
-    return NextResponse.json({ message: 'Máquina Pi-hole excluída com sucesso' });
+    return NextResponse.json({ message: 'Máquina Pi-Hole excluída com sucesso' });
   } catch (error) {
     console.error('Error deleting pihole:', error);
     return NextResponse.json(

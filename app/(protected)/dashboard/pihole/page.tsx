@@ -122,7 +122,7 @@ export default function PiholePage() {
 
       if (!response.ok) {
         const data = await response.json();
-        setError(data.error || `Erro ao ${editingPihole ? 'atualizar' : 'criar'} máquina Pi-hole`);
+        setError(data.error || `Erro ao ${editingPihole ? 'atualizar' : 'criar'} máquina Pi-Hole`);
         return;
       }
 
@@ -150,7 +150,7 @@ export default function PiholePage() {
   };
 
   const handleDelete = async (id: string) => {
-    if (!confirm('Tem certeza que deseja excluir esta máquina Pi-hole?')) {
+    if (!confirm('Tem certeza que deseja excluir esta máquina Pi-Hole?')) {
       return;
     }
 
@@ -189,7 +189,7 @@ export default function PiholePage() {
   return (
     <div>
       <div className="flex items-center justify-between mb-6">
-        <h1 className="text-3xl font-bold text-white">Pi-hole</h1>
+        <h1 className="text-3xl font-bold text-white">Pi-Hole</h1>
         {user?.nivelAcesso !== 'suporte' && (
           <button
             onClick={handleCreate}
@@ -331,7 +331,7 @@ export default function PiholePage() {
           <div className="bg-[#282c34] rounded-lg border border-gray-700/50 max-w-2xl w-full max-h-[90vh] overflow-y-auto">
             <div className="p-6">
               <h2 className="text-2xl font-bold text-white mb-6">
-                {editingPihole ? 'Editar Máquina Pi-hole' : 'Nova Máquina Pi-hole'}
+                {editingPihole ? 'Editar Máquina Pi-Hole' : 'Nova Máquina Pi-Hole'}
               </h2>
 
               <form onSubmit={handleSubmit} className="space-y-4">
