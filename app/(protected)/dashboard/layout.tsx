@@ -69,7 +69,7 @@ export default function DashboardLayout({
     
     // Abre automaticamente o submenu se a página atual estiver dentro dele
     const equipamentosPaths = ['/dashboard/lista-pc', '/dashboard/impressoras', '/dashboard/relogios-ponto', '/dashboard/celulares'];
-    const redePaths = ['/dashboard/gestao-ip', '/dashboard/consulta-ip', '/dashboard/conectividades', '/dashboard/servidores'];
+    const redePaths = ['/dashboard/gestao-ip', '/dashboard/consulta-ip', '/dashboard/conectividades', '/dashboard/servidores', '/dashboard/pihole'];
     const gestaoPaths = ['/dashboard/tarefas', '/dashboard/documentos', '/dashboard/gpos', '/dashboard/automacoes'];
     const credenciaisPaths = ['/dashboard/emails', '/dashboard/senhas'];
     
@@ -193,6 +193,7 @@ export default function DashboardLayout({
       '/dashboard/consulta-ip': 'Consulta IP',
       '/dashboard/conectividades': 'Conectividade',
       '/dashboard/servidores': 'Servidores',
+      '/dashboard/pihole': 'PI-HOLE',
       '/dashboard/tarefas': 'Tarefas',
       '/dashboard/documentos': 'Documentos',
       '/dashboard/gpos': 'GPOs',
@@ -513,7 +514,7 @@ export default function DashboardLayout({
               <button
                 onClick={() => toggleSubmenu('rede')}
                 className={`w-full flex items-center justify-between px-3 py-2 rounded-md transition group ${
-                  isSubmenuActive(['/dashboard/gestao-ip', '/dashboard/consulta-ip', '/dashboard/conectividades', '/dashboard/servidores'])
+                  isSubmenuActive(['/dashboard/gestao-ip', '/dashboard/consulta-ip', '/dashboard/conectividades', '/dashboard/servidores', '/dashboard/pihole'])
                   ? 'bg-[#4CAF50] text-white shadow-sm'
                   : 'text-gray-300 hover:bg-gray-700/60'
                 } ${sidebarCollapsed ? 'justify-center' : ''}`}
@@ -616,6 +617,24 @@ export default function DashboardLayout({
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 12h14M5 12a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v4a2 2 0 01-2 2M5 12a2 2 0 00-2 2v4a2 2 0 002 2h14a2 2 0 002-2v-4a2 2 0 00-2-2m-2-4h.01M17 16h.01" />
               </svg>
               Servidores
+            </Link>
+            <Link
+              href="/dashboard/pihole"
+                    className={`flex items-center px-3 py-1.5 rounded-md transition text-sm ${
+                isActive('/dashboard/pihole')
+                        ? 'bg-[#4CAF50]/20 text-[#4CAF50] font-medium'
+                        : 'text-gray-400 hover:bg-gray-700/40'
+              }`}
+              onClick={() => {
+                if (window.innerWidth < 768) {
+                  setSidebarOpen(false);
+                }
+              }}
+            >
+                    <svg className="w-3.5 h-3.5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9" />
+              </svg>
+              PI-HOLE
             </Link>
                 </div>
               )}

@@ -5,7 +5,7 @@ Sistema de gerenciamento e controle de TI desenvolvido para administração cent
 ## Características
 
 - Gerenciamento de usuários com níveis de acesso (Administrador, Analista, Suporte)
-- Controle de computadores e equipamentos
+- Controle de computadores e equipamentos 
 - Gestão de IPs e VLANs
 - Gerenciamento de emails e senhas com criptografia
 - Cadastro de impressoras e relógios de ponto
